@@ -6,13 +6,13 @@ class Message {
   final String to;
   final DateTime timestamp;
   final String contents;
-  String _id;
+  late String _id;
 
   Message({
-    @required this.from,
-    @required this.to,
-    @required this.timestamp,
-    @required this.contents,
+    required this.from,
+    required this.to,
+    required this.timestamp,
+    required this.contents,
   });
 
   toJson() => {

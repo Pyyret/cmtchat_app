@@ -16,12 +16,12 @@ class TypingEvent {
   final String to;
   final String from;
   final Typing event;
-  String _id;
+  late String _id;
 
   TypingEvent({
-    @required this.to,
-    @required this.from,
-    @required this.event
+    required this.to,
+    required this.from,
+    required this.event
   });
 
   Map<String, dynamic> toJson() => {

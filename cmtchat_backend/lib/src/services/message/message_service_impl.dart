@@ -1,5 +1,6 @@
 import 'dart:async';
-import 'package:rethinkdb_dart/rethinkdb_dart.dart';
+
+import 'package:rethink_db_ns/rethink_db_ns.dart';
 
 import '../../models/message.dart';
 import '../../models/user.dart';
@@ -8,7 +9,7 @@ import 'message_service_contract.dart';
 
 class MessageService implements IMessageService {
   final Connection _connection;
-  final Rethinkdb r;
+  final RethinkDb r;
   final IEncryption _encryption;
   final _controller = StreamController<Message>.broadcast();
 

@@ -1,5 +1,3 @@
-import 'package:flutter/cupertino.dart';
-
 enum ReceiptStatus { sent, delivered, read }
 
 extension EnumParsing on ReceiptStatus {
@@ -17,13 +15,13 @@ class Receipt {
   final String messageId;
   final ReceiptStatus status;
   final DateTime timestamp;
-  String _id;
+  late String _id;
 
   Receipt({
-    @required this.recipient,
-    @required this.messageId,
-    @required this.status,
-    @required this.timestamp});
+    required this.recipient,
+    required this.messageId,
+    required this.status,
+    required this.timestamp});
 
   Map<String, dynamic> toJson() => {
     'recipient': recipient,

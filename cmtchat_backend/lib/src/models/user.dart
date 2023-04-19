@@ -6,13 +6,13 @@ class User {
   String photoUrl;
   bool active;
   DateTime lastSeen;
-  String _id;
+  late String _id;
 
   User({
-    @required this.username,
-    @required this.photoUrl,
-    @required this.active,
-    @required this.lastSeen});
+    required this.username,
+    required this.photoUrl,
+    required this.active,
+    required this.lastSeen});
 
   toJson() => {
     'username': username,
