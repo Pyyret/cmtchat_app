@@ -39,11 +39,25 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.2
 
+  # Provides helpers and methods for interaction with SQLite databases. Used for interacting
+  # with the locally stored chat data.
   sqflite: ^2.0.0+3
 
+
 dev_dependencies:
+
+  # flutter_test and sdk below are commented since there are unresolvable dependency conflicts
+  # with mockito. test_api was added with appropriate version number.
+  #
   flutter_test:
     sdk: flutter
+
+  # test_api: ^0.2.19
+
+  # Mockito is a popular open source framework for mocking objects in software test. Here it
+  # used to test sqflite_datasource implementation.
+  # mockito: ^5.0.6
+
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is
