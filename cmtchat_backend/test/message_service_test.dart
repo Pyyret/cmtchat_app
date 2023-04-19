@@ -4,17 +4,16 @@ import 'package:cmtchat_backend/src/services/encryption/encryption_service_impl.
 import 'package:cmtchat_backend/src/services/message/message_service_impl.dart';
 import 'package:encrypt/encrypt.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:rethinkdb_dart/rethinkdb_dart.dart';
+import 'package:rethink_db_ns/rethink_db_ns.dart';
 
 import 'helpers.dart';
 
-void main() {
-  Rethinkdb r = Rethinkdb();
-  Connection connection;
-  MessageService sut;
+Future<void> main() async {
+  RethinkDb r = RethinkDb();
+  Connection connection = await r.connect(host: '127.0.0.1', port: 28015);
+  late MessageService sut;
 
   setUp(() async {
-    connection = await r.connect(host: '127.0.0.1', port: 28015);
     final encryption =  EncryptionService(Encrypter(AES(Key.fromLength(32))));
     await createDb(r, connection);
     sut = MessageService(r, connection, encryption);

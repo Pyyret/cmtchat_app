@@ -1,39 +1,50 @@
-import 'package:rethinkdb_dart/rethinkdb_dart.dart';
+import 'package:rethink_db_ns/rethink_db_ns.dart';
 
 import '../../models/user.dart';
 import 'user_service_contract.dart';
 
 class UserService implements IUserService {
   final Connection _connection;
-  final Rethinkdb r;
+  final RethinkDb r;
 
   UserService(this.r, this._connection);
 
   @override
   Future<User> connect(User user) async {
-    var data = user.toJson();
-    if (user.id != null) data['id'] = user.id;
-    final result = await r
+    user.active = true;
+    user.lastSeen = DateTime.now();
+
+    final response = await r
         .table('users')
-        .insert(data, {
+        .insert(user.toJson() , {
           'conflict': 'update',
           'return_changes': true
         })
         .run(_connection);
-    return User.fromJson(result['changes'].first['new_val']);
+
+    if(response['changes'].length == 0) { return user; }
+    else {
+      return User.fromJson(response['changes'].first['new_val']);
+    }
   }
 
   @override
-  Future<void> disconnect(User user) async {
-    await r
+  Future<User> disconnect(User user) async {
+    final response = await r
         .table('users')
-        .update({
-          'id': user.id,
+        .get(user.id)
+        .update(
+        {
           'active': false,
           'last_seen': DateTime.now()
-        })
+        }, {'return_changes': true})
         .run(_connection);
-    _connection.close();
+
+    if(response['changes'].length > 0) {
+      return User.fromJson(response['changes'].first['new_val']);
+    } else {
+      return user;
+    }
   }
 
   @override

@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:rethinkdb_dart/rethinkdb_dart.dart';
+import 'package:rethink_db_ns/rethink_db_ns.dart';
 
 import '../../models/receipt.dart';
 import '../../models/user.dart';
@@ -8,10 +8,10 @@ import 'receipt_service_contract.dart';
 
 class ReceiptService implements IReceiptService {
   final Connection _connection;
-  final Rethinkdb r;
+  final RethinkDb r;
   final _controller = StreamController<Receipt>.broadcast();
 
-  StreamSubscription _changeFeed;
+  late StreamSubscription _changeFeed;
 
   /// Constructor
   ReceiptService(this.r, this._connection);
@@ -35,8 +35,8 @@ class ReceiptService implements IReceiptService {
 
   @override
   dispose() {
-    _changeFeed?.cancel();
-    _controller?.close();
+    _changeFeed.cancel();
+    _controller.close();
   }
 
   _startRecievingReceipts(User user) {

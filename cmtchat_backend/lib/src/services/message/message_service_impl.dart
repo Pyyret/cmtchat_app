@@ -1,5 +1,4 @@
 import 'dart:async';
-
 import 'package:rethink_db_ns/rethink_db_ns.dart';
 
 import '../../models/message.dart';
@@ -13,7 +12,7 @@ class MessageService implements IMessageService {
   final IEncryption _encryption;
   final _controller = StreamController<Message>.broadcast();
 
-  StreamSubscription _changeFeed;
+  late StreamSubscription _changeFeed;
 
   /// Constructor
   MessageService(this.r, this._connection, this._encryption);
@@ -30,15 +29,15 @@ class MessageService implements IMessageService {
   }
 
   @override
-  Stream<Message> messages({User activeUser}) {
+  Stream<Message> messages({required User activeUser}) {
     _startRecievingMessages(activeUser);
     return _controller.stream;
   }
 
   @override
   dispose() {
-    _changeFeed?.cancel();
-    _controller?.close();
+    _changeFeed.cancel();
+    _controller.close();
   }
 
   _startRecievingMessages(User user) {

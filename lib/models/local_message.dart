@@ -2,11 +2,11 @@ import 'package:cmtchat_backend/cmtchat_backend.dart';
 
 /// A local representation of a message
 class LocalMessage {
+  String get id => _id;
   String chatId;
   Message message;
   ReceiptStatus receipt;
-  String _id;
-  String get id => _id;
+  late String _id;
 
   /// Constructor
   LocalMessage(this.chatId, this.message, this.receipt);

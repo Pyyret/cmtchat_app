@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/cupertino.dart';
-import 'package:rethinkdb_dart/rethinkdb_dart.dart';
+import 'package:rethink_db_ns/rethink_db_ns.dart';
 
 import '../../models/typing_event.dart';
 import '../../models/user.dart';
@@ -9,17 +9,17 @@ import 'typing_notification_service_contract.dart';
 
 class TypingNotification implements ITypingNotification {
   final Connection _connection;
-  final Rethinkdb _r;
+  final RethinkDb _r;
   final _controller = StreamController<TypingEvent>.broadcast();
 
-  StreamSubscription _changeFeed;
+  late StreamSubscription _changeFeed;
 
   /// Constructor
   TypingNotification(this._r, this._connection);
 
   /// Methods
   @override
-  Future<bool> send({@required TypingEvent event, @required User to}) async {
+  Future<bool> send({required TypingEvent event, required User to}) async {
     if(!to.active) return false;
     Map record = await _r
         .table('typing_events')
@@ -36,8 +36,8 @@ class TypingNotification implements ITypingNotification {
 
   @override
   void dispose() {
-    _changeFeed?.cancel();
-    _controller?.close();
+    _changeFeed.cancel();
+    _controller.close();
   }
 
   _startReceivingTypingEvents(User user, List<String> userIds) {

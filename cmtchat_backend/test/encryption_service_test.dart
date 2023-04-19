@@ -4,15 +4,11 @@ import 'package:encrypt/encrypt.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 main() {
-  IEncryption sut;
-
-  setUp(() {
-    final encrypter = Encrypter(AES(Key.fromLength(32)));
-    sut = EncryptionService(encrypter);
-  });
+  final encrypter = Encrypter(AES(Key.fromLength(32)));
+  IEncryption sut = EncryptionService(encrypter);
 
   test('Encryption of plain text', () {
-    final text = 'This is a message';
+    const text = 'This is a message';
     final base64 = RegExp(r'^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=|[A-Za-z0-9+/]{4})$');
     final encrypted = sut.encrypt(text);
 
@@ -20,7 +16,7 @@ main() {
   });
 
   test('Decrypting the encrypted text', () {
-    final text = 'Hello (..hello..hello), is there anybody out there?';
+    const text = 'Hello (..hello..hello), is there anybody out there?';
     final encrypted = sut.encrypt(text);
     final decrypted = sut.decrypt(encrypted);
 

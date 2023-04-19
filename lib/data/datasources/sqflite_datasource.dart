@@ -1,6 +1,6 @@
 import 'package:cmtchat_app/models/chat.dart';
-
 import 'package:cmtchat_app/models/local_message.dart';
+
 import 'package:sqflite/sqflite.dart';
 
 import 'datasource_contract.dart';
@@ -56,7 +56,7 @@ class SqfliteDatasource implements IDatasource {
             orElse: () => {'unread': 0})['unread']
         );
         final chat = Chat.fromMap(row);
-        chat.unread = unread;
+        chat.unread = unread!;
         chat.mostRecent = LocalMessage.fromMap(row);
         return chat;
       }).toList();
@@ -88,7 +88,7 @@ class SqfliteDatasource implements IDatasource {
       );
 
       final chat = Chat.fromMap(listOfChatMaps.first);
-      chat.unread = unread;
+      chat.unread = unread!;
       chat.mostRecent = LocalMessage.fromMap(mostRecentMessage.first);
 
       return chat;
