@@ -1,33 +1,45 @@
 import 'package:cmtchat_backend/cmtchat_backend.dart';
+import 'package:isar/isar.dart';
 
+
+@Collection()
+@Name('LocalMessages')
 /// A local representation of a message
 class LocalMessage {
-  String get id => _id;
-  String chatId;
-  Message message;
-  ReceiptStatus receipt;
-  late String _id;
+  late final Id isarId;
+  final String chatId;
+  String? get id => message.id;
+  final Message message;
+  ReceiptStatus? receipt;
 
   /// Constructor
-  LocalMessage(this.chatId, this.message, this.receipt);
+  LocalMessage({
+    required this.chatId,
+    required this.message
+  }) {
+   isarId = Isar.autoIncrement;
+  }
 
-  Map<String, dynamic> toMap() => {
-    'chatId': chatId,
-    'id': message.id,
-    'receipt': receipt.value(),
-    ... message.toJson()
-  };
+  Map<String, dynamic> toMap() {
+    var data = {
+      'chat_id' : chatId,
+      'id' : message.id,
+      'sender' : message.from,
+      'receiver' : message.to,
+      'contents' : message.contents,
+      'timestamp' : message.timestamp.toString()
+    };
+    if(receipt != null ?? false) data['receipt'] = receipt!.value();
+    return data;
+  }
 
   factory LocalMessage.fromMap(Map<String, dynamic> json) {
-    final message = Message(
-        from: json['from'],
-        to: json['to'],
-        timestamp: json['timestamp'],
-        contents: json['contents']
+    final message = Message.fromJson(json);
+    final localMessage = LocalMessage(
+        chatId : json['chat_id'],
+        message : message
     );
-    final localMessage = LocalMessage(json['chat_id'], message, json['receipt']);
-    localMessage._id = json['id'];
-
+    localMessage.receipt = json['receipt'];
     return localMessage;
   }
 }

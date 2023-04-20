@@ -1,12 +1,12 @@
 import 'package:flutter/cupertino.dart';
 
 class Message {
-  String get id => _id;
+  String? get id => _id;
   final String from;
   final String to;
   final DateTime timestamp;
   final String contents;
-  late String _id;
+  late final String? _id;
 
   Message({
     required this.from,
@@ -15,12 +15,16 @@ class Message {
     required this.contents,
   });
 
-  toJson() => {
-    'from': from,
-    'to': to,
-    'timestamp': timestamp,
-    'contents': contents
-  };
+  Map<String, dynamic> toJson() {
+    var data = {
+      'from' : from,
+      'to' : to,
+      'timestamp' : timestamp,
+      'contents' : contents
+    };
+    if(_id?.isNotEmpty ?? false) data['id'] = _id!;
+    return data;
+  }
 
   factory Message.fromJson(Map<String, dynamic> json) {
     final message = Message(

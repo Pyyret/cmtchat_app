@@ -43,15 +43,21 @@ dependencies:
   # with the locally stored chat data.
   sqflite: ^2.0.0+3
 
+  # NoSql local database. https://isar.dev/
+  isar: ^3.1.0
+  isar_flutter_libs: ^3.1.0
+
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
 
-
   # Mockito is a popular open source framework for mocking objects in software test. Here it
   # used to test sqflite_datasource implementation.
-  # mockito: ^5.0.6
+  mockito: ^5.0.6
+
+  isar_generator: ^3.1.0
+  build_runner:
 
 
   # The "flutter_lints" package below contains a set of recommended lints to

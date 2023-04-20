@@ -13,8 +13,10 @@ class SqfliteDatasource implements IDatasource {
 
   @override
   Future<void> addChat(Chat chat) async {
-    await _db.insert('chats', chat.toMap(),
-        conflictAlgorithm: ConflictAlgorithm.replace);
+    await _db.transaction((txn) async {
+      await txn.insert('chats', chat.toMap(),
+          conflictAlgorithm: ConflictAlgorithm.replace);
+    });
   }
 
   @override
