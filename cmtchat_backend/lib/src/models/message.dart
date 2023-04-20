@@ -23,7 +23,7 @@ class Message {
   };
 
   factory Message.fromJson(Map<String, dynamic> json) {
-    var message = Message(
+    final message = Message(
         from: json['from'],
         to: json['to'],
         timestamp: json['timestamp'],

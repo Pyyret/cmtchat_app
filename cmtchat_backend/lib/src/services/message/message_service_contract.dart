@@ -4,9 +4,7 @@ import '../../models/message.dart';
 import '../../models/user.dart';
 
 abstract class IMessageService {
-  Future<bool> send(Message message);
-  Stream<Message> messages({
-    required User activeUser
-  });
+  Future<bool> send({required Message message});
+  Stream<Message> messageStream({ required User activeUser });
   dispose();
 }

@@ -10,34 +10,36 @@ class MessageService implements IMessageService {
   final Connection _connection;
   final RethinkDb r;
   final IEncryption _encryption;
-  final _controller = StreamController<Message>.broadcast();
+  late final StreamController<Message> _controller;
 
   late StreamSubscription _changeFeed;
 
   /// Constructor
-  MessageService(this.r, this._connection, this._encryption);
-
-  @override
-  Future<bool> send(Message message) async {
-    var data = message.toJson();
-    data['contents'] = _encryption.encrypt(message.contents);
-    Map record = await r
-        .table('messages')
-        .insert(data)
-        .run(_connection);
-    return record['inserted'] == 1;
+  MessageService(this.r, this._connection, this._encryption) {
+    _controller = StreamController<Message>.broadcast();
   }
 
   @override
-  Stream<Message> messages({required User activeUser}) {
+  Future<bool> send({required Message message}) async {
+    var data = message.toJson();
+    data['contents'] = _encryption.encrypt(message.contents);
+    final response = await r
+        .table('messages')
+        .insert(data)
+        .run(_connection);
+    return response['inserted'] == 1;
+  }
+
+  @override
+  Stream<Message> messageStream({required User activeUser}) {
     _startRecievingMessages(activeUser);
     return _controller.stream;
   }
 
   @override
-  dispose() {
-    _changeFeed.cancel();
-    _controller.close();
+  Future<void> dispose() async {
+    await _changeFeed.cancel();
+    await _controller.close();
   }
 
   _startRecievingMessages(User user) {

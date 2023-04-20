@@ -10,88 +10,73 @@ import 'helpers.dart';
 
 Future<void> main() async {
   RethinkDb r = RethinkDb();
-  Connection connection = await r.connect(host: '127.0.0.1', port: 28015);
-  late MessageService sut;
+  final Connection connection = await r.connect(host: '127.0.0.1', port: 28015);
+  final encryption =  EncryptionService(Encrypter(AES(Key.fromLength(32))));
+  late MessageService sut = MessageService(r, connection, encryption);
 
-  setUp(() async {
-    final encryption =  EncryptionService(Encrypter(AES(Key.fromLength(32))));
-    await createDb(r, connection);
-    sut = MessageService(r, connection, encryption);
-  });
-
-  tearDown(() async {
-    sut.dispose();
-    await cleanDb(r, connection);
-  });
 
   final user1 = User.fromJson({
-    'id': '1111',
+    'username': '1111',
+    'id' : '1111',
+    'photo_url': 'img',
     'active': true,
     'last_seen': DateTime.now()
   });
 
   final user2 = User.fromJson({
-  'id': '2222',
-  'active': true,
-  'last_seen': DateTime.now()
+    'username': '2222',
+    'id' : '2222',
+    'photo_url': 'img',
+    'active': true,
+    'last_seen': DateTime.now()
+  });
+
+  const content = 'TESTINGTESTING!';
+
+  final Message message1 = Message(
+      from: user2.id!,
+      to: user1.id!,
+      timestamp: DateTime.now(),
+      contents: content);
+
+  final Message message2 = Message(
+      from: user2.id!,
+      to: user1.id!,
+      timestamp: DateTime.now(),
+      contents: content);
+
+  setUp(() async {
+    await createDb(r, connection);
+  });
+
+  tearDown(() async {
+    await cleanDb(r, connection);
   });
 
   test('Send message', () async {
-    Message message = Message(
-        from: user1.id,
-        to: user2.id,
-        timestamp: DateTime.now(),
-        contents: 'TESTINGTESTING!'
-    );
-
-    final res = await sut.send(message);
+    final res = await sut.send(message: message1);
     expect(res, true);
   });
 
   test('Subscribe and receive messages', () async {
-    final content = 'TESTINGTESTING!';
-
-    Message message1 = Message(
-        from: user2.id,
-        to: user1.id,
-        timestamp: DateTime.now(),
-        contents: content);
-
-    Message message2 = Message(
-        from: user2.id,
-        to: user1.id,
-        timestamp: DateTime.now(),
-        contents: content);
-
-    sut.messages(activeUser: user1).listen(expectAsync1((message) {
+    sut.messageStream(activeUser: user1).listen(expectAsync1((message) {
       expect(message.to, user1.id);
       expect(message.id, isNotEmpty);
       expect(message.contents, content);
     }, count: 2));
-    await sut.send(message1);
-    await sut.send(message2);
+
+    await sut.send(message: message1);
+    await sut.send(message: message2);
   });
 
   test('Subscribe and receive new messages when logging on', () async {
-    Message message = Message(
-        from: user2.id,
-        to: user1.id,
-        timestamp: DateTime.now(),
-        contents: 'TESTINGTESTING!');
-
-    Message message2 = Message(
-        from: user2.id,
-        to: user1.id,
-        timestamp: DateTime.now(),
-        contents: 'TESTING AGAIN!');
-
     /// Sending the messages first
-    await sut.send(message);
-    await sut.send(message2)
+    await sut.send(message: message1);
+    await sut.send(message: message2)
 
     /// And then subscribing to the stream
         .whenComplete(() =>
-        sut.messages(activeUser: user1).listen(expectAsync1((message) {
+        sut.messageStream(activeUser: user1).listen(expectAsync1((message) {
           expect(message.to, user1.id);
           expect(message.id, isNotEmpty);
     }, count: 2)));

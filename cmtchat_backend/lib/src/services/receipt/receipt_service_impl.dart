@@ -9,12 +9,14 @@ import 'receipt_service_contract.dart';
 class ReceiptService implements IReceiptService {
   final Connection _connection;
   final RethinkDb r;
-  final _controller = StreamController<Receipt>.broadcast();
+  late final _controller;
 
   late StreamSubscription _changeFeed;
 
   /// Constructor
-  ReceiptService(this.r, this._connection);
+  ReceiptService(this.r, this._connection){
+    _controller = StreamController<Receipt>.broadcast();
+  }
 
   /// Methods
   @override
@@ -28,7 +30,7 @@ class ReceiptService implements IReceiptService {
   }
 
   @override
-  Stream<Receipt> receipts(User user) {
+  Stream<Receipt> receiptStream(User user) {
     _startRecievingReceipts(user);
     return _controller.stream;
   }
