@@ -4,12 +4,12 @@ import 'package:cmtchat_backend/cmtchat_backend.dart';
 
 import 'package:sqflite/sqflite.dart';
 
-import 'datasource_contract.dart';
+import 'dataservice_contract.dart';
 
-class SqfliteDatasource implements IDatasource {
+class SqfliteService implements IDataService {
   final Database _db;
 
-  const SqfliteDatasource(this._db);
+  const SqfliteService(this._db);
 
   @override
   Future<void> addChat(Chat chat) async {
@@ -130,5 +130,29 @@ class SqfliteDatasource implements IDatasource {
             conflictAlgorithm: ConflictAlgorithm.replace
         );
       });
+  }
+
+  @override
+  Future<void> removeUser(User user) {
+    // TODO: implement removeUser
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<int> saveChat(Chat c) {
+    // TODO: implement saveChat
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<void> saveMessage(LocalMessage message) {
+    // TODO: implement saveMessage
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<void> saveUser(User user) {
+    // TODO: implement saveUser
+    throw UnimplementedError();
   }
 }

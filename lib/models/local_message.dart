@@ -1,9 +1,6 @@
 import 'package:cmtchat_backend/cmtchat_backend.dart';
 import 'package:isar/isar.dart';
 
-
-@Collection()
-@Name('LocalMessages')
 /// A local representation of a message
 class LocalMessage {
   late final Id isarId;
