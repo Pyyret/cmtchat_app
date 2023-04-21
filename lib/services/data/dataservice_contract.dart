@@ -1,7 +1,6 @@
-import 'package:cmtchat_backend/cmtchat_backend.dart';
-
-import '../../models/chat.dart';
-import '../../models/local_message.dart';
+import '../../models/chats.dart';
+import '../../models/messages.dart';
+import '../../models/users.dart';
 
 /// Interface for any form of local storage of chats & messages
 abstract class IDataService {
@@ -20,5 +19,5 @@ abstract class IDataService {
   Future<void> saveMessage(LocalMessage message);
   Future<List<LocalMessage>> findMessage(String messageId);
   Future<void> updateMessage(LocalMessage message);
-  Future<void> updateMessageReceipt(String messageId, ReceiptStatus status);
+  //Future<void> updateMessageReceipt(String messageId, ReceiptStatus status);
 }

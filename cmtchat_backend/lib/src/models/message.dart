@@ -1,7 +1,8 @@
 import 'package:flutter/cupertino.dart';
 
+
 class Message {
-  String? get id => _id;
+  final Id id = Isar.autoIncrement;
   final String from;
   final String to;
   final DateTime timestamp;

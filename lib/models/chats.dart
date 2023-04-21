@@ -1,9 +1,8 @@
-import 'package:cmtchat_app/services/data/isar/collections.dart';
 import 'package:isar/isar.dart';
+import 'users.dart';
+import 'messages.dart';
 
-import 'local_message.dart';
-
-part 'models.g.dart';
+part 'chats.g.dart';
 
 
 @Collection()
@@ -21,7 +20,10 @@ class Chat {
   int? unread;
 
   /// Constructor
-  Chat({ required User owner, this.chatName });
+  Chat({ required User chatOwner, this.chatName }) {
+    owner.value = chatOwner;
+  }
+
 
   /*
 

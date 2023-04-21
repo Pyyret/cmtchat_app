@@ -1,4 +1,4 @@
-import 'package:cmtchat_app/models/chat.dart';
+import 'package:cmtchat_app/models/chats.dart';
 import 'package:cmtchat_app/models/local_message.dart';
 import 'package:cmtchat_backend/cmtchat_backend.dart';
 

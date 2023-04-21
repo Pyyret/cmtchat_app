@@ -1,6 +1,8 @@
-import 'package:cmtchat_app/models/chat.dart';
+
+import 'package:cmtchat_app/models/users.dart';
 import 'package:cmtchat_app/services/data/isar/isar_dataservice.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:isar/isar.dart';
 
 void main() {
 
@@ -10,10 +12,21 @@ void main() {
     i = IsarService()
   });
 
-  tearDown(() => {});
+  tearDown(() => {
+    i
+  });
 
 
-  var tstChat1 = Chat();
+  var ts = User();
+  test('userdb', () => {
+
+
+
+  });
+
+
+
+  /*
 
   test('Save a new chat', () async {
     var ans = await i.saveChat(tstChat1);
@@ -21,4 +34,6 @@ void main() {
     expect(ans, tstChat1.id);
   });
 
+
+   */
 }

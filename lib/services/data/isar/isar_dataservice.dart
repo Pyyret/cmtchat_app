@@ -1,19 +1,20 @@
 import 'dart:async';
 
-import 'package:cmtchat_app/models/chat.dart';
-import 'package:cmtchat_app/models/local_message.dart';
+import 'package:cmtchat_app/models/chats.dart';
+import 'package:cmtchat_app/models/messages.dart';
 import 'package:cmtchat_app/services/data/dataservice_contract.dart';
-import 'package:cmtchat_backend/src/models/receipt.dart';
-import 'package:cmtchat_backend/src/models/user.dart';
 import 'package:isar/isar.dart';
-import  'collections.dart' show ChatSchema, GetChatCollection, LocalMessageSchema, ReceiptSchema, TypingEventSchema, UserSchema;
+import '../../../models/users.dart';
 import 'package:path_provider/path_provider.dart';
+
 
 
 /// Isar local database service ///
 // Implementation of all necessary operations for a dataservice
 // as specified in the dataservice contract, IDataService
+
 class IsarService implements IDataService {
+
   // Database object used by this service
   late Future<Isar> db;
 
@@ -44,8 +45,11 @@ class IsarService implements IDataService {
   @override
   Future<int> saveChat(Chat chat) async {
     final isar = await db;
-    return isar.writeTxnSync<int>(() => isar.chats.putSync(chat));
+    return isar.writeTxnSync<int>(() => isar.users.putSync(chat));
   }
+
+
+
 
   @override
   Future<void> deleteChat(String chatId) {
@@ -84,13 +88,15 @@ class IsarService implements IDataService {
     // TODO: implement updateMessage
     throw UnimplementedError();
   }
-
+/*
   @override
   Future<void> updateMessageReceipt(String messageId, ReceiptStatus status) {
     // TODO: implement updateMessageReceipt
     throw UnimplementedError();
   }
 
+
+ */
 
 
   /// Activate and open the local database for use ///
@@ -99,10 +105,6 @@ class IsarService implements IDataService {
     if (Isar.instanceNames.isEmpty) {
       var dir = await getApplicationDocumentsDirectory();
       return await Isar.open([
-        ChatSchema,
-        LocalMessageSchema,
-        ReceiptSchema,
-        TypingEventSchema,
         UserSchema
       ], inspector: true, directory: dir.path);
     }

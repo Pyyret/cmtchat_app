@@ -25,14 +25,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.4.0"
-  asn1lib:
-    dependency: transitive
-    description:
-      name: asn1lib
-      sha256: ab96a1cb3beeccf8145c52e449233fe68364c9641623acd3adad66f8184f1039
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.4.0"
   async:
     dependency: transitive
     description:
@@ -137,13 +129,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.1.1"
-  cmtchat_backend:
-    dependency: "direct main"
-    description:
-      path: cmtchat_backend
-      relative: true
-    source: path
-    version: "0.1.1+1"
   code_builder:
     dependency: transitive
     description:
@@ -200,14 +185,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.1.0"
-  encrypt:
-    dependency: transitive
-    description:
-      name: encrypt
-      sha256: "4fd4e4fdc21b9d7d4141823e1e6515cd94e7b8d84749504c232999fba25d9bbb"
-      url: "https://pub.dev"
-    source: hosted
-    version: "5.0.1"
   fake_async:
     dependency: transitive
     description:
@@ -458,14 +435,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.1.5"
-  pbkdf2ns:
-    dependency: transitive
-    description:
-      name: pbkdf2ns
-      sha256: "395eb73e1859cd0864de14d97e07b70392eda7f7fd6f0ed7537dd7062dc0650c"
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.0.2"
   platform:
     dependency: transitive
     description:
@@ -482,14 +451,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.1.4"
-  pointycastle:
-    dependency: transitive
-    description:
-      name: pointycastle
-      sha256: "7c1e5f0d23c9016c5bbd8b1473d0d3fb3fc851b876046039509e18e0c7485f2c"
-      url: "https://pub.dev"
-    source: hosted
-    version: "3.7.3"
   pool:
     dependency: transitive
     description:
@@ -506,14 +467,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "4.2.4"
-  protobuf:
-    dependency: transitive
-    description:
-      name: protobuf
-      sha256: "01dd9bd0fa02548bf2ceee13545d4a0ec6046459d847b6b061d8a27237108a08"
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.1.0"
   pub_semver:
     dependency: transitive
     description:
@@ -530,14 +483,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.2.2"
-  rethink_db_ns:
-    dependency: transitive
-    description:
-      name: rethink_db_ns
-      sha256: dac14016cd8a40dfcaed63ac956b11bc8a7a0328f52e35f8a5f8abc644f0ab87
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.0.4"
   shelf:
     dependency: transitive
     description:
