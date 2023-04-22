@@ -10,7 +10,7 @@ abstract class IDataService {
   Future<void> removeUser(User user);
 
   /// Chat
-  Future<int> saveChat(Chat chat);
+  //Future<int> saveChat(Chat chat);
   Future<List<Chat>> findAllChats();
   Future<Chat> findChat(String chatId);
   Future<void> deleteChat(String chatId);

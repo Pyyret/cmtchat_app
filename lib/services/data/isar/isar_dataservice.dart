@@ -40,7 +40,7 @@ class IsarService implements IDataService {
 
 
   /// Chat
-
+/*
   // Returns the id of the new or updated chat
   @override
   Future<int> saveChat(Chat chat) async {
@@ -48,6 +48,8 @@ class IsarService implements IDataService {
     return isar.writeTxnSync<int>(() => isar.users.putSync(chat));
   }
 
+
+ */
 
 
 

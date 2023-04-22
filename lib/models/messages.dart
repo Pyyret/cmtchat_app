@@ -2,7 +2,7 @@ import 'package:cmtchat_app/models/chats.dart';
 import 'package:cmtchat_app/models/users.dart';
 import 'package:isar/isar.dart';
 
-part 'messages.g.dart';
+//part 'messages.g.dart';
 
 
 /// The basic building-blocks for a message to send ///
@@ -54,8 +54,8 @@ class Message {
 
 /// A local representation of a message ///
 
-@Collection()
-@Name('Messages')
+//@Collection()
+//@Name('Messages')
 class LocalMessage extends Message {
 
   final chat = IsarLink<Chat>();

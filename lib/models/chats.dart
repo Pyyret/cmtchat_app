@@ -2,11 +2,11 @@ import 'package:isar/isar.dart';
 import 'users.dart';
 import 'messages.dart';
 
-part 'chats.g.dart';
+//part 'chats.g.dart';
 
 
-@Collection()
-@Name('Chats')
+//@Collection()
+//@Name('Chats')
 class Chat {
 
   final Id id = Isar.autoIncrement;
