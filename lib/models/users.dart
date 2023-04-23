@@ -11,7 +11,7 @@ part 'users.g.dart';
 
 class User {
   // Required for all kinds of users, but happens automatically
-  final Id id = Isar.autoIncrement;
+  Id id = Isar.autoIncrement;
 
   // Defaults to 'Guest', necessary for many things
   String username = '';
@@ -20,8 +20,8 @@ class User {
   WebUser? webUser;
 
   // Links to all your chats & messages
-  final allChats = IsarLinks<Chat>();
-  final allMessages = IsarLinks<LocalMessage>();
+  //final allChats = IsarLinks<Chat>();
+  //final allMessages = IsarLinks<LocalMessage>();
 
 
   /// Constructors ///

@@ -27,15 +27,21 @@ class IsarService implements IDataService {
 
   /// User
   @override
-  Future<void> saveUser(User user) {
-    // TODO: implement saveUser
-    throw UnimplementedError();
+  Future<void> saveUser(User user) async {
+    final isar = await db;
+     isar.writeTxnSync(() => isar.users.putSync(user));
   }
 
   @override
-  Future<void> removeUser(User user) {
-    // TODO: implement removeUser
-    throw UnimplementedError();
+  Future<User?> findUser(Id userId) async {
+    final isar = await db;
+    return await isar.users.get(userId);
+  }
+
+  @override
+  Future<void> removeUser(Id userId) async {
+    final isar = await db;
+    await isar.writeTxnSync(() => isar.users.deleteSync(userId));
   }
 
 
@@ -101,15 +107,16 @@ class IsarService implements IDataService {
  */
 
 
-  /// Activate and open the local database for use ///
+  /// Activate and open the local isar database for use ///
   // This is called everytime a new instance of this service class is made
   Future<Isar> activate() async {
     if (Isar.instanceNames.isEmpty) {
       var dir = await getApplicationDocumentsDirectory();
       return await Isar.open([
         UserSchema
-      ], inspector: true, directory: dir.path);
+      ], directory: dir.path);
     }
     return Future.value(Isar.getInstance());
   }
+
 }

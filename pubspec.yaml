@@ -32,43 +32,48 @@ dependencies:
   flutter:
     sdk: flutter
 
+  path_provider: ^2.0.14
+  path_provider_platform_interface:
+
+  # NoSql local database. See https://isar.dev/ for more information
+  # Related dependencies also added in dev_dependencies below
+  isar: ^3.1.0
+  isar_flutter_libs: ^3.1.0
+
+  plugin_platform_interface:
+
   # Adds the backend module to the application
   #cmtchat_backend:
   #  path: ./cmtchat_backend
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
-  cupertino_icons:
+  cupertino_icons: ^1.0.2
 
   # Provides helpers and methods for interaction with SQLite databases. Used for interacting
   # with the locally stored chat data.
 
 
-  # NoSql local database. https://isar.dev/
-  isar:
-  isar_flutter_libs:
-
-  path_provider:
 
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
 
+  # Dev_dependencies related to isar, see above
+  isar_generator: ^3.1.0
+  build_runner:
+
   # Mockito is a popular open source framework for mocking objects in software test. Here it
   # used to test sqflite_datasource implementation.
  # mockito: ^5.0.6
-
-  #isar_generator: ^3.1.0
-
-  #build_runner:
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is
   # activated in the `analysis_options.yaml` file located at the root of your
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
-  flutter_lints:
+  flutter_lints: ^2.0.0
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
