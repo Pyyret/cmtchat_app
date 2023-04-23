@@ -7,7 +7,8 @@ abstract class IDataService {
 
   /// User
   Future<void> saveUser(User user);
-  Future<void> removeUser(User user);
+  Future<User?> findUser(int userId);
+  Future<void> removeUser(int userId);
 
   /// Chat
   //Future<int> saveChat(Chat chat);

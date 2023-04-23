@@ -13,7 +13,7 @@ const String kTemporaryPath = 'temporaryPath';
 const String kApplicationSupportPath = 'applicationSupportPath';
 const String kDownloadsPath = 'downloadsPath';
 const String kLibraryPath = 'libraryPath';
-const String kApplicationDocumentsPath = 'applicationDocumentsPath';
+const String kApplicationDocumentsPath = './test/data/testApplicationDocumentsDirectory';
 const String kExternalCachePath = 'externalCachePath';
 const String kExternalStoragePath = 'externalStoragePath';
 
