@@ -88,7 +88,7 @@ Future<void> main() async {
       expect(user1Chats?.id, chat1.id);
     });
 
-    test('Link multiple chats from user and checking backlink', () async {
+    test('Link multiple chats to user and checking backlink', () async {
       user1.allChats.add(chat1);
       user1.allChats.add(chat2);
 
@@ -114,14 +114,20 @@ Future<void> main() async {
     });
 
     test('Messages saving/finding/linking/deleting', () async {
-      Message msg1 = Message(timestamp: DateTime.now(), contents: 'msg1');
-      Message msg2 = Message(timestamp: DateTime.now(), contents: 'msg2');
+      LocalMessage msg1 = LocalMessage(
+          message: Message(
+              timestamp: DateTime.now(),
+              contents: 'msg1'));
+      LocalMessage msg2 = LocalMessage(
+          message: Message(
+              timestamp: DateTime.now(),
+              contents: 'msg1'));
 
-      msg1.to.value = user1;
-      msg1.from.value = user2;
+      msg1.isarTo.value = user1;
+      msg1.isarFrom.value = user2;
 
-      msg2.to.value = user2;
-      msg2.from.value = user1;
+      msg2.isarTo.value = user2;
+      msg2.isarFrom.value = user1;
 
       msg1.chat.value = chat1;
       msg2.chat.value = chat1;
@@ -145,7 +151,19 @@ Future<void> main() async {
 
       expect(dbUser1?.allChats.first.id, chat1.id);
       expect(chat1.allMessages.length, 2);
+
+      // Testing if messages get removed when chat is removed
+      await i.removeChat(chat1.id);
+
+      Chat? dbChat = await i.findChat(chat1.id);
+      expect(dbChat, isNull);
+
+      LocalMessage? dbMsg1 = await i.findMessage(msg1.id);
+      LocalMessage? dbMsg2 = await i.findMessage(msg2.id);
+      expect(dbMsg1, isNull);
+      expect(dbMsg2, isNull);
     });
+
 
 
   });

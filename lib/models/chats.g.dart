@@ -138,7 +138,7 @@ void _chatAttach(IsarCollection<dynamic> col, Id id, Chat object) {
   object.id = id;
   object.owner.attach(col, col.isar.collection<User>(), r'owner', id);
   object.allMessages
-      .attach(col, col.isar.collection<Message>(), r'allMessages', id);
+      .attach(col, col.isar.collection<LocalMessage>(), r'allMessages', id);
 }
 
 extension ChatQueryWhereSort on QueryBuilder<Chat, Chat, QWhere> {
@@ -643,7 +643,7 @@ extension ChatQueryLinks on QueryBuilder<Chat, Chat, QFilterCondition> {
   }
 
   QueryBuilder<Chat, Chat, QAfterFilterCondition> allMessages(
-      FilterQuery<Message> q) {
+      FilterQuery<LocalMessage> q) {
     return QueryBuilder.apply(this, (query) {
       return query.link(q, r'allMessages');
     });

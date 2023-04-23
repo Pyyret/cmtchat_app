@@ -17,9 +17,9 @@ abstract class IDataService {
   Future<void> removeChat(int chatId);
 
   /// LocalMessage
-  Future<void> saveMessage(Message message);
-  Future<Message?> findMessage(int messageId);
-  Future<List<Message>?> findAllMessages(int chatId);
+  Future<void> saveMessage(LocalMessage message);
+  Future<LocalMessage?> findMessage(int messageId);
+  Future<List<LocalMessage>?> findAllMessages(int chatId);
   Future<void> removeMessage(int messageId);
   //Future<void> updateMessageReceipt(String messageId, ReceiptStatus status);
 }

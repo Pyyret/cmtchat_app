@@ -143,9 +143,9 @@ void _userAttach(IsarCollection<dynamic> col, Id id, User object) {
   object.id = id;
   object.allChats.attach(col, col.isar.collection<Chat>(), r'allChats', id);
   object.allSentMessages
-      .attach(col, col.isar.collection<Message>(), r'allSentMessages', id);
-  object.allReceivedMessages
-      .attach(col, col.isar.collection<Message>(), r'allReceivedMessages', id);
+      .attach(col, col.isar.collection<LocalMessage>(), r'allSentMessages', id);
+  object.allReceivedMessages.attach(
+      col, col.isar.collection<LocalMessage>(), r'allReceivedMessages', id);
 }
 
 extension UserQueryWhereSort on QueryBuilder<User, User, QWhere> {
@@ -489,7 +489,7 @@ extension UserQueryLinks on QueryBuilder<User, User, QFilterCondition> {
   }
 
   QueryBuilder<User, User, QAfterFilterCondition> allSentMessages(
-      FilterQuery<Message> q) {
+      FilterQuery<LocalMessage> q) {
     return QueryBuilder.apply(this, (query) {
       return query.link(q, r'allSentMessages');
     });
@@ -547,7 +547,7 @@ extension UserQueryLinks on QueryBuilder<User, User, QFilterCondition> {
   }
 
   QueryBuilder<User, User, QAfterFilterCondition> allReceivedMessages(
-      FilterQuery<Message> q) {
+      FilterQuery<LocalMessage> q) {
     return QueryBuilder.apply(this, (query) {
       return query.link(q, r'allReceivedMessages');
     });

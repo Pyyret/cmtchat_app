@@ -17,8 +17,8 @@ class User {
 
   // Links to all your chats & messages
   final allChats = IsarLinks<Chat>();
-  final allSentMessages = IsarLinks<Message>();
-  final allReceivedMessages = IsarLinks<Message>();
+  final allSentMessages = IsarLinks<LocalMessage>();
+  final allReceivedMessages = IsarLinks<LocalMessage>();
 
 
   /// Constructors ///

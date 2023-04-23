@@ -2,31 +2,49 @@ import 'package:cmtchat_app/models/chats.dart';
 import 'package:cmtchat_app/models/users.dart';
 import 'package:isar/isar.dart';
 
+
 part 'messages.g.dart';
+
 
 @Collection()
 @Name('Messages')
-class Message {
+
+/// LocalMessage ///
+class LocalMessage {
   Id id = Isar.autoIncrement;       // Automatically given by Isar
-  String? webId;                    // Webserver-specific id.
 
-  // Required message variables
-  final DateTime timestamp;
-  final String contents;
+  // Necessary parts of a local message
+  Message message;
+  Receipt? receipt;
 
-  // Links to sender, receiver & containing chatroom
+  // Isar links to sender, receiver & containing chatroom
   @Backlink(to: 'allSentMessages')
-  final from = IsarLink<User>();
+  final isarFrom = IsarLink<User>();
   @Backlink(to: 'allReceivedMessages')
-  final to = IsarLink<User>();
+  final isarTo = IsarLink<User>();
   @Backlink(to: 'allMessages')
   final chat = IsarLink<Chat>();
 
 
   /// Constructor
-  Message({required this.timestamp, required this.contents });
+  LocalMessage({ required this.message, this.receipt});
 
-  /*
+}
+
+/// Message ///
+
+@embedded
+class Message {
+  String? webId;                    // Webserver-specific id.
+
+  String? from;
+  String? to;
+  DateTime? timestamp;
+  String? contents;
+
+  Message({this.from, this.to, this.timestamp, this.contents, this.webId});
+
+
   Map<String, dynamic> toJson() {
     var data = {
       'from' : from,
@@ -46,10 +64,55 @@ class Message {
         contents: json['contents']
     );
     message.webId = json['id'];
+
     return message;
+  }
+}
+
+/// Receipt ///
+
+enum ReceiptStatus { sent, delivered, read }
+
+extension EnumParsing on ReceiptStatus {
+  String value() {
+    return toString().split('.').last;
+  }
+  static ReceiptStatus fromString(String status) {
+    return ReceiptStatus.values.firstWhere((element) => element.value() == status);
+  }
+}
+
+@embedded
+class Receipt {
+  String? webId;                    // Webserver-specific id.
+
+  @Enumerated(EnumType.name)
+  ReceiptStatus? status;
+  DateTime? timestamp;
+
+  Receipt({this.status, this.timestamp, this.webId});
+
+  /*
+  Map<String, dynamic> toJson() => {
+    'recipient': recipient,
+    'message_id': messageId,
+    'status': status.value(),
+    'timestamp': timestamp
+  };
+
+  factory Receipt.fromJson(Map<String, dynamic> json) {
+    var receipt = Receipt(
+        recipient: json['recipient'],
+        messageId: json['message_id'],
+        status: EnumParsing.fromString(json['status']),
+        timestamp: json['timestamp']
+    );
+    receipt._id = json['id'];
+    return receipt;
   }
 
    */
+}
 
 /*
   Map<String, dynamic> toMap() {
@@ -76,4 +139,3 @@ class Message {
   }
 
    */
-}
