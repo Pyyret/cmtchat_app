@@ -16,7 +16,7 @@ class Chat {
   final owner = IsarLink<User>();
 
   // Links to messages in chatroom
-  final allMessages = IsarLinks<Message>();
+  final allMessages = IsarLinks<LocalMessage>();
 
   // Optional
   String? chatName;
@@ -24,7 +24,6 @@ class Chat {
 
   /// Constructor
   Chat({ this.chatName });
-
 
   /*
 
