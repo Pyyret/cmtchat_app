@@ -2,27 +2,29 @@ import 'package:isar/isar.dart';
 import 'users.dart';
 import 'messages.dart';
 
-//part 'chats.g.dart';
+part 'chats.g.dart';
 
 
-//@Collection()
-//@Name('Chats')
+@Collection()
+@Name('Chats')
 class Chat {
+  Id id = Isar.autoIncrement;     // Automatically given by Isar
+  String? webId;       // Webserver-specific id.
 
-  final Id id = Isar.autoIncrement;
-  late final String? webId;
-
+  // Links to the owner of the chatroom
+  @Backlink(to: 'allChats')
   final owner = IsarLink<User>();
-  final mostRecentMessage = IsarLink<LocalMessage>();
-  final allMessages = IsarLinks<LocalMessage>();
 
+  // Links to messages in chatroom
+  //final mostRecentMessage = IsarLink<LocalMessage>();
+  //final allMessages = IsarLinks<LocalMessage>();
+
+  // Optional
   String? chatName;
   int? unread;
 
   /// Constructor
-  Chat({ required User chatOwner, this.chatName }) {
-    owner.value = chatOwner;
-  }
+  Chat({ this.chatName });
 
 
   /*

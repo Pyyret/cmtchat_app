@@ -2,9 +2,9 @@ import 'dart:async';
 
 import 'package:cmtchat_app/models/chats.dart';
 import 'package:cmtchat_app/models/messages.dart';
+import 'package:cmtchat_app/models/users.dart';
 import 'package:cmtchat_app/services/data/dataservice_contract.dart';
 import 'package:isar/isar.dart';
-import '../../../models/users.dart';
 import 'package:path_provider/path_provider.dart';
 
 
@@ -41,40 +41,36 @@ class IsarService implements IDataService {
   @override
   Future<void> removeUser(Id userId) async {
     final isar = await db;
-    await isar.writeTxnSync(() => isar.users.deleteSync(userId));
+    isar.writeTxnSync(() => isar.users.deleteSync(userId));
   }
 
 
   /// Chat
-/*
+
   // Returns the id of the new or updated chat
   @override
-  Future<int> saveChat(Chat chat) async {
+  Future<void> saveChat(Chat chat) async {
     final isar = await db;
-    return isar.writeTxnSync<int>(() => isar.users.putSync(chat));
-  }
-
-
- */
-
-
-
-  @override
-  Future<void> deleteChat(String chatId) {
-    // TODO: implement deleteChat
-    throw UnimplementedError();
+    return isar.writeTxnSync(() => isar.chats.putSync(chat));
   }
 
   @override
-  Future<List<Chat>> findAllChats() {
-    // TODO: implement findAllChats
-    throw UnimplementedError();
+  Future<Chat?> findChat(Id chatId) async {
+    final isar = await db;
+    return await isar.chats.get(chatId);
   }
 
   @override
-  Future<Chat> findChat(String chatId) {
-    // TODO: implement findChat
-    throw UnimplementedError();
+  Future<List<Chat>?> findAllChats(Id userId) async {
+    final isar = await db;
+    final user = await isar.users.get(userId);
+    return user?.allChats.toList();
+  }
+
+  @override
+  Future<void> removeChat(Id chatId) async {
+    final isar = await db;
+    isar.writeTxnSync(() => isar.chats.deleteSync(chatId));
   }
 
 
@@ -113,7 +109,8 @@ class IsarService implements IDataService {
     if (Isar.instanceNames.isEmpty) {
       var dir = await getApplicationDocumentsDirectory();
       return await Isar.open([
-        UserSchema
+        UserSchema,
+        ChatSchema,
       ], directory: dir.path);
     }
     return Future.value(Isar.getInstance());

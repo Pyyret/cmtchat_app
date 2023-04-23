@@ -35,7 +35,14 @@ const UserSchema = CollectionSchema(
   deserializeProp: _userDeserializeProp,
   idName: r'id',
   indexes: {},
-  links: {},
+  links: {
+    r'allChats': LinkSchema(
+      id: -916065859806567206,
+      name: r'allChats',
+      target: r'Chats',
+      single: false,
+    )
+  },
   embeddedSchemas: {r'WebUser': WebUserSchema},
   getId: _userGetId,
   getLinks: _userGetLinks,
@@ -117,11 +124,12 @@ Id _userGetId(User object) {
 }
 
 List<IsarLinkBase<dynamic>> _userGetLinks(User object) {
-  return [];
+  return [object.allChats];
 }
 
 void _userAttach(IsarCollection<dynamic> col, Id id, User object) {
   object.id = id;
+  object.allChats.attach(col, col.isar.collection<Chat>(), r'allChats', id);
 }
 
 extension UserQueryWhereSort on QueryBuilder<User, User, QWhere> {
@@ -407,7 +415,63 @@ extension UserQueryObject on QueryBuilder<User, User, QFilterCondition> {
   }
 }
 
-extension UserQueryLinks on QueryBuilder<User, User, QFilterCondition> {}
+extension UserQueryLinks on QueryBuilder<User, User, QFilterCondition> {
+  QueryBuilder<User, User, QAfterFilterCondition> allChats(
+      FilterQuery<Chat> q) {
+    return QueryBuilder.apply(this, (query) {
+      return query.link(q, r'allChats');
+    });
+  }
+
+  QueryBuilder<User, User, QAfterFilterCondition> allChatsLengthEqualTo(
+      int length) {
+    return QueryBuilder.apply(this, (query) {
+      return query.linkLength(r'allChats', length, true, length, true);
+    });
+  }
+
+  QueryBuilder<User, User, QAfterFilterCondition> allChatsIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.linkLength(r'allChats', 0, true, 0, true);
+    });
+  }
+
+  QueryBuilder<User, User, QAfterFilterCondition> allChatsIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.linkLength(r'allChats', 0, false, 999999, true);
+    });
+  }
+
+  QueryBuilder<User, User, QAfterFilterCondition> allChatsLengthLessThan(
+    int length, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.linkLength(r'allChats', 0, true, length, include);
+    });
+  }
+
+  QueryBuilder<User, User, QAfterFilterCondition> allChatsLengthGreaterThan(
+    int length, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.linkLength(r'allChats', length, include, 999999, true);
+    });
+  }
+
+  QueryBuilder<User, User, QAfterFilterCondition> allChatsLengthBetween(
+    int lower,
+    int upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.linkLength(
+          r'allChats', lower, includeLower, upper, includeUpper);
+    });
+  }
+}
 
 extension UserQuerySortBy on QueryBuilder<User, User, QSortBy> {
   QueryBuilder<User, User, QAfterSortBy> sortByUsername() {

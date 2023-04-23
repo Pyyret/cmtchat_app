@@ -26,7 +26,7 @@ class SqfliteService implements IDataService {
   }
 
   @override
-  Future<void> deleteChat(String chatId) async {
+  Future<void> removeChat(String chatId) async {
     final batch = _db.batch();
     batch.delete('messages', where: 'chatId = ?', whereArgs: [chatId]);
     batch.delete('chats', where: 'id = ?', whereArgs: [chatId]);
