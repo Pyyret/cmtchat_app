@@ -1,5 +1,4 @@
 import 'package:cmtchat_app/models/chats.dart';
-import 'package:cmtchat_app/models/users.dart';
 import 'messages.dart';
 import 'package:isar/isar.dart';
 
@@ -11,16 +10,15 @@ part 'users.g.dart';
 
 class User {
   Id id = Isar.autoIncrement;     // Automatically given by Isar
+  WebUser? webUser;               // Online-specific variables
 
   // Defaults to 'Guest', necessary for many things
   String username = '';
 
-  // Online-specific variables
-  WebUser? webUser;
-
   // Links to all your chats & messages
   final allChats = IsarLinks<Chat>();
-  //final allMessages = IsarLinks<LocalMessage>();
+  final allSentMessages = IsarLinks<Message>();
+  final allReceivedMessages = IsarLinks<Message>();
 
 
   /// Constructors ///

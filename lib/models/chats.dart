@@ -9,15 +9,14 @@ part 'chats.g.dart';
 @Name('Chats')
 class Chat {
   Id id = Isar.autoIncrement;     // Automatically given by Isar
-  String? webId;       // Webserver-specific id.
+  String? webId;                  // Webserver-specific id.
 
   // Links to the owner of the chatroom
   @Backlink(to: 'allChats')
   final owner = IsarLink<User>();
 
   // Links to messages in chatroom
-  //final mostRecentMessage = IsarLink<LocalMessage>();
-  //final allMessages = IsarLinks<LocalMessage>();
+  final allMessages = IsarLinks<Message>();
 
   // Optional
   String? chatName;

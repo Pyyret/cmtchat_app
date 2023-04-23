@@ -41,6 +41,18 @@ const UserSchema = CollectionSchema(
       name: r'allChats',
       target: r'Chats',
       single: false,
+    ),
+    r'allSentMessages': LinkSchema(
+      id: 5723794373574606834,
+      name: r'allSentMessages',
+      target: r'Messages',
+      single: false,
+    ),
+    r'allReceivedMessages': LinkSchema(
+      id: 3432129567246385424,
+      name: r'allReceivedMessages',
+      target: r'Messages',
+      single: false,
     )
   },
   embeddedSchemas: {r'WebUser': WebUserSchema},
@@ -124,12 +136,16 @@ Id _userGetId(User object) {
 }
 
 List<IsarLinkBase<dynamic>> _userGetLinks(User object) {
-  return [object.allChats];
+  return [object.allChats, object.allSentMessages, object.allReceivedMessages];
 }
 
 void _userAttach(IsarCollection<dynamic> col, Id id, User object) {
   object.id = id;
   object.allChats.attach(col, col.isar.collection<Chat>(), r'allChats', id);
+  object.allSentMessages
+      .attach(col, col.isar.collection<Message>(), r'allSentMessages', id);
+  object.allReceivedMessages
+      .attach(col, col.isar.collection<Message>(), r'allReceivedMessages', id);
 }
 
 extension UserQueryWhereSort on QueryBuilder<User, User, QWhere> {
@@ -469,6 +485,126 @@ extension UserQueryLinks on QueryBuilder<User, User, QFilterCondition> {
     return QueryBuilder.apply(this, (query) {
       return query.linkLength(
           r'allChats', lower, includeLower, upper, includeUpper);
+    });
+  }
+
+  QueryBuilder<User, User, QAfterFilterCondition> allSentMessages(
+      FilterQuery<Message> q) {
+    return QueryBuilder.apply(this, (query) {
+      return query.link(q, r'allSentMessages');
+    });
+  }
+
+  QueryBuilder<User, User, QAfterFilterCondition> allSentMessagesLengthEqualTo(
+      int length) {
+    return QueryBuilder.apply(this, (query) {
+      return query.linkLength(r'allSentMessages', length, true, length, true);
+    });
+  }
+
+  QueryBuilder<User, User, QAfterFilterCondition> allSentMessagesIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.linkLength(r'allSentMessages', 0, true, 0, true);
+    });
+  }
+
+  QueryBuilder<User, User, QAfterFilterCondition> allSentMessagesIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.linkLength(r'allSentMessages', 0, false, 999999, true);
+    });
+  }
+
+  QueryBuilder<User, User, QAfterFilterCondition> allSentMessagesLengthLessThan(
+    int length, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.linkLength(r'allSentMessages', 0, true, length, include);
+    });
+  }
+
+  QueryBuilder<User, User, QAfterFilterCondition>
+      allSentMessagesLengthGreaterThan(
+    int length, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.linkLength(
+          r'allSentMessages', length, include, 999999, true);
+    });
+  }
+
+  QueryBuilder<User, User, QAfterFilterCondition> allSentMessagesLengthBetween(
+    int lower,
+    int upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.linkLength(
+          r'allSentMessages', lower, includeLower, upper, includeUpper);
+    });
+  }
+
+  QueryBuilder<User, User, QAfterFilterCondition> allReceivedMessages(
+      FilterQuery<Message> q) {
+    return QueryBuilder.apply(this, (query) {
+      return query.link(q, r'allReceivedMessages');
+    });
+  }
+
+  QueryBuilder<User, User, QAfterFilterCondition>
+      allReceivedMessagesLengthEqualTo(int length) {
+    return QueryBuilder.apply(this, (query) {
+      return query.linkLength(
+          r'allReceivedMessages', length, true, length, true);
+    });
+  }
+
+  QueryBuilder<User, User, QAfterFilterCondition> allReceivedMessagesIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.linkLength(r'allReceivedMessages', 0, true, 0, true);
+    });
+  }
+
+  QueryBuilder<User, User, QAfterFilterCondition>
+      allReceivedMessagesIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.linkLength(r'allReceivedMessages', 0, false, 999999, true);
+    });
+  }
+
+  QueryBuilder<User, User, QAfterFilterCondition>
+      allReceivedMessagesLengthLessThan(
+    int length, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.linkLength(r'allReceivedMessages', 0, true, length, include);
+    });
+  }
+
+  QueryBuilder<User, User, QAfterFilterCondition>
+      allReceivedMessagesLengthGreaterThan(
+    int length, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.linkLength(
+          r'allReceivedMessages', length, include, 999999, true);
+    });
+  }
+
+  QueryBuilder<User, User, QAfterFilterCondition>
+      allReceivedMessagesLengthBetween(
+    int lower,
+    int upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.linkLength(
+          r'allReceivedMessages', lower, includeLower, upper, includeUpper);
     });
   }
 }

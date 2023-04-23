@@ -1,28 +1,38 @@
-import 'dart:math';
-
 import 'package:cmtchat_app/models/chats.dart';
+import 'package:cmtchat_app/models/messages.dart';
 import 'package:cmtchat_app/models/users.dart';
 import 'package:cmtchat_app/services/data/isar/isar_dataservice.dart';
-import 'package:flutter/cupertino.dart';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:isar/isar.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path_provider_platform_interface/path_provider_platform_interface.dart';
 
-import 'path_provider_test.dart';
+import 'path_provider_mock_classes.dart';
 
 
-void main() {
+Future<void> main() async {
+  PathProviderPlatform.instance = FakePathProviderPlatform();
+  await Isar.initializeIsarCore(download: true);
 
-  User user1 = User(newUsername: '123');
-  Chat chat1 = Chat(chatName: 'test');
+  final IsarService i = IsarService();
+
+  User user1 = User(newUsername: '111');
+  User user2 = User(newUsername: '222');
+  Chat chat1 = Chat(chatName: 'chat1');
+  Chat chat2 = Chat(chatName: 'chat2');
 
   group('Path_provider dependant tests', () {
+
     setUp(() async {
-      PathProviderPlatform.instance = FakePathProviderPlatform();
-      await Isar.initializeIsarCore(download: true);
+      user1 = User(newUsername: '123');
+      user2 = User(newUsername: '222');
+      chat1 = Chat(chatName: 'test');
+      chat2 = Chat(chatName: 'chat2');
     });
+
+    tearDown(() async => await i.cleanDb());
+
 
     // Just to test since this has been a problem during development
     test('Testing that "getApplicationDocumentsDirectory()" is working', () async {
@@ -31,8 +41,6 @@ void main() {
     });
 
     test('Add and retrieve a user to the db, then remove', () async {
-      IsarService i = IsarService();
-
       await i.saveUser(user1);
 
       User? dbUser = await i.findUser(user1.id);
@@ -46,7 +54,6 @@ void main() {
     });
 
     test('Add and retrieve a chat to the db, then remove', () async {
-      IsarService i = IsarService();
 
       await i.saveChat(chat1);
       Chat? dbChat = await i.findChat(chat1.id);
@@ -61,7 +68,6 @@ void main() {
     });
 
     test('Add owner link to chat, and test backlink', () async {
-      IsarService i = IsarService();
 
       // Testing that user1 is registered as the owner
       chat1.owner.value = user1;
@@ -83,10 +89,6 @@ void main() {
     });
 
     test('Link multiple chats from user and checking backlink', () async {
-      IsarService i = IsarService();
-
-      Chat chat2 = Chat(chatName: "chat2");
-
       user1.allChats.add(chat1);
       user1.allChats.add(chat2);
 
@@ -103,7 +105,7 @@ void main() {
 
       // Test that removing chat removes from chatlist
       await i.removeChat(chat1.id);
-      dbUserChats = await i.findAllChats(dbUser!.id);
+      dbUserChats = await i.findAllChats(dbUser.id);
       expect(dbUserChats?.length, 1);
 
       i.removeUser(user1.id);
@@ -111,6 +113,39 @@ void main() {
       expect(dbUserChats, isNull);
     });
 
+    test('Messages saving/finding/linking/deleting', () async {
+      Message msg1 = Message(timestamp: DateTime.now(), contents: 'msg1');
+      Message msg2 = Message(timestamp: DateTime.now(), contents: 'msg2');
+
+      msg1.to.value = user1;
+      msg1.from.value = user2;
+
+      msg2.to.value = user2;
+      msg2.from.value = user1;
+
+      msg1.chat.value = chat1;
+      msg2.chat.value = chat1;
+
+      chat1.owner.value = user1;
+
+      await i.saveMessage(msg1);
+      await i.saveMessage(msg2);
+
+      User? dbUser1 = await i.findUser(user1.id);
+      User? dbUser2 = await i.findUser(user2.id);
+
+      expect(dbUser1?.allReceivedMessages.length, 1);
+      expect(dbUser2?.allReceivedMessages.length, 1);
+
+      expect(dbUser1?.allSentMessages.length, 1);
+      expect(dbUser2?.allSentMessages.length, 1);
+
+      expect(dbUser1?.allReceivedMessages.first.id, msg1.id);
+      expect(dbUser2?.allReceivedMessages.first.id, msg2.id);
+
+      expect(dbUser1?.allChats.first.id, chat1.id);
+      expect(chat1.allMessages.length, 2);
+    });
 
 
   });

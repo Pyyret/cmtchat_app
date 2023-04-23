@@ -74,33 +74,32 @@ class IsarService implements IDataService {
   }
 
 
-  /// LocalMessage
+  /// Message
+
   @override
-  Future<List<LocalMessage>> findMessage(String messageId) {
-    // TODO: implement findMessage
-    throw UnimplementedError();
+  Future<void> saveMessage(Message message) async {
+    final isar = await db;
+    return isar.writeTxnSync(() => isar.messages.putSync(message));
   }
 
   @override
-  Future<void> saveMessage(LocalMessage message) {
-    // TODO: implement saveMessage
-    throw UnimplementedError();
+  Future<Message?> findMessage(int messageId) async {
+    final isar = await db;
+    return await isar.messages.get(messageId);
   }
 
   @override
-  Future<void> updateMessage(LocalMessage message) {
-    // TODO: implement updateMessage
-    throw UnimplementedError();
+  Future<List<Message>?> findAllMessages(int chatId) async {
+    final isar = await db;
+    final chat = await isar.chats.get(chatId);
+    return chat?.allMessages.toList();
   }
-/*
+
   @override
-  Future<void> updateMessageReceipt(String messageId, ReceiptStatus status) {
-    // TODO: implement updateMessageReceipt
-    throw UnimplementedError();
+  Future<void> removeMessage(int messageId) async {
+    final isar = await db;
+    isar.writeTxnSync(() => isar.messages.deleteSync(messageId));
   }
-
-
- */
 
 
   /// Activate and open the local isar database for use ///
@@ -111,9 +110,15 @@ class IsarService implements IDataService {
       return await Isar.open([
         UserSchema,
         ChatSchema,
+        MessageSchema
       ], directory: dir.path);
     }
     return Future.value(Isar.getInstance());
   }
 
+  /// Clear the entire database -- BE CAREFUL ///
+  Future<void> cleanDb() async {
+    final isar = await db;
+    isar.writeTxnSync(() => isar.clearSync());
+  }
 }

@@ -2,32 +2,31 @@ import 'package:cmtchat_app/models/chats.dart';
 import 'package:cmtchat_app/models/users.dart';
 import 'package:isar/isar.dart';
 
-//part 'messages.g.dart';
+part 'messages.g.dart';
 
-
-/// The basic building-blocks for a message to send ///
+@Collection()
+@Name('Messages')
 class Message {
+  Id id = Isar.autoIncrement;       // Automatically given by Isar
+  String? webId;                    // Webserver-specific id.
 
-  final Id id = Isar.autoIncrement;
-  late final String? webId;
-
-  final from = IsarLink<User>();
-  final to = IsarLink<User>();
+  // Required message variables
   final DateTime timestamp;
   final String contents;
 
+  // Links to sender, receiver & containing chatroom
+  @Backlink(to: 'allSentMessages')
+  final from = IsarLink<User>();
+  @Backlink(to: 'allReceivedMessages')
+  final to = IsarLink<User>();
+  @Backlink(to: 'allMessages')
+  final chat = IsarLink<Chat>();
 
-  Message({
-    this.webId,
-    required User from,
-    required User to,
-    required this.timestamp,
-    required this.contents,
-  }) {
-    this.from.value = from;
-    this.to.value = to;
-  }
 
+  /// Constructor
+  Message({required this.timestamp, required this.contents });
+
+  /*
   Map<String, dynamic> toJson() {
     var data = {
       'from' : from,
@@ -49,31 +48,10 @@ class Message {
     message.webId = json['id'];
     return message;
   }
-}
 
+   */
 
-/// A local representation of a message ///
-
-//@Collection()
-//@Name('Messages')
-class LocalMessage extends Message {
-
-  final chat = IsarLink<Chat>();
-
-  //ReceiptStatus? receipt;
-
-  /// Constructor
-  LocalMessage({
-    required super.from,
-    required super.to,
-    required super.timestamp,
-    required super.contents,
-    required Chat chat
-  }) {
-    this.chat.value = chat;
-  }
-
-  /*
+/*
   Map<String, dynamic> toMap() {
     var data = {
       'chat_id' : chatId,
