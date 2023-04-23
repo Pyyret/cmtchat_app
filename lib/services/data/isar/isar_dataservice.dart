@@ -78,6 +78,17 @@ class IsarService implements IDataService {
   }
 
   @override
+  Future<Chat?> findWebChat(String webChatId) async {
+    final isar = await db;
+    final list = isar.chats
+        .filter()
+        .webChatIdEqualTo(webChatId)
+        .findAllSync();
+    if(list.length != 1) { return null; }
+    else { return list.single; }
+  }
+
+  @override
   Future<List<Chat>?> findAllChats(Id userId) async {
     final isar = await db;
     final user = await isar.users.get(userId);

@@ -36,13 +36,14 @@ class LocalMessage {
 @embedded
 class Message {
   String? webId;                    // Webserver-specific id.
+  String? webChatId;                // Webserver-specific chatId.
 
   String? from;
   String? to;
   DateTime? timestamp;
   String? contents;
 
-  Message({this.from, this.to, this.timestamp, this.contents, this.webId});
+  Message({this.webChatId, this.from, this.to, this.timestamp, this.contents, this.webId});
 
 
   Map<String, dynamic> toJson() {

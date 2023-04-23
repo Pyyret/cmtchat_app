@@ -27,9 +27,9 @@ const ChatSchema = CollectionSchema(
       name: r'unread',
       type: IsarType.long,
     ),
-    r'webId': PropertySchema(
+    r'webChatId': PropertySchema(
       id: 2,
-      name: r'webId',
+      name: r'webChatId',
       type: IsarType.string,
     )
   },
@@ -74,7 +74,7 @@ int _chatEstimateSize(
     }
   }
   {
-    final value = object.webId;
+    final value = object.webChatId;
     if (value != null) {
       bytesCount += 3 + value.length * 3;
     }
@@ -90,7 +90,7 @@ void _chatSerialize(
 ) {
   writer.writeString(offsets[0], object.chatName);
   writer.writeLong(offsets[1], object.unread);
-  writer.writeString(offsets[2], object.webId);
+  writer.writeString(offsets[2], object.webChatId);
 }
 
 Chat _chatDeserialize(
@@ -101,10 +101,10 @@ Chat _chatDeserialize(
 ) {
   final object = Chat(
     chatName: reader.readStringOrNull(offsets[0]),
+    webChatId: reader.readStringOrNull(offsets[2]),
   );
   object.id = id;
   object.unread = reader.readLongOrNull(offsets[1]);
-  object.webId = reader.readStringOrNull(offsets[2]);
   return object;
 }
 
@@ -482,36 +482,36 @@ extension ChatQueryFilter on QueryBuilder<Chat, Chat, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Chat, Chat, QAfterFilterCondition> webIdIsNull() {
+  QueryBuilder<Chat, Chat, QAfterFilterCondition> webChatIdIsNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'webId',
+        property: r'webChatId',
       ));
     });
   }
 
-  QueryBuilder<Chat, Chat, QAfterFilterCondition> webIdIsNotNull() {
+  QueryBuilder<Chat, Chat, QAfterFilterCondition> webChatIdIsNotNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'webId',
+        property: r'webChatId',
       ));
     });
   }
 
-  QueryBuilder<Chat, Chat, QAfterFilterCondition> webIdEqualTo(
+  QueryBuilder<Chat, Chat, QAfterFilterCondition> webChatIdEqualTo(
     String? value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'webId',
+        property: r'webChatId',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<Chat, Chat, QAfterFilterCondition> webIdGreaterThan(
+  QueryBuilder<Chat, Chat, QAfterFilterCondition> webChatIdGreaterThan(
     String? value, {
     bool include = false,
     bool caseSensitive = true,
@@ -519,14 +519,14 @@ extension ChatQueryFilter on QueryBuilder<Chat, Chat, QFilterCondition> {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
         include: include,
-        property: r'webId',
+        property: r'webChatId',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<Chat, Chat, QAfterFilterCondition> webIdLessThan(
+  QueryBuilder<Chat, Chat, QAfterFilterCondition> webChatIdLessThan(
     String? value, {
     bool include = false,
     bool caseSensitive = true,
@@ -534,14 +534,14 @@ extension ChatQueryFilter on QueryBuilder<Chat, Chat, QFilterCondition> {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.lessThan(
         include: include,
-        property: r'webId',
+        property: r'webChatId',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<Chat, Chat, QAfterFilterCondition> webIdBetween(
+  QueryBuilder<Chat, Chat, QAfterFilterCondition> webChatIdBetween(
     String? lower,
     String? upper, {
     bool includeLower = true,
@@ -550,7 +550,7 @@ extension ChatQueryFilter on QueryBuilder<Chat, Chat, QFilterCondition> {
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.between(
-        property: r'webId',
+        property: r'webChatId',
         lower: lower,
         includeLower: includeLower,
         upper: upper,
@@ -560,67 +560,69 @@ extension ChatQueryFilter on QueryBuilder<Chat, Chat, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Chat, Chat, QAfterFilterCondition> webIdStartsWith(
+  QueryBuilder<Chat, Chat, QAfterFilterCondition> webChatIdStartsWith(
     String value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'webId',
+        property: r'webChatId',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<Chat, Chat, QAfterFilterCondition> webIdEndsWith(
+  QueryBuilder<Chat, Chat, QAfterFilterCondition> webChatIdEndsWith(
     String value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'webId',
+        property: r'webChatId',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<Chat, Chat, QAfterFilterCondition> webIdContains(String value,
+  QueryBuilder<Chat, Chat, QAfterFilterCondition> webChatIdContains(
+      String value,
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.contains(
-        property: r'webId',
+        property: r'webChatId',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<Chat, Chat, QAfterFilterCondition> webIdMatches(String pattern,
+  QueryBuilder<Chat, Chat, QAfterFilterCondition> webChatIdMatches(
+      String pattern,
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.matches(
-        property: r'webId',
+        property: r'webChatId',
         wildcard: pattern,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<Chat, Chat, QAfterFilterCondition> webIdIsEmpty() {
+  QueryBuilder<Chat, Chat, QAfterFilterCondition> webChatIdIsEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'webId',
+        property: r'webChatId',
         value: '',
       ));
     });
   }
 
-  QueryBuilder<Chat, Chat, QAfterFilterCondition> webIdIsNotEmpty() {
+  QueryBuilder<Chat, Chat, QAfterFilterCondition> webChatIdIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'webId',
+        property: r'webChatId',
         value: '',
       ));
     });
@@ -724,15 +726,15 @@ extension ChatQuerySortBy on QueryBuilder<Chat, Chat, QSortBy> {
     });
   }
 
-  QueryBuilder<Chat, Chat, QAfterSortBy> sortByWebId() {
+  QueryBuilder<Chat, Chat, QAfterSortBy> sortByWebChatId() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'webId', Sort.asc);
+      return query.addSortBy(r'webChatId', Sort.asc);
     });
   }
 
-  QueryBuilder<Chat, Chat, QAfterSortBy> sortByWebIdDesc() {
+  QueryBuilder<Chat, Chat, QAfterSortBy> sortByWebChatIdDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'webId', Sort.desc);
+      return query.addSortBy(r'webChatId', Sort.desc);
     });
   }
 }
@@ -774,15 +776,15 @@ extension ChatQuerySortThenBy on QueryBuilder<Chat, Chat, QSortThenBy> {
     });
   }
 
-  QueryBuilder<Chat, Chat, QAfterSortBy> thenByWebId() {
+  QueryBuilder<Chat, Chat, QAfterSortBy> thenByWebChatId() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'webId', Sort.asc);
+      return query.addSortBy(r'webChatId', Sort.asc);
     });
   }
 
-  QueryBuilder<Chat, Chat, QAfterSortBy> thenByWebIdDesc() {
+  QueryBuilder<Chat, Chat, QAfterSortBy> thenByWebChatIdDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'webId', Sort.desc);
+      return query.addSortBy(r'webChatId', Sort.desc);
     });
   }
 }
@@ -801,10 +803,10 @@ extension ChatQueryWhereDistinct on QueryBuilder<Chat, Chat, QDistinct> {
     });
   }
 
-  QueryBuilder<Chat, Chat, QDistinct> distinctByWebId(
+  QueryBuilder<Chat, Chat, QDistinct> distinctByWebChatId(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'webId', caseSensitive: caseSensitive);
+      return query.addDistinctBy(r'webChatId', caseSensitive: caseSensitive);
     });
   }
 }
@@ -828,9 +830,9 @@ extension ChatQueryProperty on QueryBuilder<Chat, Chat, QQueryProperty> {
     });
   }
 
-  QueryBuilder<Chat, String?, QQueryOperations> webIdProperty() {
+  QueryBuilder<Chat, String?, QQueryOperations> webChatIdProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'webId');
+      return query.addPropertyName(r'webChatId');
     });
   }
 }

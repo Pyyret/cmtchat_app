@@ -13,6 +13,7 @@ abstract class IDataService {
   /// Chat
   Future<void> saveChat(Chat chat);
   Future<Chat?> findChat(int chatId);
+  Future<Chat?> findWebChat(String webChatId);
   Future<List<Chat>?> findAllChats(int userId);
   Future<void> removeChat(int chatId);
 
