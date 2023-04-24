@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:rethink_db_ns/rethink_db_ns.dart';
 
-import '../../models/receipt.dart';
+import '../../../../../lib/models/web/receipt.dart';
 import '../../models/user.dart';
 import 'receipt_service_contract.dart';
 

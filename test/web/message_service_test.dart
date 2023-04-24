@@ -1,7 +1,7 @@
-import 'package:cmtchat_backend/src/models/message.dart';
-import 'package:cmtchat_backend/src/models/user.dart';
-import 'package:cmtchat_backend/src/services/encryption/encryption_service_impl.dart';
-import 'package:cmtchat_backend/src/services/message/message_service_impl.dart';
+import 'package:cmtchat_app/models/local/messages.dart';
+import 'package:cmtchat_app/models/local/users.dart';
+import 'package:cmtchat_app/services/web/encryption/encryption_service_impl.dart';
+import 'package:cmtchat_app/services/web/message/message_service_impl.dart';
 import 'package:encrypt/encrypt.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rethink_db_ns/rethink_db_ns.dart';

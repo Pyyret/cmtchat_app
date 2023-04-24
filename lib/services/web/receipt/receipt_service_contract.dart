@@ -1,4 +1,4 @@
-import '../../models/receipt.dart';
+import '../../../../../lib/models/web/receipt.dart';
 import '../../models/user.dart';
 
 abstract class IReceiptService {

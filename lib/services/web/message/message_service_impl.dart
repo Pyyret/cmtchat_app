@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:rethink_db_ns/rethink_db_ns.dart';
 
-import '../../models/message.dart';
+import '../../../../../lib/models/web/message.dart';
 import '../../models/user.dart';
 import '../encryption/encryption_contract.dart';
 import 'message_service_contract.dart';

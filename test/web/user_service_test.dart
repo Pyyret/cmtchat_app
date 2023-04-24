@@ -1,9 +1,8 @@
-import 'package:cmtchat_backend/src/models/user.dart';
-import 'package:cmtchat_backend/src/services/user/user_service_impl.dart';
+import 'package:cmtchat_app/models/local/users.dart';
+import 'package:cmtchat_app/services/web/user/user_service_impl.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rethink_db_ns/rethink_db_ns.dart';
 
-import 'helpers.dart';
 
 void main() {
   RethinkDb r = RethinkDb();

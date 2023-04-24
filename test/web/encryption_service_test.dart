@@ -1,5 +1,5 @@
-import 'package:cmtchat_backend/src/services/encryption/encryption_contract.dart';
-import 'package:cmtchat_backend/src/services/encryption/encryption_service_impl.dart';
+import 'package:cmtchat_app/services/web/encryption/encryption_contract.dart';
+import 'package:cmtchat_app/services/web/encryption/encryption_service_impl.dart';
 import 'package:encrypt/encrypt.dart';
 import 'package:flutter_test/flutter_test.dart';
 

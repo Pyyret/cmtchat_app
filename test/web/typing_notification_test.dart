@@ -1,10 +1,11 @@
-import 'package:cmtchat_backend/src/models/typing_event.dart';
-import 'package:cmtchat_backend/src/models/user.dart';
-import 'package:cmtchat_backend/src/services/typing/typing_notification_service_impl.dart';
+import 'package:cmtchat_app/models/local/users.dart';
+import 'package:cmtchat_app/models/web/typing_event.dart';
+import 'package:cmtchat_app/services/web/typing/typing_notification_service_impl.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rethink_db_ns/rethink_db_ns.dart';
 
 import 'helpers.dart';
+
 
 void main() {
   final RethinkDb r = RethinkDb();
