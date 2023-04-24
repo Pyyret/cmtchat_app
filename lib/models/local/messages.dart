@@ -1,5 +1,5 @@
-import 'package:cmtchat_app/models/chats.dart';
-import 'package:cmtchat_app/models/users.dart';
+import 'package:cmtchat_app/models/local/chats.dart';
+import 'package:cmtchat_app/models/local/users.dart';
 import 'package:isar/isar.dart';
 
 

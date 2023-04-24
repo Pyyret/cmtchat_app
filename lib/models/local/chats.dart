@@ -1,9 +1,9 @@
+import 'package:cmtchat_app/models/local/users.dart';
 import 'package:isar/isar.dart';
-import 'users.dart';
+
 import 'messages.dart';
 
 part 'chats.g.dart';
-
 
 @Collection()
 @Name('Chats')
