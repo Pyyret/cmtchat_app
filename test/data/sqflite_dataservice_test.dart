@@ -1,5 +1,5 @@
-import 'package:cmtchat_app/models/chats.dart';
-import 'package:cmtchat_backend/cmtchat_backend.dart';
+import 'package:cmtchat_app/models/local/chats.dart';
+import 'package:cmtchat_backend/local/cmtchat_backend.dart';
 
 import 'package:flutter_test/flutter_test.dart';
 

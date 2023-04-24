@@ -1,5 +1,6 @@
-import 'package:cmtchat_app/models/chats.dart';
-import 'package:cmtchat_app/models/local_message.dart';
+import 'package:cmtchat_app/models/local/chats.dart';
+import 'package:cmtchat_app/models/local/messages.dart';
+
 import 'package:cmtchat_backend/cmtchat_backend.dart';
 
 import 'package:sqflite/sqflite.dart';

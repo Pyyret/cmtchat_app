@@ -1,5 +1,5 @@
-import 'package:cmtchat_app/models/chats.dart';
-import 'package:cmtchat_app/models/messages.dart';
+import 'package:cmtchat_app/models/local/chats.dart';
+import 'package:cmtchat_app/models/local/messages.dart';
 import 'package:cmtchat_app/services/data/dataservice_contract.dart';
 
 abstract class BaseViewModel {

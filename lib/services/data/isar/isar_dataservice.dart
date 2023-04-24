@@ -1,8 +1,8 @@
 import 'dart:async';
 
-import 'package:cmtchat_app/models/chats.dart';
-import 'package:cmtchat_app/models/messages.dart';
-import 'package:cmtchat_app/models/users.dart';
+import 'package:cmtchat_app/models/local/chats.dart';
+import 'package:cmtchat_app/models/local/messages.dart';
+import 'package:cmtchat_app/models/local/users.dart';
 import 'package:cmtchat_app/services/data/dataservice_contract.dart';
 import 'package:isar/isar.dart';
 import 'package:path_provider/path_provider.dart';

@@ -1,6 +1,8 @@
-import '../../models/chats.dart';
-import '../../models/messages.dart';
-import '../../models/users.dart';
+
+
+import 'package:cmtchat_app/models/local/chats.dart';
+import 'package:cmtchat_app/models/local/messages.dart';
+import 'package:cmtchat_app/models/local/users.dart';
 
 /// Interface for any form of local storage of chats & messages
 abstract class IDataService {

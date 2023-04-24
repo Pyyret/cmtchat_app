@@ -1,6 +1,6 @@
-import 'package:cmtchat_app/models/chats.dart';
-import 'package:cmtchat_app/models/messages.dart';
-import 'package:cmtchat_app/models/users.dart';
+import 'package:cmtchat_app/models/local/chats.dart';
+import 'package:cmtchat_app/models/local/messages.dart';
+import 'package:cmtchat_app/models/local/users.dart';
 import 'package:cmtchat_app/services/data/isar/isar_dataservice.dart';
 
 import 'package:flutter_test/flutter_test.dart';
