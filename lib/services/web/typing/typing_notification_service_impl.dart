@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:cmtchat_app/models/web/typing_event.dart';
 import 'package:cmtchat_app/models/web/web_user.dart';
+import 'package:cmtchat_app/services/web/user/web_user_service_contract.dart';
 import 'package:rethink_db_ns/rethink_db_ns.dart';
 
 import 'typing_notification_service_contract.dart';
@@ -11,19 +12,27 @@ class TypingNotification implements ITypingNotification {
   final _controller = StreamController<TypingEvent>.broadcast();
 
   late StreamSubscription _changeFeed;
+  final IWebUserService _webUserService;
 
   /// Constructor
-  TypingNotification(this._r, this._connection);
+  TypingNotification(this._r, this._connection, this._webUserService);
 
   /// Methods
   @override
-  Future<bool> send({required TypingEvent event, required WebUser to}) async {
-    if(!to.active) return false;
+  Future<bool> send({required List<TypingEvent> events}) async {
+    final receivers = await _webUserService
+        .fetch(events.map((e) => e.to)
+        .toList());
+    if(receivers.isEmpty) { return false; }
+    events
+        .retainWhere((event) => receivers.map((e) => e.webUserId)
+        .contains(event.to));
+    final data = events.map((e) => e.toJson()).toList();
     Map record = await _r
         .table('typing_events')
-        .insert(event.toJson(), {'conflict': 'update'})
+        .insert(data, {'conflict': 'update'})
         .run(_connection);
-    return record['inserted'] == 1;
+    return record['inserted'] >= 1;
   }
 
   @override

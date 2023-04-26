@@ -1,6 +1,8 @@
 import 'package:cmtchat_app/models/web/typing_event.dart';
 import 'package:cmtchat_app/models/web/web_user.dart';
 import 'package:cmtchat_app/services/web/typing/typing_notification_service_impl.dart';
+import 'package:cmtchat_app/services/web/user/web_user_service_contract.dart';
+import 'package:cmtchat_app/services/web/user/web_user_service_impl.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rethink_db_ns/rethink_db_ns.dart';
 
@@ -11,11 +13,13 @@ void main() {
   final RethinkDb r = RethinkDb();
   late Connection connection;
   late TypingNotification sut;
+  late IWebUserService webUserService;
 
   setUp(() async {
     connection = await r.connect();
     await createDb(r, connection);
-    sut = TypingNotification(r, connection);
+    webUserService = WebUserService(r, connection);
+    sut = TypingNotification(r, connection, webUserService);
   });
   
   tearDown(() async {
@@ -44,7 +48,7 @@ void main() {
         to: user2.webUserId!,
         event: Typing.start
     );
-    final res = await sut.send(event: typingEvent, to: user2);
+    final res = await sut.send(events: [typingEvent]);
 
     expect(res, true);
   });
@@ -68,7 +72,7 @@ void main() {
         event: Typing.stop
     );
 
-    await sut.send(event: typing, to: user2);
-    await sut.send(event: stopTyping, to: user2);
+    await sut.send(events: [typing]);
+    await sut.send(events: [stopTyping]);
   });
 }

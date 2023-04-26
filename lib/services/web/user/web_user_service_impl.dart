@@ -29,22 +29,13 @@ class WebUserService implements IWebUserService {
   }
 
   @override
-  Future<WebUser> disconnect(WebUser user) async {
-    final response = await r
-        .table('users')
-        .get(user.webUserId)
-        .update(
-        {
-          'active': false,
-          'last_seen': DateTime.now()
-        }, {'return_changes': true})
+  Future<void> disconnect(WebUser user) async {
+    await r.table('users').update({
+      'id' : user.webUserId,
+      'active': false,
+      'last_seen': DateTime.now()
+        })
         .run(_connection);
-
-    if(response['changes'].length > 0) {
-      return WebUser.fromJson(response['changes'].first['new_val']);
-    } else {
-      return user;
-    }
   }
 
   @override
@@ -55,5 +46,18 @@ class WebUserService implements IWebUserService {
         .run(_connection);
     final userList = await users.toList();
     return userList.map((item) => WebUser.fromJson(item)).toList();
+  }
+
+  @override
+  Future<List<WebUser>> fetch(List<String?> ids) async {
+    Cursor users = await r.table('users')
+        .getAll(r.args(ids))
+        .filter({
+      'active' : true
+        })
+        .run(_connection);
+
+    List userList = await users.toList();
+    return userList.map((e) => WebUser.fromJson(e)).toList();
   }
 }

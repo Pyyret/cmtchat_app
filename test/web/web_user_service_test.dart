@@ -46,8 +46,7 @@ void main() {
     expect(testPilot.webUserId == null, false);
     expect(testPilot.active, true);
 
-    testPilot = await sut.disconnect(testPilot);
-    expect(testPilot.active, false);
+    await sut.disconnect(testPilot);
 
     DateTime oldDateTime = testPilot.lastSeen;
     testPilot = await sut.connect(testPilot);
@@ -61,7 +60,7 @@ void main() {
     expect(users.length, 1);
     expect(users.first.username, 'test');
 
-    testPilot = await sut.disconnect(testPilot);
+    await sut.disconnect(testPilot);
     users = await sut.online();
     expect(users.length, 0);
   });
