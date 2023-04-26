@@ -37,8 +37,8 @@ dependencies:
 
   # NoSql local database. See https://isar.dev/ for more information
   # Related dependencies also added in dev_dependencies below
-  isar: ^3.1.0
-  isar_flutter_libs: ^3.1.0
+  isar: ^3.1.0+1
+  isar_flutter_libs: ^3.1.0+1
 
   path_provider: ^2.0.14
   path_provider_platform_interface:
@@ -62,8 +62,8 @@ dev_dependencies:
     sdk: flutter
 
   # Dev_dependencies related to isar, see above
-  isar_generator: ^3.1.0
-  build_runner:
+  isar_generator: ^3.1.0+1
+  build_runner: ^2.3.3
 
   # Mockito is a popular open source framework for mocking objects in software test. Here it
   # used to test sqflite_datasource implementation.

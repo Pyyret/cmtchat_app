@@ -43,6 +43,7 @@ void main() {
   });
   
   test('Send typing notification', () async {
+    await webUserService.connect(user2);
     TypingEvent typingEvent = TypingEvent(
         from: user1.webUserId!,
         to: user2.webUserId!,
@@ -54,8 +55,10 @@ void main() {
   });
 
   test('Subscribe and receive typing events', () async {
-    sut
-        .subscribe(user2, [user1.webUserId!])
+    await webUserService.connect(user1);
+    await webUserService.connect(user2);
+
+    sut.subscribe(user2, [user1.webUserId!])
         .listen(expectAsync1((event) {
           expect(event.from, user1.webUserId);
     }, count: 2));

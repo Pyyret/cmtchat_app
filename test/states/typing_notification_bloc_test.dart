@@ -1,7 +1,11 @@
 import 'package:cmtchat_app/models/web/receipt.dart';
+import 'package:cmtchat_app/models/web/typing_event.dart';
 import 'package:cmtchat_app/models/web/web_user.dart';
-import 'package:cmtchat_app/services/web/receipt/receipt_service_impl.dart';
+import 'package:cmtchat_app/services/web/typing/typing_notification_service_impl.dart';
+import 'package:cmtchat_app/services/web/user/web_user_service_contract.dart';
+import 'package:cmtchat_app/services/web/user/web_user_service_impl.dart';
 import 'package:cmtchat_app/states_management/receipt/receipt_bloc.dart';
+import 'package:cmtchat_app/states_management/typing/typing_notification_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rethink_db_ns/rethink_db_ns.dart';
 
@@ -10,9 +14,11 @@ import '../web/helpers.dart';
 Future<void> main() async {
   RethinkDb r = RethinkDb();
   final Connection connection = await r.connect(host: '127.0.0.1', port: 28015);
-  ReceiptService receiptService = ReceiptService(r, connection);
+  IWebUserService webUserService = WebUserService(r, connection);
+  TypingNotification typingNotificationService = TypingNotification(r, connection,webUserService);
 
-  ReceiptBloc sut = ReceiptBloc(receiptService);
+  TypingNotificationBloc sut = TypingNotificationBloc(typingNotificationService);
+
   WebUser user = WebUser.fromJson({
     'username': 'test',
     'photo_url': 'photoUrl',
@@ -24,7 +30,7 @@ Future<void> main() async {
   setUp(() async {
     await createDb(r, connection);
 
-    sut = ReceiptBloc(receiptService);
+    sut = TypingNotificationBloc(typingNotificationService);
   });
 
   tearDown(() async {
@@ -35,19 +41,19 @@ Future<void> main() async {
 
 
   test('Emit initial state if no subscriptions', () {
-    expect(sut.state, ReceiptInitial());
+    expect(sut.state, TypingNotificationState.initial());
   });
 
-  test('Emit message sent state when message is sent', () {
-    final receipt = Receipt(
-        recipient: '123',
-        messageId: '546',
-        status: ReceiptStatus.read,
-        timestamp: DateTime.now()
+  test('Emit typingNotification sent state when it is sent', () {
+    //webUserService.connect(user);
+    final typingEvent = TypingEvent(
+        to: user.webUserId!,
+        from: '123',
+        event: Typing.start
     );
 
-    sut.add(ReceiptEvent.onReceiptSent(receipt));
-    expectLater(sut.stream, emits(ReceiptState.sent(receipt)));
+    sut.add(TypingNotificationEvent.onTypingEventSent(typingEvent));
+    expectLater(sut.stream, emits(TypingNotificationState.sent()));
   });
 
 /*

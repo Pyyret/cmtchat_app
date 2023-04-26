@@ -27,8 +27,7 @@ class TypingNotificationBloc
       await _subscription?.cancel();
       _subscription = _typingNotification
           .subscribe(typingEvent.user, typingEvent.usersWithChat)
-          .listen(
-              (typingEvent) => add(_TypingNotificationReceived(typingEvent)));
+          .listen((typingEvent) => add(_TypingNotificationReceived(typingEvent)));
     }
 
     if (typingEvent is _TypingNotificationReceived) {
@@ -36,7 +35,7 @@ class TypingNotificationBloc
     }
 
     if (typingEvent is TypingNotificationSent) {
-      await _typingNotification.send(event: typingEvent.event, to: typingEvent.event.to);
+      await _typingNotification.send(events: [typingEvent.event]);
       yield TypingNotificationState.sent();
     }
 

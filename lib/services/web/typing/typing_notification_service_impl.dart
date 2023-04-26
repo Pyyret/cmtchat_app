@@ -36,7 +36,7 @@ class TypingNotification implements ITypingNotification {
   }
 
   @override
-  Stream<TypingEvent> subscribe(WebUser user, List<String> userIds) {
+  Stream<TypingEvent> subscribe(WebUser user, List<String?> userIds) {
     _startReceivingTypingEvents(user, userIds);
     return _controller.stream;
   }
@@ -47,7 +47,7 @@ class TypingNotification implements ITypingNotification {
     _controller.close();
   }
 
-  _startReceivingTypingEvents(WebUser user, List<String> userIds) {
+  _startReceivingTypingEvents(WebUser user, List<String?> userIds) {
     _changeFeed = _r
         .table('typing_events')
         .filter((event) {
@@ -61,7 +61,8 @@ class TypingNotification implements ITypingNotification {
         .cast<Feed>()
         .listen((event) {
           event.forEach((feedData) {
-            if(feedData['new_val'] == null) return;
+            if(feedData['new_val'] == null) { return; }
+
             final typingEvent = _eventFromFeed(feedData);
             _controller.sink.add(typingEvent);
             _removeEvent(typingEvent);
@@ -76,9 +77,7 @@ class TypingNotification implements ITypingNotification {
   }
 
   _removeEvent(TypingEvent event) {
-    _r
-        .table('typing_events')
-        .get(event.id)
+    _r.table('typing_events').get(event.id)
         .delete({'return_changes': false}).run(_connection);
   }
 }
