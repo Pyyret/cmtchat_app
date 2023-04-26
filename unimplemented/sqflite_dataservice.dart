@@ -1,11 +1,9 @@
-import 'package:cmtchat_app/models/local/chats.dart';
-import 'package:cmtchat_app/models/local/messages.dart';
-
-import 'package:cmtchat_backend/cmtchat_backend.dart';
+import 'package:cmtchat_app/models/local/chat.dart';
+import 'package:cmtchat_app/models/local/message.dart';
 
 import 'package:sqflite/sqflite.dart';
 
-import 'dataservice_contract.dart';
+import '../lib/services/local/data/dataservice_contract.dart';
 
 class SqfliteService implements IDataService {
   final Database _db;
@@ -21,7 +19,7 @@ class SqfliteService implements IDataService {
   }
 
   @override
-  Future<void> addMessage(LocalMessage message) async {
+  Future<void> addMessage(Message message) async {
     await _db.insert('messages', message.toMap(),
         conflictAlgorithm: ConflictAlgorithm.replace);
   }
@@ -58,7 +56,7 @@ class SqfliteService implements IDataService {
         final chat = Chat.fromMap(row);
         chat.unread = unread!;
         if (mostRecentMessage.isNotEmpty) {
-          chat.mostRecent = LocalMessage.fromMap(mostRecentMessage.first);
+          chat.mostRecent = Message.fromMap(mostRecentMessage.first);
         }
         return chat;
       }));
@@ -91,14 +89,14 @@ class SqfliteService implements IDataService {
 
       final chat = Chat.fromMap(listOfChatMaps.first);
       chat.unread = unread!;
-      chat.mostRecent = LocalMessage.fromMap(mostRecentMessage.first);
+      chat.mostRecent = Message.fromMap(mostRecentMessage.first);
 
       return chat;
     });
   }
 
   @override
-  Future<List<LocalMessage>> findMessage(String chatId) async {
+  Future<List<Message>> findMessage(String chatId) async {
     final listOfMessageMaps = await _db.query(
         'messages',
         where: 'chat_id = ?',
@@ -106,11 +104,11 @@ class SqfliteService implements IDataService {
     );
 
     return listOfMessageMaps
-        .map<LocalMessage>((map) => LocalMessage.fromMap(map))
+        .map<Message>((map) => Message.fromMap(map))
         .toList();
   }
 
-  Future<void> updateMessage(LocalMessage message) async {
+  Future<void> updateMessage(Message message) async {
     await _db.update(
         'messages',
         message.toMap(),
@@ -146,7 +144,7 @@ class SqfliteService implements IDataService {
   }
 
   @override
-  Future<void> saveMessage(LocalMessage message) {
+  Future<void> saveMessage(Message message) {
     // TODO: implement saveMessage
     throw UnimplementedError();
   }

@@ -1,7 +1,7 @@
 import 'package:cmtchat_app/viewmodels/base_view_model.dart';
-import 'package:cmtchat_app/services/data/dataservice_contract.dart';
+import 'package:cmtchat_app/services/local/data/dataservice_contract.dart';
 
-import '../models/local/messages.dart';
+import '../models/local/message.dart';
 
 class ChatsViewModel extends BaseViewModel {
   IDataService _dataService;
@@ -9,7 +9,7 @@ class ChatsViewModel extends BaseViewModel {
   ChatsViewModel(this._dataService) : super(_dataService);
 
   Future<void> receivedMessage(Message message) async {
-    LocalMessage newMessage = LocalMessage(
+    Message newMessage = Message(
         message: message,
         receipt: Receipt(
             status: ReceiptStatus.delivered,

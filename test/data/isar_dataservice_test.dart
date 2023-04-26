@@ -1,7 +1,7 @@
-import 'package:cmtchat_app/models/local/chats.dart';
-import 'package:cmtchat_app/models/local/messages.dart';
-import 'package:cmtchat_app/models/local/users.dart';
-import 'package:cmtchat_app/services/data/isar/isar_dataservice.dart';
+import 'package:cmtchat_app/models/local/chat.dart';
+import 'package:cmtchat_app/models/local/message.dart';
+import 'package:cmtchat_app/models/local/user.dart';
+import 'package:cmtchat_app/services/local/data/isar_dataservice.dart';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:isar/isar.dart';
@@ -17,18 +17,42 @@ Future<void> main() async {
 
   final IsarService i = IsarService();
 
-  User user1 = User(newUsername: '111');
-  User user2 = User(newUsername: '222');
-  Chat chat1 = Chat(chatName: 'chat1');
-  Chat chat2 = Chat(chatName: 'chat2');
+  User user1 = User(
+      webId: '111',
+      username: '111',
+      photoUrl: 'url',
+      active: false,
+      lastSeen: DateTime.now());
+
+  User user2 = User(
+      webId: '222',
+      username: '222',
+      photoUrl: 'url',
+      active: false,
+      lastSeen: DateTime.now());
+
+  Chat chat1 = Chat(chatName: 'chat1', webChatId: '1');
+  Chat chat2 = Chat(chatName: 'chat2', webChatId: '2');
 
   group('Path_provider dependant tests', () {
 
     setUp(() async {
-      user1 = User(newUsername: '123');
-      user2 = User(newUsername: '222');
-      chat1 = Chat(chatName: 'test');
-      chat2 = Chat(chatName: 'chat2');
+      user1 = User(
+          webId: '111',
+          username: '111',
+          photoUrl: 'url',
+          active: false,
+          lastSeen: DateTime.now());
+
+      user2 = User(
+          webId: '222',
+          username: '222',
+          photoUrl: 'url',
+          active: false,
+          lastSeen: DateTime.now());
+
+      chat1 = Chat(chatName: 'chat1', webChatId: '1');
+      chat2 = Chat(chatName: 'chat2', webChatId: '2');
     });
 
     tearDown(() async => await i.cleanDb());
@@ -70,27 +94,27 @@ Future<void> main() async {
     test('Add owner link to chat, and test backlink', () async {
 
       // Testing that user1 is registered as the owner
-      chat1.owner.value = user1;
+      chat1.owners.add(user1);
       await i.saveChat(chat1);
 
       Chat? dbChat = await i.findChat(chat1.id);
-      User? chatOwner = dbChat?.owner.value;
+      User? chatOwner = dbChat?.owners.single;
 
       expect(chatOwner, isNotNull);
       expect(chatOwner?.id, user1.id);
-      expect(chatOwner?.username, '123');
+      expect(chatOwner?.username, '111');
 
       // Testing that backlink works
       User? dbUser = await i.findUser(user1.id);
-      Chat? user1Chats = dbUser?.allChats.first;
+      Chat? user1Chats = dbUser?.chats.first;
 
       expect(user1Chats, isNotNull);
       expect(user1Chats?.id, chat1.id);
     });
 
     test('Link multiple chats to user and checking backlink', () async {
-      user1.allChats.add(chat1);
-      user1.allChats.add(chat2);
+      user1.chats.add(chat1);
+      user1.chats.add(chat2);
 
       await i.saveUser(user1);
 
@@ -101,7 +125,7 @@ Future<void> main() async {
       expect(dbUserChats?.length, 2);
 
       // Here testing that backlink works also
-      expect(dbUserChats?.first.owner.value?.id, user1.id);
+      expect(dbUserChats?.first.owners.single.id, user1.id);
 
       // Test that removing chat removes from chatlist
       await i.removeChat(chat1.id);
@@ -114,25 +138,26 @@ Future<void> main() async {
     });
 
     test('Messages saving/finding/linking/deleting', () async {
-      LocalMessage msg1 = LocalMessage(
-          message: Message(
-              timestamp: DateTime.now(),
-              contents: 'msg1'));
-      LocalMessage msg2 = LocalMessage(
-          message: Message(
-              timestamp: DateTime.now(),
-              contents: 'msg1'));
+      Message msg1 = Message(
+          webId: '1',
+          timestamp: DateTime.now(),
+          contents: 'msg1');
 
-      msg1.isarTo.value = user1;
-      msg1.isarFrom.value = user2;
+      Message msg2 = Message(
+          webId: '2',
+          timestamp: DateTime.now(),
+          contents: 'msg2');
 
-      msg2.isarTo.value = user2;
-      msg2.isarFrom.value = user1;
+      msg1.to.value = user1;
+      msg1.from.value = user2;
+
+      msg2.to.value = user2;
+      msg2.from.value = user1;
 
       msg1.chat.value = chat1;
       msg2.chat.value = chat1;
 
-      chat1.owner.value = user1;
+      chat1.owners.add(user1);
 
       await i.saveMessage(msg1);
       await i.saveMessage(msg2);
@@ -140,17 +165,17 @@ Future<void> main() async {
       User? dbUser1 = await i.findUser(user1.id);
       User? dbUser2 = await i.findUser(user2.id);
 
-      expect(dbUser1?.allReceivedMessages.length, 1);
-      expect(dbUser2?.allReceivedMessages.length, 1);
+      expect(dbUser1?.receivedMessages.length, 1);
+      expect(dbUser2?.receivedMessages.length, 1);
 
-      expect(dbUser1?.allSentMessages.length, 1);
-      expect(dbUser2?.allSentMessages.length, 1);
+      expect(dbUser1?.sentMessages.length, 1);
+      expect(dbUser2?.sentMessages.length, 1);
 
-      expect(dbUser1?.allReceivedMessages.first.id, msg1.id);
-      expect(dbUser2?.allReceivedMessages.first.id, msg2.id);
+      expect(dbUser1?.receivedMessages.first.id, msg1.id);
+      expect(dbUser2?.receivedMessages.first.id, msg2.id);
 
-      expect(dbUser1?.allChats.first.id, chat1.id);
-      expect(chat1.allMessages.length, 2);
+      expect(dbUser1?.chats.first.id, chat1.id);
+      expect(chat1.messages.length, 2);
 
       // Testing if messages get removed when chat is removed
       await i.removeChat(chat1.id);
@@ -158,8 +183,8 @@ Future<void> main() async {
       Chat? dbChat = await i.findChat(chat1.id);
       expect(dbChat, isNull);
 
-      LocalMessage? dbMsg1 = await i.findMessage(msg1.id);
-      LocalMessage? dbMsg2 = await i.findMessage(msg2.id);
+      Message? dbMsg1 = await i.findMessage(msg1.id);
+      Message? dbMsg2 = await i.findMessage(msg2.id);
       expect(dbMsg1, isNull);
       expect(dbMsg2, isNull);
     });

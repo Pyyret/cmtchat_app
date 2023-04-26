@@ -1,16 +1,16 @@
+import 'package:cmtchat_app/models/web/web_user.dart';
 import 'package:rethink_db_ns/rethink_db_ns.dart';
 
-import '../../models/user.dart';
-import 'user_service_contract.dart';
+import 'web_user_service_contract.dart';
 
-class UserService implements IUserService {
+class WebUserService implements IWebUserService {
   final Connection _connection;
   final RethinkDb r;
 
-  UserService(this.r, this._connection);
+  WebUserService(this.r, this._connection);
 
   @override
-  Future<User> connect(User user) async {
+  Future<WebUser> connect(WebUser user) async {
     user.active = true;
     user.lastSeen = DateTime.now();
 
@@ -24,15 +24,15 @@ class UserService implements IUserService {
 
     if(response['changes'].length == 0) { return user; }
     else {
-      return User.fromJson(response['changes'].first['new_val']);
+      return WebUser.fromJson(response['changes'].first['new_val']);
     }
   }
 
   @override
-  Future<User> disconnect(User user) async {
+  Future<WebUser> disconnect(WebUser user) async {
     final response = await r
         .table('users')
-        .get(user.id)
+        .get(user.webId)
         .update(
         {
           'active': false,
@@ -41,19 +41,19 @@ class UserService implements IUserService {
         .run(_connection);
 
     if(response['changes'].length > 0) {
-      return User.fromJson(response['changes'].first['new_val']);
+      return WebUser.fromJson(response['changes'].first['new_val']);
     } else {
       return user;
     }
   }
 
   @override
-  Future<List<User>> online() async {
+  Future<List<WebUser>> online() async {
     Cursor users = await r
         .table('users')
         .filter({'active': true})
         .run(_connection);
     final userList = await users.toList();
-    return userList.map((item) => User.fromJson(item)).toList();
+    return userList.map((item) => WebUser.fromJson(item)).toList();
   }
 }

@@ -1,10 +1,8 @@
 import 'dart:async';
-
-import 'package:flutter/cupertino.dart';
+import 'package:cmtchat_app/models/web/typing_event.dart';
+import 'package:cmtchat_app/models/web/web_user.dart';
 import 'package:rethink_db_ns/rethink_db_ns.dart';
 
-import '../../models/typing_event.dart';
-import '../../models/user.dart';
 import 'typing_notification_service_contract.dart';
 
 class TypingNotification implements ITypingNotification {
@@ -19,7 +17,7 @@ class TypingNotification implements ITypingNotification {
 
   /// Methods
   @override
-  Future<bool> send({required TypingEvent event, required User to}) async {
+  Future<bool> send({required TypingEvent event, required WebUser to}) async {
     if(!to.active) return false;
     Map record = await _r
         .table('typing_events')
@@ -29,7 +27,7 @@ class TypingNotification implements ITypingNotification {
   }
 
   @override
-  Stream<TypingEvent> subscribe(User user, List<String> userIds) {
+  Stream<TypingEvent> subscribe(WebUser user, List<String> userIds) {
     _startReceivingTypingEvents(user, userIds);
     return _controller.stream;
   }
@@ -40,12 +38,12 @@ class TypingNotification implements ITypingNotification {
     _controller.close();
   }
 
-  _startReceivingTypingEvents(User user, List<String> userIds) {
+  _startReceivingTypingEvents(WebUser user, List<String> userIds) {
     _changeFeed = _r
         .table('typing_events')
         .filter((event) {
           return event('to')
-              .eq(user.id)
+              .eq(user.webId)
               .and(_r.expr(userIds).contains(event('from')));
         })
         .changes({'include_initial': true})

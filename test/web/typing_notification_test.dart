@@ -1,5 +1,5 @@
-import 'package:cmtchat_app/models/local/users.dart';
 import 'package:cmtchat_app/models/web/typing_event.dart';
+import 'package:cmtchat_app/models/web/web_user.dart';
 import 'package:cmtchat_app/services/web/typing/typing_notification_service_impl.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rethink_db_ns/rethink_db_ns.dart';
@@ -22,7 +22,7 @@ void main() {
     await cleanDb(r, connection);
   });
 
-  final user1 = User.fromJson({
+  final user1 = WebUser.fromJson({
     'id': '1111',
     'username': '1111',
     'photo_url': 'url',
@@ -30,7 +30,7 @@ void main() {
     'last_seen': DateTime.now(),
   });
 
-  final user2 = User.fromJson({
+  final user2 = WebUser.fromJson({
     'id': '2222',
     'username': '2222',
     'photo_url': 'url',
@@ -40,8 +40,8 @@ void main() {
   
   test('Send typing notification', () async {
     TypingEvent typingEvent = TypingEvent(
-        from: user1.id!,
-        to: user2.id!,
+        from: user1.webId!,
+        to: user2.webId!,
         event: Typing.start
     );
     final res = await sut.send(event: typingEvent, to: user2);
@@ -51,20 +51,20 @@ void main() {
 
   test('Subscribe and receive typing events', () async {
     sut
-        .subscribe(user2, [user1.id!])
+        .subscribe(user2, [user1.webId!])
         .listen(expectAsync1((event) {
-          expect(event.from, user1.id);
+          expect(event.from, user1.webId);
     }, count: 2));
 
     TypingEvent typing = TypingEvent(
-        from: user1.id!,
-        to: user2.id!,
+        from: user1.webId!,
+        to: user2.webId!,
         event: Typing.start
     );
 
     TypingEvent stopTyping = TypingEvent(
-        from: user1.id!,
-        to: user2.id!,
+        from: user1.webId!,
+        to: user2.webId!,
         event: Typing.stop
     );
 

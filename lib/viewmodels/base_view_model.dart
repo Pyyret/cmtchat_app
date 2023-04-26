@@ -1,5 +1,5 @@
-import 'package:cmtchat_app/models/local/chats.dart';
-import 'package:cmtchat_app/models/local/messages.dart';
+import 'package:cmtchat_app/models/local/chat.dart';
+import 'package:cmtchat_app/models/local/message.dart';
 import 'package:cmtchat_app/services/data/dataservice_contract.dart';
 
 abstract class BaseViewModel {
@@ -7,7 +7,7 @@ abstract class BaseViewModel {
 
   BaseViewModel(this._dataService);
 
-  Future<void> addMessage(LocalMessage message) async {
+  Future<void> addMessage(Message message) async {
     if(!await _isExistingChat(message.message.webChatId!)) {
       await _createNewChat(message.message.webChatId!);
     }

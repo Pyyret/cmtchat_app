@@ -1,18 +1,15 @@
 
-import 'package:isar/isar.dart';
-
-
-class Message {
-  final Id id = Isar.autoIncrement;
-  final String from;
+class WebMessage {
+  get webId => _webId;
   final String to;
+  final String from;
   final DateTime timestamp;
   final String contents;
-  late final String? _id;
+  String? _webId;
 
-  Message({
-    required this.from,
+  WebMessage({
     required this.to,
+    required this.from,
     required this.timestamp,
     required this.contents,
   });
@@ -24,18 +21,18 @@ class Message {
       'timestamp' : timestamp,
       'contents' : contents
     };
-    if(_id?.isNotEmpty ?? false) data['id'] = _id!;
+    if(_webId?.isNotEmpty ?? false) data['id'] = _webId!;
     return data;
   }
 
-  factory Message.fromJson(Map<String, dynamic> json) {
-    final message = Message(
+  factory WebMessage.fromJson(Map<String, dynamic> json) {
+    final message = WebMessage(
         from: json['from'],
         to: json['to'],
         timestamp: json['timestamp'],
         contents: json['contents']
     );
-    message._id = json['id'];
+    message._webId = json['id'];
     return message;
   }
 }

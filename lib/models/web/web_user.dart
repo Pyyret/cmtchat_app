@@ -1,12 +1,12 @@
-class User {
-  String? get id => _id;
+class WebUser {
+  String? get webId => _webId;
   String username;
   String photoUrl;
   bool active;
   DateTime lastSeen;
-  String? _id;
+  String? _webId;
 
-  User({
+  WebUser({
     required this.username,
     required this.photoUrl,
     required this.active,
@@ -19,18 +19,18 @@ class User {
       'active': active,
       'last_seen': lastSeen
     };
-    if(_id?.isNotEmpty ?? false) data['id'] = _id!;
+    if(_webId?.isNotEmpty ?? false) data['id'] = _webId!;
     return data;
   }
 
-  factory User.fromJson(Map<String, dynamic> json) {
-    final user = User(
+  factory WebUser.fromJson(Map<String, dynamic> json) {
+    final user = WebUser(
         username: json['username'],
         photoUrl: json['photo_url'],
         active: json['active'],
         lastSeen: json['last_seen']
     );
-    user._id = json['id'];
+    user._webId = json['id'];
     return user;
   }
 }

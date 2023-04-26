@@ -1,15 +1,14 @@
 import 'dart:async';
 
+import 'package:cmtchat_app/models/web/receipt.dart';
+import 'package:cmtchat_app/models/web/web_user.dart';
 import 'package:rethink_db_ns/rethink_db_ns.dart';
-
-import '../../../../../lib/models/web/receipt.dart';
-import '../../models/user.dart';
 import 'receipt_service_contract.dart';
 
 class ReceiptService implements IReceiptService {
   final Connection _connection;
   final RethinkDb r;
-  late final _controller;
+  late final StreamController<Receipt> _controller;
 
   late StreamSubscription _changeFeed;
 
@@ -30,7 +29,7 @@ class ReceiptService implements IReceiptService {
   }
 
   @override
-  Stream<Receipt> receiptStream(User user) {
+  Stream<Receipt> receiptStream(WebUser user) {
     _startRecievingReceipts(user);
     return _controller.stream;
   }
@@ -41,10 +40,10 @@ class ReceiptService implements IReceiptService {
     _controller.close();
   }
 
-  _startRecievingReceipts(User user) {
+  _startRecievingReceipts(WebUser user) {
     _changeFeed = r
         .table('receipts')
-        .filter({'recipient' : user.id})
+        .filter({'recipient' : user.webId})
         .changes({'include_initial': true})
         .run(_connection)
         .asStream()

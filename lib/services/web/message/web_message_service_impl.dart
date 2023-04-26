@@ -1,26 +1,27 @@
 import 'dart:async';
+import 'package:cmtchat_app/models/web/web_message.dart';
+import 'package:cmtchat_app/models/web/web_user.dart';
+import 'package:cmtchat_app/services/web/message/web_message_service_contract.dart';
 import 'package:rethink_db_ns/rethink_db_ns.dart';
 
-import '../../../../../lib/models/web/message.dart';
-import '../../models/user.dart';
 import '../encryption/encryption_contract.dart';
-import 'message_service_contract.dart';
 
-class MessageService implements IMessageService {
+
+class WebMessageService implements IWebMessageService {
   final Connection _connection;
   final RethinkDb r;
   final IEncryption _encryption;
-  late final StreamController<Message> _controller;
+  late final StreamController<WebMessage> _controller;
 
   late StreamSubscription _changeFeed;
 
   /// Constructor
-  MessageService(this.r, this._connection, this._encryption) {
-    _controller = StreamController<Message>.broadcast();
+  WebMessageService(this.r, this._connection, this._encryption) {
+    _controller = StreamController<WebMessage>.broadcast();
   }
 
   @override
-  Future<bool> send({required Message message}) async {
+  Future<bool> send({required WebMessage message}) async {
     var data = message.toJson();
     data['contents'] = _encryption.encrypt(message.contents);
     final response = await r
@@ -31,7 +32,7 @@ class MessageService implements IMessageService {
   }
 
   @override
-  Stream<Message> messageStream({required User activeUser}) {
+  Stream<WebMessage> messageStream({required WebUser activeUser}) {
     _startRecievingMessages(activeUser);
     return _controller.stream;
   }
@@ -42,10 +43,10 @@ class MessageService implements IMessageService {
     await _controller.close();
   }
 
-  _startRecievingMessages(User user) {
+  _startRecievingMessages(WebUser user) {
     _changeFeed = r
         .table('messages')
-        .filter({'to' : user.id})
+        .filter({'to' : user.webId})
         .changes({'include_initial': true})
         .run(_connection)
         .asStream()
@@ -61,16 +62,16 @@ class MessageService implements IMessageService {
         });
   }
 
-  Message _messageFromFeed(feedData) {
+  WebMessage _messageFromFeed(feedData) {
     var data = feedData['new_val'];
     data['contents'] = _encryption.decrypt(data['contents']);
-    return Message.fromJson(data);
+    return WebMessage.fromJson(data);
   }
 
-  _removeDeliveredMessage(Message message) {
+  _removeDeliveredMessage(WebMessage message) {
     r
         .table('messages')
-        .get(message.id)
+        .get(message.webId)
         .delete({'return_changes': false})
         .run(_connection);
   }

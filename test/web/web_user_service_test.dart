@@ -1,15 +1,17 @@
-import 'package:cmtchat_app/models/local/users.dart';
-import 'package:cmtchat_app/services/web/user/user_service_impl.dart';
+import 'package:cmtchat_app/models/web/web_user.dart';
+import 'package:cmtchat_app/services/web/user/web_user_service_impl.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rethink_db_ns/rethink_db_ns.dart';
+
+import 'helpers.dart';
 
 
 void main() {
   RethinkDb r = RethinkDb();
   late Connection connection;
-  late UserService sut;
+  late WebUserService sut;
 
-  User testPilot = User(
+  WebUser testPilot = WebUser(
     username: 'test',
     photoUrl: 'url',
     active: true,
@@ -17,7 +19,7 @@ void main() {
   );
 
   setUp(() async {
-    testPilot = User(
+    testPilot = WebUser(
         username: 'test',
         photoUrl: 'url',
         active: false,
@@ -25,7 +27,7 @@ void main() {
     );
     connection = await r.connect(host: "127.0.0.1", port: 28015);
     await createDb(r, connection);
-    sut = UserService(r, connection);
+    sut = WebUserService(r, connection);
   });
 
   tearDown(() async {
@@ -33,15 +35,15 @@ void main() {
     connection.close();
   });
 
-  test('Connect new user to database and receive unique _id', () async {
+  test('Connect new user to database and receive unique _webId', () async {
     testPilot = await sut.connect(testPilot);
-    expect(testPilot.id == null, false);
+    expect(testPilot.webId == null, false);
     expect(testPilot.active, true);
   });
 
   test('Testing update. Connect, disconnect, connect again', () async {
     testPilot = await sut.connect(testPilot);
-    expect(testPilot.id == null, false);
+    expect(testPilot.webId == null, false);
     expect(testPilot.active, true);
 
     testPilot = await sut.disconnect(testPilot);

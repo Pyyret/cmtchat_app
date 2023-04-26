@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'chats.dart';
+part of 'chat.dart';
 
 // **************************************************************************
 // IsarCollectionGenerator
@@ -40,16 +40,16 @@ const ChatSchema = CollectionSchema(
   idName: r'id',
   indexes: {},
   links: {
-    r'owner': LinkSchema(
-      id: -7444163814384527797,
-      name: r'owner',
+    r'owners': LinkSchema(
+      id: 8481593217365149869,
+      name: r'owners',
       target: r'Users',
-      single: true,
-      linkName: r'allChats',
+      single: false,
+      linkName: r'chats',
     ),
-    r'allMessages': LinkSchema(
-      id: 7066281433005845276,
-      name: r'allMessages',
+    r'messages': LinkSchema(
+      id: 3221285292385264691,
+      name: r'messages',
       target: r'Messages',
       single: false,
     )
@@ -73,12 +73,7 @@ int _chatEstimateSize(
       bytesCount += 3 + value.length * 3;
     }
   }
-  {
-    final value = object.webChatId;
-    if (value != null) {
-      bytesCount += 3 + value.length * 3;
-    }
-  }
+  bytesCount += 3 + object.webChatId.length * 3;
   return bytesCount;
 }
 
@@ -101,7 +96,7 @@ Chat _chatDeserialize(
 ) {
   final object = Chat(
     chatName: reader.readStringOrNull(offsets[0]),
-    webChatId: reader.readStringOrNull(offsets[2]),
+    webChatId: reader.readString(offsets[2]),
   );
   object.id = id;
   object.unread = reader.readLongOrNull(offsets[1]);
@@ -120,7 +115,7 @@ P _chatDeserializeProp<P>(
     case 1:
       return (reader.readLongOrNull(offset)) as P;
     case 2:
-      return (reader.readStringOrNull(offset)) as P;
+      return (reader.readString(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
   }
@@ -131,14 +126,13 @@ Id _chatGetId(Chat object) {
 }
 
 List<IsarLinkBase<dynamic>> _chatGetLinks(Chat object) {
-  return [object.owner, object.allMessages];
+  return [object.owners, object.messages];
 }
 
 void _chatAttach(IsarCollection<dynamic> col, Id id, Chat object) {
   object.id = id;
-  object.owner.attach(col, col.isar.collection<User>(), r'owner', id);
-  object.allMessages
-      .attach(col, col.isar.collection<LocalMessage>(), r'allMessages', id);
+  object.owners.attach(col, col.isar.collection<User>(), r'owners', id);
+  object.messages.attach(col, col.isar.collection<Message>(), r'messages', id);
 }
 
 extension ChatQueryWhereSort on QueryBuilder<Chat, Chat, QWhere> {
@@ -482,24 +476,8 @@ extension ChatQueryFilter on QueryBuilder<Chat, Chat, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Chat, Chat, QAfterFilterCondition> webChatIdIsNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'webChatId',
-      ));
-    });
-  }
-
-  QueryBuilder<Chat, Chat, QAfterFilterCondition> webChatIdIsNotNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'webChatId',
-      ));
-    });
-  }
-
   QueryBuilder<Chat, Chat, QAfterFilterCondition> webChatIdEqualTo(
-    String? value, {
+    String value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
@@ -512,7 +490,7 @@ extension ChatQueryFilter on QueryBuilder<Chat, Chat, QFilterCondition> {
   }
 
   QueryBuilder<Chat, Chat, QAfterFilterCondition> webChatIdGreaterThan(
-    String? value, {
+    String value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
@@ -527,7 +505,7 @@ extension ChatQueryFilter on QueryBuilder<Chat, Chat, QFilterCondition> {
   }
 
   QueryBuilder<Chat, Chat, QAfterFilterCondition> webChatIdLessThan(
-    String? value, {
+    String value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
@@ -542,8 +520,8 @@ extension ChatQueryFilter on QueryBuilder<Chat, Chat, QFilterCondition> {
   }
 
   QueryBuilder<Chat, Chat, QAfterFilterCondition> webChatIdBetween(
-    String? lower,
-    String? upper, {
+    String lower,
+    String upper, {
     bool includeLower = true,
     bool includeUpper = true,
     bool caseSensitive = true,
@@ -632,63 +610,50 @@ extension ChatQueryFilter on QueryBuilder<Chat, Chat, QFilterCondition> {
 extension ChatQueryObject on QueryBuilder<Chat, Chat, QFilterCondition> {}
 
 extension ChatQueryLinks on QueryBuilder<Chat, Chat, QFilterCondition> {
-  QueryBuilder<Chat, Chat, QAfterFilterCondition> owner(FilterQuery<User> q) {
+  QueryBuilder<Chat, Chat, QAfterFilterCondition> owners(FilterQuery<User> q) {
     return QueryBuilder.apply(this, (query) {
-      return query.link(q, r'owner');
+      return query.link(q, r'owners');
     });
   }
 
-  QueryBuilder<Chat, Chat, QAfterFilterCondition> ownerIsNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.linkLength(r'owner', 0, true, 0, true);
-    });
-  }
-
-  QueryBuilder<Chat, Chat, QAfterFilterCondition> allMessages(
-      FilterQuery<LocalMessage> q) {
-    return QueryBuilder.apply(this, (query) {
-      return query.link(q, r'allMessages');
-    });
-  }
-
-  QueryBuilder<Chat, Chat, QAfterFilterCondition> allMessagesLengthEqualTo(
+  QueryBuilder<Chat, Chat, QAfterFilterCondition> ownersLengthEqualTo(
       int length) {
     return QueryBuilder.apply(this, (query) {
-      return query.linkLength(r'allMessages', length, true, length, true);
+      return query.linkLength(r'owners', length, true, length, true);
     });
   }
 
-  QueryBuilder<Chat, Chat, QAfterFilterCondition> allMessagesIsEmpty() {
+  QueryBuilder<Chat, Chat, QAfterFilterCondition> ownersIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.linkLength(r'allMessages', 0, true, 0, true);
+      return query.linkLength(r'owners', 0, true, 0, true);
     });
   }
 
-  QueryBuilder<Chat, Chat, QAfterFilterCondition> allMessagesIsNotEmpty() {
+  QueryBuilder<Chat, Chat, QAfterFilterCondition> ownersIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.linkLength(r'allMessages', 0, false, 999999, true);
+      return query.linkLength(r'owners', 0, false, 999999, true);
     });
   }
 
-  QueryBuilder<Chat, Chat, QAfterFilterCondition> allMessagesLengthLessThan(
+  QueryBuilder<Chat, Chat, QAfterFilterCondition> ownersLengthLessThan(
     int length, {
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.linkLength(r'allMessages', 0, true, length, include);
+      return query.linkLength(r'owners', 0, true, length, include);
     });
   }
 
-  QueryBuilder<Chat, Chat, QAfterFilterCondition> allMessagesLengthGreaterThan(
+  QueryBuilder<Chat, Chat, QAfterFilterCondition> ownersLengthGreaterThan(
     int length, {
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.linkLength(r'allMessages', length, include, 999999, true);
+      return query.linkLength(r'owners', length, include, 999999, true);
     });
   }
 
-  QueryBuilder<Chat, Chat, QAfterFilterCondition> allMessagesLengthBetween(
+  QueryBuilder<Chat, Chat, QAfterFilterCondition> ownersLengthBetween(
     int lower,
     int upper, {
     bool includeLower = true,
@@ -696,7 +661,63 @@ extension ChatQueryLinks on QueryBuilder<Chat, Chat, QFilterCondition> {
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.linkLength(
-          r'allMessages', lower, includeLower, upper, includeUpper);
+          r'owners', lower, includeLower, upper, includeUpper);
+    });
+  }
+
+  QueryBuilder<Chat, Chat, QAfterFilterCondition> messages(
+      FilterQuery<Message> q) {
+    return QueryBuilder.apply(this, (query) {
+      return query.link(q, r'messages');
+    });
+  }
+
+  QueryBuilder<Chat, Chat, QAfterFilterCondition> messagesLengthEqualTo(
+      int length) {
+    return QueryBuilder.apply(this, (query) {
+      return query.linkLength(r'messages', length, true, length, true);
+    });
+  }
+
+  QueryBuilder<Chat, Chat, QAfterFilterCondition> messagesIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.linkLength(r'messages', 0, true, 0, true);
+    });
+  }
+
+  QueryBuilder<Chat, Chat, QAfterFilterCondition> messagesIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.linkLength(r'messages', 0, false, 999999, true);
+    });
+  }
+
+  QueryBuilder<Chat, Chat, QAfterFilterCondition> messagesLengthLessThan(
+    int length, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.linkLength(r'messages', 0, true, length, include);
+    });
+  }
+
+  QueryBuilder<Chat, Chat, QAfterFilterCondition> messagesLengthGreaterThan(
+    int length, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.linkLength(r'messages', length, include, 999999, true);
+    });
+  }
+
+  QueryBuilder<Chat, Chat, QAfterFilterCondition> messagesLengthBetween(
+    int lower,
+    int upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.linkLength(
+          r'messages', lower, includeLower, upper, includeUpper);
     });
   }
 }
@@ -830,7 +851,7 @@ extension ChatQueryProperty on QueryBuilder<Chat, Chat, QQueryProperty> {
     });
   }
 
-  QueryBuilder<Chat, String?, QQueryOperations> webChatIdProperty() {
+  QueryBuilder<Chat, String, QQueryOperations> webChatIdProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'webChatId');
     });

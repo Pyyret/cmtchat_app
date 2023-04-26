@@ -1,7 +1,7 @@
-import 'package:cmtchat_app/models/local/messages.dart';
-import 'package:cmtchat_app/models/local/users.dart';
+import 'package:cmtchat_app/models/web/web_message.dart';
+import 'package:cmtchat_app/models/web/web_user.dart';
 import 'package:cmtchat_app/services/web/encryption/encryption_service_impl.dart';
-import 'package:cmtchat_app/services/web/message/message_service_impl.dart';
+import 'package:cmtchat_app/services/web/message/web_message_service_impl.dart';
 import 'package:encrypt/encrypt.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rethink_db_ns/rethink_db_ns.dart';
@@ -12,10 +12,10 @@ Future<void> main() async {
   RethinkDb r = RethinkDb();
   final Connection connection = await r.connect(host: '127.0.0.1', port: 28015);
   final encryption =  EncryptionService(Encrypter(AES(Key.fromLength(32))));
-  late MessageService sut = MessageService(r, connection, encryption);
+  late WebMessageService sut = WebMessageService(r, connection, encryption);
 
 
-  final user1 = User.fromJson({
+  final user1 = WebUser.fromJson({
     'username': '1111',
     'id' : '1111',
     'photo_url': 'img',
@@ -23,7 +23,7 @@ Future<void> main() async {
     'last_seen': DateTime.now()
   });
 
-  final user2 = User.fromJson({
+  final user2 = WebUser.fromJson({
     'username': '2222',
     'id' : '2222',
     'photo_url': 'img',
@@ -33,15 +33,15 @@ Future<void> main() async {
 
   const content = 'TESTINGTESTING!';
 
-  final Message message1 = Message(
-      from: user2.id!,
-      to: user1.id!,
+  final WebMessage message1 = WebMessage(
+      from: user2.webId!,
+      to: user1.webId!,
       timestamp: DateTime.now(),
       contents: content);
 
-  final Message message2 = Message(
-      from: user2.id!,
-      to: user1.id!,
+  final WebMessage message2 = WebMessage(
+      from: user2.webId!,
+      to: user1.webId!,
       timestamp: DateTime.now(),
       contents: content);
 
@@ -60,8 +60,8 @@ Future<void> main() async {
 
   test('Subscribe and receive messages', () async {
     sut.messageStream(activeUser: user1).listen(expectAsync1((message) {
-      expect(message.to, user1.id);
-      expect(message.id, isNotEmpty);
+      expect(message.to, user1.webId);
+      expect(message.webId, isNotEmpty);
       expect(message.contents, content);
     }, count: 2));
 
@@ -77,8 +77,8 @@ Future<void> main() async {
     /// And then subscribing to the stream
         .whenComplete(() =>
         sut.messageStream(activeUser: user1).listen(expectAsync1((message) {
-          expect(message.to, user1.id);
-          expect(message.id, isNotEmpty);
+          expect(message.to, user1.webId);
+          expect(message.webId, isNotEmpty);
     }, count: 2)));
   });
 }

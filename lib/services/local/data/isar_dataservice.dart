@@ -1,11 +1,12 @@
 import 'dart:async';
 
-import 'package:cmtchat_app/models/local/chats.dart';
-import 'package:cmtchat_app/models/local/messages.dart';
-import 'package:cmtchat_app/models/local/users.dart';
-import 'package:cmtchat_app/services/data/dataservice_contract.dart';
+import 'package:cmtchat_app/models/local/chat.dart';
+import 'package:cmtchat_app/models/local/message.dart';
+import 'package:cmtchat_app/models/local/user.dart';
 import 'package:isar/isar.dart';
 import 'package:path_provider/path_provider.dart';
+
+import 'dataservice_contract.dart';
 
 
 
@@ -92,7 +93,7 @@ class IsarService implements IDataService {
   Future<List<Chat>?> findAllChats(Id userId) async {
     final isar = await db;
     final user = await isar.users.get(userId);
-    return user?.allChats.toList();
+    return user?.chats.toList();
   }
 
   // Also removes all messages linked to the chat.
@@ -100,7 +101,7 @@ class IsarService implements IDataService {
   Future<void> removeChat(Id chatId) async {
     final isar = await db;
     isar.writeTxnSync(() async {
-      isar.localMessages
+      isar.messages
           .filter()
           .chat((q) => q.idEqualTo(chatId))
           .deleteAllSync();
@@ -112,28 +113,28 @@ class IsarService implements IDataService {
   /// Message
 
   @override
-  Future<void> saveMessage(LocalMessage message) async {
+  Future<void> saveMessage(Message message) async {
     final isar = await db;
-    return isar.writeTxnSync(() => isar.localMessages.putSync(message));
+    return isar.writeTxnSync(() => isar.messages.putSync(message));
   }
 
   @override
-  Future<LocalMessage?> findMessage(int messageId) async {
+  Future<Message?> findMessage(int messageId) async {
     final isar = await db;
-    return await isar.localMessages.get(messageId);
+    return await isar.messages.get(messageId);
   }
 
   @override
-  Future<List<LocalMessage>?> findAllMessages(int chatId) async {
+  Future<List<Message>?> findAllMessages(int chatId) async {
     final isar = await db;
     final chat = await isar.chats.get(chatId);
-    return chat?.allMessages.toList();
+    return chat?.messages.toList();
   }
 
   @override
   Future<void> removeMessage(int messageId) async {
     final isar = await db;
-    isar.writeTxnSync(() => isar.localMessages.deleteSync(messageId));
+    isar.writeTxnSync(() => isar.messages.deleteSync(messageId));
   }
 
 
@@ -145,7 +146,7 @@ class IsarService implements IDataService {
       return await Isar.open([
         UserSchema,
         ChatSchema,
-        LocalMessageSchema
+        MessageSchema
       ], directory: dir.path);
     }
     return Future.value(Isar.getInstance());

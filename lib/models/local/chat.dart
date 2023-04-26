@@ -1,29 +1,31 @@
-import 'package:cmtchat_app/models/local/users.dart';
+import 'package:cmtchat_app/models/local/user.dart';
 import 'package:isar/isar.dart';
 
-import 'messages.dart';
+import 'message.dart';
 
-part 'chats.g.dart';
+part 'chat.g.dart';
 
 @Collection()
 @Name('Chats')
 class Chat {
   Id id = Isar.autoIncrement;     // Automatically given by Isar
-  String? webChatId;                  // Webserver-specific id.
+  String webChatId;                  // Webserver-specific id.
 
   // Links to the owner of the chatroom
-  @Backlink(to: 'allChats')
-  final owner = IsarLink<User>();
+  @Backlink(to: 'chats')
+  final owners = IsarLinks<User>();
 
   // Links to messages in chatroom
-  final allMessages = IsarLinks<LocalMessage>();
+  final messages = IsarLinks<Message>();
 
   // Optional
   String? chatName;
   int? unread;
 
   /// Constructor
-  Chat({this.webChatId, this.chatName});
+  Chat({
+    required this.webChatId,
+    this.chatName});
 
   /*
 

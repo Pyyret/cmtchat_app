@@ -1,5 +1,5 @@
-import 'package:cmtchat_app/models/local/messages.dart';
-import 'package:cmtchat_app/models/local/users.dart';
+import 'package:cmtchat_app/models/web/receipt.dart';
+import 'package:cmtchat_app/models/web/web_user.dart';
 import 'package:cmtchat_app/services/web/receipt/receipt_service_impl.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rethink_db_ns/rethink_db_ns.dart';
@@ -21,7 +21,7 @@ void main() {
     await cleanDb(r, connection);
   });
 
-  final user = User.fromJson({
+  final user = WebUser.fromJson({
     'id': '1234',
     'username': '1234',
     'photo_url': 'url',
@@ -31,7 +31,7 @@ void main() {
 
   test('Sending receipt', () async {
     Receipt receipt = Receipt(
-        recipient: user.id!,
+        recipient: user.webId!,
         messageId: '1234',
         status: ReceiptStatus.sent,
         timestamp: DateTime.now()
@@ -43,12 +43,12 @@ void main() {
 
   test('Receiving receipt', () async {
     sut.receiptStream(user).listen((receipt) {
-      expect(receipt.recipient, user.id!);
+      expect(receipt.recipient, user.webId!);
       expect(receipt.status, ReceiptStatus.sent);
     });
 
     Receipt receipt = Receipt(
-        recipient: user.id!,
+        recipient: user.webId!,
         messageId: '1234',
         status: ReceiptStatus.sent,
         timestamp: DateTime.now());

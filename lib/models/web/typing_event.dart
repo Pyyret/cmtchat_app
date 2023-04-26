@@ -1,5 +1,3 @@
-import 'package:flutter/cupertino.dart';
-
 enum Typing { start, stop }
 
 extension TypingParser on Typing {
