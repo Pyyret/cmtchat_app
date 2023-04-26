@@ -1,10 +1,10 @@
 class WebUser {
-  String? get webId => _webId;
+  String? get webUserId => _webUserId;
   String username;
   String photoUrl;
   bool active;
   DateTime lastSeen;
-  String? _webId;
+  String? _webUserId;
 
   WebUser({
     required this.username,
@@ -19,7 +19,7 @@ class WebUser {
       'active': active,
       'last_seen': lastSeen
     };
-    if(_webId?.isNotEmpty ?? false) data['id'] = _webId!;
+    if(_webUserId?.isNotEmpty ?? false) data['id'] = _webUserId!;
     return data;
   }
 
@@ -30,7 +30,7 @@ class WebUser {
         active: json['active'],
         lastSeen: json['last_seen']
     );
-    user._webId = json['id'];
+    user._webUserId = json['id'];
     return user;
   }
 }

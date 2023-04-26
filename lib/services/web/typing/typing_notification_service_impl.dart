@@ -43,7 +43,7 @@ class TypingNotification implements ITypingNotification {
         .table('typing_events')
         .filter((event) {
           return event('to')
-              .eq(user.webId)
+              .eq(user.webUserId)
               .and(_r.expr(userIds).contains(event('from')));
         })
         .changes({'include_initial': true})

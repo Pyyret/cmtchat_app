@@ -31,7 +31,7 @@ void main() {
 
   test('Sending receipt', () async {
     Receipt receipt = Receipt(
-        recipient: user.webId!,
+        recipient: user.webUserId!,
         messageId: '1234',
         status: ReceiptStatus.sent,
         timestamp: DateTime.now()
@@ -43,12 +43,12 @@ void main() {
 
   test('Receiving receipt', () async {
     sut.receiptStream(user).listen((receipt) {
-      expect(receipt.recipient, user.webId!);
+      expect(receipt.recipient, user.webUserId!);
       expect(receipt.status, ReceiptStatus.sent);
     });
 
     Receipt receipt = Receipt(
-        recipient: user.webId!,
+        recipient: user.webUserId!,
         messageId: '1234',
         status: ReceiptStatus.sent,
         timestamp: DateTime.now());

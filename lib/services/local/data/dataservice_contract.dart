@@ -8,16 +8,17 @@ abstract class IDataService {
   /// User
   Future<void> saveUser(User user);
   Future<User?> findUser(int userId);
+  Future<User?> findWebUser(String webId);
   Future<void> removeUser(int userId);
 
   /// Chat
   Future<void> saveChat(Chat chat);
   Future<Chat?> findChat(int chatId);
-  Future<Chat?> findWebChat(String webChatId);
+  Future<Chat?> findChatWith(String webUserId);
   Future<List<Chat>?> findAllChats(int userId);
   Future<void> removeChat(int chatId);
 
-  /// LocalMessage
+  /// Message
   Future<void> saveMessage(Message message);
   Future<Message?> findMessage(int messageId);
   Future<List<Message>?> findAllMessages(int chatId);

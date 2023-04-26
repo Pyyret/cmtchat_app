@@ -46,7 +46,7 @@ class WebMessageService implements IWebMessageService {
   _startRecievingMessages(WebUser user) {
     _changeFeed = r
         .table('messages')
-        .filter({'to' : user.webId})
+        .filter({'to' : user.webUserId})
         .changes({'include_initial': true})
         .run(_connection)
         .asStream()

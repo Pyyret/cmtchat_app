@@ -43,7 +43,7 @@ class ReceiptService implements IReceiptService {
   _startRecievingReceipts(WebUser user) {
     _changeFeed = r
         .table('receipts')
-        .filter({'recipient' : user.webId})
+        .filter({'recipient' : user.webUserId})
         .changes({'include_initial': true})
         .run(_connection)
         .asStream()

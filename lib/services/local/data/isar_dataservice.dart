@@ -40,6 +40,17 @@ class IsarService implements IDataService {
   }
 
   @override
+  Future<User?> findWebUser(String webId) async {
+    final isar = await db;
+    final list = isar.users
+        .filter()
+        .webUserIdEqualTo(webId)
+        .findAllSync();
+    if(list.isEmpty) { return null; }
+    else { return list.single; }
+  }
+
+  @override
   Future<void> removeUser(Id userId) async {
     final isar = await db;
     isar.writeTxnSync(() => isar.users.deleteSync(userId));
@@ -79,13 +90,13 @@ class IsarService implements IDataService {
   }
 
   @override
-  Future<Chat?> findWebChat(String webChatId) async {
+  Future<Chat?> findChatWith(String webUserId) async {
     final isar = await db;
     final list = isar.chats
         .filter()
-        .webChatIdEqualTo(webChatId)
+        .owners((user) => user.webUserIdEqualTo(webUserId))
         .findAllSync();
-    if(list.length != 1) { return null; }
+    if(list.isEmpty) { return null; }
     else { return list.single; }
   }
 

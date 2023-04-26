@@ -40,8 +40,8 @@ void main() {
   
   test('Send typing notification', () async {
     TypingEvent typingEvent = TypingEvent(
-        from: user1.webId!,
-        to: user2.webId!,
+        from: user1.webUserId!,
+        to: user2.webUserId!,
         event: Typing.start
     );
     final res = await sut.send(event: typingEvent, to: user2);
@@ -51,20 +51,20 @@ void main() {
 
   test('Subscribe and receive typing events', () async {
     sut
-        .subscribe(user2, [user1.webId!])
+        .subscribe(user2, [user1.webUserId!])
         .listen(expectAsync1((event) {
-          expect(event.from, user1.webId);
+          expect(event.from, user1.webUserId);
     }, count: 2));
 
     TypingEvent typing = TypingEvent(
-        from: user1.webId!,
-        to: user2.webId!,
+        from: user1.webUserId!,
+        to: user2.webUserId!,
         event: Typing.start
     );
 
     TypingEvent stopTyping = TypingEvent(
-        from: user1.webId!,
-        to: user2.webId!,
+        from: user1.webUserId!,
+        to: user2.webUserId!,
         event: Typing.stop
     );
 

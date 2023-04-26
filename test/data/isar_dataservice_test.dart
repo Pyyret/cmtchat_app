@@ -18,41 +18,41 @@ Future<void> main() async {
   final IsarService i = IsarService();
 
   User user1 = User(
-      webId: '111',
+      webUserId: '111',
       username: '111',
       photoUrl: 'url',
       active: false,
       lastSeen: DateTime.now());
 
   User user2 = User(
-      webId: '222',
+      webUserId: '222',
       username: '222',
       photoUrl: 'url',
       active: false,
       lastSeen: DateTime.now());
 
-  Chat chat1 = Chat(chatName: 'chat1', webChatId: '1');
-  Chat chat2 = Chat(chatName: 'chat2', webChatId: '2');
+  Chat chat1 = Chat(chatName: 'chat1');
+  Chat chat2 = Chat(chatName: 'chat2');
 
   group('Path_provider dependant tests', () {
 
     setUp(() async {
       user1 = User(
-          webId: '111',
+          webUserId: '111',
           username: '111',
           photoUrl: 'url',
           active: false,
           lastSeen: DateTime.now());
 
       user2 = User(
-          webId: '222',
+          webUserId: '222',
           username: '222',
           photoUrl: 'url',
           active: false,
           lastSeen: DateTime.now());
 
-      chat1 = Chat(chatName: 'chat1', webChatId: '1');
-      chat2 = Chat(chatName: 'chat2', webChatId: '2');
+      chat1 = Chat(chatName: 'chat1');
+      chat2 = Chat(chatName: 'chat2');
     });
 
     tearDown(() async => await i.cleanDb());

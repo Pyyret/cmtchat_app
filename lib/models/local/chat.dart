@@ -9,7 +9,6 @@ part 'chat.g.dart';
 @Name('Chats')
 class Chat {
   Id id = Isar.autoIncrement;     // Automatically given by Isar
-  String webChatId;                  // Webserver-specific id.
 
   // Links to the owner of the chatroom
   @Backlink(to: 'chats')
@@ -23,9 +22,7 @@ class Chat {
   int? unread;
 
   /// Constructor
-  Chat({
-    required this.webChatId,
-    this.chatName});
+  Chat({this.chatName});
 
   /*
 

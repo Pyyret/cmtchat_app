@@ -32,7 +32,7 @@ class WebUserService implements IWebUserService {
   Future<WebUser> disconnect(WebUser user) async {
     final response = await r
         .table('users')
-        .get(user.webId)
+        .get(user.webUserId)
         .update(
         {
           'active': false,

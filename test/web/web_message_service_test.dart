@@ -34,14 +34,14 @@ Future<void> main() async {
   const content = 'TESTINGTESTING!';
 
   final WebMessage message1 = WebMessage(
-      from: user2.webId!,
-      to: user1.webId!,
+      from: user2.webUserId!,
+      to: user1.webUserId!,
       timestamp: DateTime.now(),
       contents: content);
 
   final WebMessage message2 = WebMessage(
-      from: user2.webId!,
-      to: user1.webId!,
+      from: user2.webUserId!,
+      to: user1.webUserId!,
       timestamp: DateTime.now(),
       contents: content);
 
@@ -60,7 +60,7 @@ Future<void> main() async {
 
   test('Subscribe and receive messages', () async {
     sut.messageStream(activeUser: user1).listen(expectAsync1((message) {
-      expect(message.to, user1.webId);
+      expect(message.to, user1.webUserId);
       expect(message.webId, isNotEmpty);
       expect(message.contents, content);
     }, count: 2));
@@ -77,7 +77,7 @@ Future<void> main() async {
     /// And then subscribing to the stream
         .whenComplete(() =>
         sut.messageStream(activeUser: user1).listen(expectAsync1((message) {
-          expect(message.to, user1.webId);
+          expect(message.to, user1.webUserId);
           expect(message.webId, isNotEmpty);
     }, count: 2)));
   });

@@ -37,13 +37,13 @@ void main() {
 
   test('Connect new user to database and receive unique _webId', () async {
     testPilot = await sut.connect(testPilot);
-    expect(testPilot.webId == null, false);
+    expect(testPilot.webUserId == null, false);
     expect(testPilot.active, true);
   });
 
   test('Testing update. Connect, disconnect, connect again', () async {
     testPilot = await sut.connect(testPilot);
-    expect(testPilot.webId == null, false);
+    expect(testPilot.webUserId == null, false);
     expect(testPilot.active, true);
 
     testPilot = await sut.disconnect(testPilot);

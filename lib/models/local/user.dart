@@ -9,12 +9,12 @@ part 'user.g.dart';
 @Name('Users')
 class User {
   Id id = Isar.autoIncrement;       // Automatically given by Isar
-  final String webId ;              // Online-specific variables
+  final String webUserId ;              // Online-specific variables
 
-  String username;
-  String photoUrl;
-  bool active;
-  DateTime lastSeen;
+  String? username;
+  String? photoUrl;
+  bool? active;
+  DateTime? lastSeen;
 
   // Links to the users chats & messages
   final chats = IsarLinks<Chat>();
@@ -22,11 +22,11 @@ class User {
   final receivedMessages = IsarLinks<Message>();
 
   User({
-    required this.webId,
-    required this.username,
-    required this.photoUrl,
-    required this.active,
-    required this.lastSeen
+    required this.webUserId,
+    this.username,
+    this.photoUrl,
+    this.active,
+    this.lastSeen
   });
 
   /// Constructors ///
