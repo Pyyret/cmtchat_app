@@ -13,10 +13,11 @@ final tabBarTheme = TabBarTheme(
   indicatorSize: TabBarIndicatorSize.label,
   unselectedLabelColor: Colors.black54,
   indicator: BoxDecoration(
-    borderRadius: BorderRadius.circular(50),
+    borderRadius: BorderRadius.circular(16.0),
     color: kPrimary,
   ),
 );
+
 
 final dividerTheme = const DividerThemeData().copyWith(thickness: 1.0, indent: 75.0);
 

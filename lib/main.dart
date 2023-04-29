@@ -1,9 +1,11 @@
+import 'package:cmtchat_app/composition_root.dart';
 import 'package:cmtchat_app/theme.dart';
-import 'package:cmtchat_app/ui/pages/onboarding/onboarding.dart';
 import 'package:flutter/material.dart';
 
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await CompositionRoot.configure();
   runApp(const MyApp());
 }
 
@@ -18,7 +20,7 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: lightTheme(context),
       darkTheme: darkTheme(context),
-      home: Onboarding()
+      home: CompositionRoot.composeHomeUi(),
     );
   }
 }

@@ -1,9 +1,12 @@
 import 'package:cmtchat_app/colors.dart';
+import 'package:cmtchat_app/states_management/onboarding/onboarding_cubit.dart';
+import 'package:cmtchat_app/states_management/onboarding/onboarding_state.dart';
 import 'package:cmtchat_app/ui/widgets/onboarding/logo.dart';
 import 'package:cmtchat_app/ui/widgets/onboarding/profile_upload.dart';
 import 'package:cmtchat_app/ui/widgets/shared/costum_text_field.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class Onboarding extends StatefulWidget {
   const Onboarding({super.key});
@@ -13,6 +16,8 @@ class Onboarding extends StatefulWidget {
 }
 
 class _OnboardingState extends State<Onboarding> {
+  String _username = '';
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -34,7 +39,9 @@ class _OnboardingState extends State<Onboarding> {
                   child: CustomTextField(
                     hint: 'Your name?',
                     height: 45.0,
-                    onchanged: (val) {},
+                    onchanged: (val) {
+                      _username =  val;
+                    },
                     inputAction: TextInputAction.done,
                   ),
               ),
@@ -46,7 +53,21 @@ class _OnboardingState extends State<Onboarding> {
 
                 ),
                 child: ElevatedButton(
-                    onPressed: () {},
+                    onPressed: () async {
+                      final error = _checkInputs();
+                      if(error.isNotEmpty) {
+                        final snackBar = SnackBar(
+                            content: Text(
+                              error,
+                              style: const TextStyle(fontSize: 14.0, fontWeight: FontWeight.bold
+                              ),
+                            ),
+                        );
+                        ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                        return;
+                      }
+                      await _connectSession();
+                    },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: kPrimary,
                     elevation: 5.0,
@@ -69,6 +90,11 @@ class _OnboardingState extends State<Onboarding> {
                 ),
               ),
               const Spacer(),
+              BlocBuilder<OnboardingCubit, OnboardingState>(
+                  builder: (context, state) => state is Loading
+                      ? Center(child: CircularProgressIndicator())
+                      : Container(),
+              )
             ],
           ),
         ),
@@ -97,4 +123,15 @@ class _OnboardingState extends State<Onboarding> {
       ],
     );
   }
+
+  _connectSession() async {
+    await context.read<OnboardingCubit>().connect(_username);
+  }
+
+  String _checkInputs() {
+    var error = '';
+    if(_username.isEmpty) { error = 'Enter display name'; }
+    return error;
+  }
+
 }
