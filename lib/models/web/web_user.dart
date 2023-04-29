@@ -1,3 +1,5 @@
+import 'package:cmtchat_app/models/local/user.dart';
+
 class WebUser {
   String? get webUserId => _webUserId;
   String username;
@@ -32,5 +34,16 @@ class WebUser {
     );
     user._webUserId = json['id'];
     return user;
+  }
+
+  factory WebUser.fromUser(User user) {
+    final webUser = WebUser(
+        username: user.username ?? '',
+        photoUrl: user.photoUrl ?? '',
+        active: user.active ?? false,
+        lastSeen: user.lastSeen ?? DateTime.now()
+    );
+    webUser._webUserId = user.webUserId;
+    return webUser;
   }
 }

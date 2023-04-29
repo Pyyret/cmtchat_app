@@ -10,25 +10,26 @@ import '../encryption/encryption_contract.dart';
 class WebMessageService implements IWebMessageService {
   final Connection _connection;
   final RethinkDb r;
-  final IEncryption _encryption;
-  late final StreamController<WebMessage> _controller;
+  final IEncryption? _encryption;
 
-  late StreamSubscription _changeFeed;
+  final StreamController<WebMessage> _controller = StreamController<WebMessage>.broadcast();
+  late StreamSubscription? _changeFeed;
 
   /// Constructor
-  WebMessageService(this.r, this._connection, this._encryption) {
-    _controller = StreamController<WebMessage>.broadcast();
-  }
+  WebMessageService(this.r, this._connection, {IEncryption? encryption})
+      : _encryption = encryption;
 
   @override
-  Future<bool> send({required WebMessage message}) async {
+  Future<WebMessage> send({required WebMessage message}) async {
     var data = message.toJson();
-    data['contents'] = _encryption.encrypt(message.contents);
-    final response = await r
+    if(_encryption != null) {
+      data['contents'] = _encryption!.encrypt(message.contents);
+    }
+    Map response = await r
         .table('messages')
-        .insert(data)
+        .insert(data, {'return_changes' : true})
         .run(_connection);
-    return response['inserted'] == 1;
+    return WebMessage.fromJson(response['changes'].first['new_val']);
   }
 
   @override
@@ -39,7 +40,7 @@ class WebMessageService implements IWebMessageService {
 
   @override
   Future<void> dispose() async {
-    await _changeFeed.cancel();
+    await _changeFeed?.cancel();
     await _controller.close();
   }
 
@@ -64,7 +65,9 @@ class WebMessageService implements IWebMessageService {
 
   WebMessage _messageFromFeed(feedData) {
     var data = feedData['new_val'];
-    data['contents'] = _encryption.decrypt(data['contents']);
+    if(_encryption != null) {
+      data['contents'] = _encryption!.decrypt(data['contents']);
+    }
     return WebMessage.fromJson(data);
   }
 

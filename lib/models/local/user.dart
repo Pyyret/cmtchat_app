@@ -1,4 +1,5 @@
 import 'package:cmtchat_app/models/local/chat.dart';
+import 'package:cmtchat_app/models/web/web_user.dart';
 import 'message.dart';
 import 'package:isar/isar.dart';
 
@@ -9,7 +10,7 @@ part 'user.g.dart';
 @Name('Users')
 class User {
   Id id = Isar.autoIncrement;       // Automatically given by Isar
-  final String webUserId ;              // Online-specific variables
+  late final String webUserId ;              // Online-specific variables
 
   String? username;
   String? photoUrl;
@@ -29,6 +30,23 @@ class User {
     this.lastSeen
   });
 
-  /// Constructors ///
+  @ignore
+  factory User.fromWebUser({required WebUser webUser}) {
+    final user = User(webUserId: webUser.webUserId!);
+    user.webUserId = webUser.webUserId!;
+    user.username = webUser.username;
+    user.photoUrl = webUser.photoUrl;
+    user.active = webUser.active;
+    user.lastSeen = webUser.lastSeen;
+    return user;
+  }
+
+  void update(WebUser webUser) {
+    if(webUserId != webUser.webUserId) { return; }
+    username = webUser.username;
+    photoUrl = webUser.photoUrl;
+    active = webUser.active;
+    lastSeen = webUser.lastSeen;
+  }
 
 }

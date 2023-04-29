@@ -9,13 +9,14 @@ abstract class IDataService {
   Future<void> saveUser(User user);
   Future<User?> findUser(int userId);
   Future<User?> findWebUser(String webId);
+  Future<List<User>> findAllConnectedUsers(int userId);
   Future<void> removeUser(int userId);
 
   /// Chat
   Future<void> saveChat(Chat chat);
   Future<Chat?> findChat(int chatId);
   Future<Chat?> findChatWith(String webUserId);
-  Future<List<Chat>?> findAllChats(int userId);
+  Future<List<Chat>> findAllChats(int userId);
   Future<void> removeChat(int chatId);
 
   /// Message
@@ -24,4 +25,6 @@ abstract class IDataService {
   Future<List<Message>?> findAllMessages(int chatId);
   Future<void> removeMessage(int messageId);
   //Future<void> updateMessageReceipt(String messageId, ReceiptStatus status);
+
+  Future<void> cleanDb();
 }

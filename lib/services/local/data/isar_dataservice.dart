@@ -50,6 +50,17 @@ class IsarService implements IDataService {
     else { return list.single; }
   }
 
+  Future<List<User>> findAllConnectedUsers(Id userId)  async {
+    final isar = await db;
+    return isar.users
+        .filter()
+        .chats((chat) => chat.owners((owner) => owner.idEqualTo(userId)))
+        .not()
+        .idEqualTo(userId)
+        .findAllSync()
+        .toList();
+  }
+
   @override
   Future<void> removeUser(Id userId) async {
     final isar = await db;
@@ -101,10 +112,49 @@ class IsarService implements IDataService {
   }
 
   @override
-  Future<List<Chat>?> findAllChats(Id userId) async {
+  Future<List<Chat>> findAllChats(Id userId) async {
     final isar = await db;
-    final user = await isar.users.get(userId);
-    return user?.chats.toList();
+
+    final chats = isar.chats
+        .filter()
+        .owners((owner) => owner.idEqualTo(userId))
+        .findAllSync()
+        .toList();
+
+    for(Chat chat in chats) {
+      chat.unread = chat.messages
+          .filter()
+          .statusEqualTo(ReceiptStatus.delivered)
+          .findAllSync()
+          .length;
+
+      chat.lastUpdate = chat.messages
+          .filter()
+          .sortByTimestamp()
+          .findAllSync()
+          .last
+          .timestamp;
+
+      chat.chatName = chat.owners
+          .filter()
+          .not()
+          .idEqualTo(userId)
+          .findFirstSync()
+          ?.username;
+    }
+
+    await isar.writeTxn(() async {
+      for(Chat chat in chats) {
+        await isar.chats.put(chat);
+      }
+    });
+
+    return isar.chats
+        .filter()
+        .owners((owner) => owner.idEqualTo(userId))
+        .sortByLastUpdateDesc()
+        .findAllSync()
+        .toList();
   }
 
   // Also removes all messages linked to the chat.

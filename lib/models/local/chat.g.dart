@@ -22,8 +22,13 @@ const ChatSchema = CollectionSchema(
       name: r'chatName',
       type: IsarType.string,
     ),
-    r'unread': PropertySchema(
+    r'lastUpdate': PropertySchema(
       id: 1,
+      name: r'lastUpdate',
+      type: IsarType.dateTime,
+    ),
+    r'unread': PropertySchema(
+      id: 2,
       name: r'unread',
       type: IsarType.long,
     )
@@ -78,7 +83,8 @@ void _chatSerialize(
   Map<Type, List<int>> allOffsets,
 ) {
   writer.writeString(offsets[0], object.chatName);
-  writer.writeLong(offsets[1], object.unread);
+  writer.writeDateTime(offsets[1], object.lastUpdate);
+  writer.writeLong(offsets[2], object.unread);
 }
 
 Chat _chatDeserialize(
@@ -91,7 +97,8 @@ Chat _chatDeserialize(
     chatName: reader.readStringOrNull(offsets[0]),
   );
   object.id = id;
-  object.unread = reader.readLongOrNull(offsets[1]);
+  object.lastUpdate = reader.readDateTime(offsets[1]);
+  object.unread = reader.readLong(offsets[2]);
   return object;
 }
 
@@ -105,7 +112,9 @@ P _chatDeserializeProp<P>(
     case 0:
       return (reader.readStringOrNull(offset)) as P;
     case 1:
-      return (reader.readLongOrNull(offset)) as P;
+      return (reader.readDateTime(offset)) as P;
+    case 2:
+      return (reader.readLong(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
   }
@@ -398,23 +407,60 @@ extension ChatQueryFilter on QueryBuilder<Chat, Chat, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Chat, Chat, QAfterFilterCondition> unreadIsNull() {
+  QueryBuilder<Chat, Chat, QAfterFilterCondition> lastUpdateEqualTo(
+      DateTime value) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'unread',
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'lastUpdate',
+        value: value,
       ));
     });
   }
 
-  QueryBuilder<Chat, Chat, QAfterFilterCondition> unreadIsNotNull() {
+  QueryBuilder<Chat, Chat, QAfterFilterCondition> lastUpdateGreaterThan(
+    DateTime value, {
+    bool include = false,
+  }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'unread',
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'lastUpdate',
+        value: value,
       ));
     });
   }
 
-  QueryBuilder<Chat, Chat, QAfterFilterCondition> unreadEqualTo(int? value) {
+  QueryBuilder<Chat, Chat, QAfterFilterCondition> lastUpdateLessThan(
+    DateTime value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'lastUpdate',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Chat, Chat, QAfterFilterCondition> lastUpdateBetween(
+    DateTime lower,
+    DateTime upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'lastUpdate',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+      ));
+    });
+  }
+
+  QueryBuilder<Chat, Chat, QAfterFilterCondition> unreadEqualTo(int value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
         property: r'unread',
@@ -424,7 +470,7 @@ extension ChatQueryFilter on QueryBuilder<Chat, Chat, QFilterCondition> {
   }
 
   QueryBuilder<Chat, Chat, QAfterFilterCondition> unreadGreaterThan(
-    int? value, {
+    int value, {
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
@@ -437,7 +483,7 @@ extension ChatQueryFilter on QueryBuilder<Chat, Chat, QFilterCondition> {
   }
 
   QueryBuilder<Chat, Chat, QAfterFilterCondition> unreadLessThan(
-    int? value, {
+    int value, {
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
@@ -450,8 +496,8 @@ extension ChatQueryFilter on QueryBuilder<Chat, Chat, QFilterCondition> {
   }
 
   QueryBuilder<Chat, Chat, QAfterFilterCondition> unreadBetween(
-    int? lower,
-    int? upper, {
+    int lower,
+    int upper, {
     bool includeLower = true,
     bool includeUpper = true,
   }) {
@@ -595,6 +641,18 @@ extension ChatQuerySortBy on QueryBuilder<Chat, Chat, QSortBy> {
     });
   }
 
+  QueryBuilder<Chat, Chat, QAfterSortBy> sortByLastUpdate() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'lastUpdate', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Chat, Chat, QAfterSortBy> sortByLastUpdateDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'lastUpdate', Sort.desc);
+    });
+  }
+
   QueryBuilder<Chat, Chat, QAfterSortBy> sortByUnread() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'unread', Sort.asc);
@@ -633,6 +691,18 @@ extension ChatQuerySortThenBy on QueryBuilder<Chat, Chat, QSortThenBy> {
     });
   }
 
+  QueryBuilder<Chat, Chat, QAfterSortBy> thenByLastUpdate() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'lastUpdate', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Chat, Chat, QAfterSortBy> thenByLastUpdateDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'lastUpdate', Sort.desc);
+    });
+  }
+
   QueryBuilder<Chat, Chat, QAfterSortBy> thenByUnread() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'unread', Sort.asc);
@@ -651,6 +721,12 @@ extension ChatQueryWhereDistinct on QueryBuilder<Chat, Chat, QDistinct> {
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'chatName', caseSensitive: caseSensitive);
+    });
+  }
+
+  QueryBuilder<Chat, Chat, QDistinct> distinctByLastUpdate() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'lastUpdate');
     });
   }
 
@@ -674,7 +750,13 @@ extension ChatQueryProperty on QueryBuilder<Chat, Chat, QQueryProperty> {
     });
   }
 
-  QueryBuilder<Chat, int?, QQueryOperations> unreadProperty() {
+  QueryBuilder<Chat, DateTime, QQueryOperations> lastUpdateProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'lastUpdate');
+    });
+  }
+
+  QueryBuilder<Chat, int, QQueryOperations> unreadProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'unread');
     });

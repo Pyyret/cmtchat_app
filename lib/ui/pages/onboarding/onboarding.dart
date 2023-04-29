@@ -130,7 +130,7 @@ class _OnboardingState extends State<Onboarding> {
 
   String _checkInputs() {
     var error = '';
-    if(_username.isEmpty) { error = 'Enter display name'; }
+    if(_username.isEmpty) { error = 'Enter name'; }
     return error;
   }
 

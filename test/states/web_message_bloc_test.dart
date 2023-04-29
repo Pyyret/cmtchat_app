@@ -1,5 +1,4 @@
 import 'package:cmtchat_app/models/web/web_message.dart';
-import 'package:cmtchat_app/models/web/web_user.dart';
 import 'package:cmtchat_app/services/web/encryption/encryption_service_impl.dart';
 import 'package:cmtchat_app/services/web/message/web_message_service_impl.dart';
 import 'package:cmtchat_app/states_management/web_message/web_message_bloc.dart';
@@ -13,16 +12,9 @@ Future<void> main() async {
   RethinkDb r = RethinkDb();
   final Connection connection = await r.connect(host: '127.0.0.1', port: 28015);
   final encryption =  EncryptionService(Encrypter(AES(Key.fromLength(32))));
-  WebMessageService messageService = WebMessageService(r, connection, encryption);
+  WebMessageService messageService = WebMessageService(r, connection, encryption: encryption);
 
   WebMessageBloc sut = WebMessageBloc(messageService);
-  WebUser user = WebUser.fromJson({
-    'username': 'test',
-    'photo_url': 'photoUrl',
-    'active': true,
-    'last_seen': DateTime.now(),
-    'id' : '111'
-  });
 
   setUp(() async {
     await createDb(r, connection);

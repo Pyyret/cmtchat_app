@@ -12,7 +12,7 @@ Future<void> main() async {
   RethinkDb r = RethinkDb();
   final Connection connection = await r.connect(host: '127.0.0.1', port: 28015);
   final encryption =  EncryptionService(Encrypter(AES(Key.fromLength(32))));
-  late WebMessageService sut = WebMessageService(r, connection, encryption);
+  late WebMessageService sut = WebMessageService(r, connection, encryption: encryption);
 
 
   final user1 = WebUser.fromJson({

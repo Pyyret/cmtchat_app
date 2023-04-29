@@ -1,5 +1,8 @@
+import 'package:cmtchat_app/models/web/web_user.dart';
+import 'package:cmtchat_app/states_management/home/chats_cubit.dart';
 import 'package:cmtchat_app/states_management/home/home_cubit.dart';
 import 'package:cmtchat_app/states_management/home/home_state.dart';
+import 'package:cmtchat_app/states_management/web_message/web_message_bloc.dart';
 import 'package:cmtchat_app/ui/widgets/home/active/active_users.dart';
 import 'package:cmtchat_app/ui/widgets/home/chats/chats.dart';
 import 'package:cmtchat_app/ui/widgets/shared/profile_placeholder.dart';
@@ -13,12 +16,16 @@ class Home extends StatefulWidget {
   State<Home> createState() => _HomeState();
 }
 
-class _HomeState extends State<Home> {
+class _HomeState extends State<Home> with AutomaticKeepAliveClientMixin {
 
   @override
   void initState() {
     super.initState();
+    context.read<ChatsCubit>().chats();
     context.read<HomeCubit>().activeUsers();
+
+    WebUser mainUser = context.read<ChatsCubit>().viewModel.getMainWebUser();
+    context.read<WebMessageBloc>().add(WebMessageEvent.onSubscribed(mainUser));
   }
 
   @override
@@ -100,4 +107,7 @@ class _HomeState extends State<Home> {
         ),
     );
   }
+
+  @override
+  bool get wantKeepAlive => true;
 }

@@ -28,9 +28,13 @@ abstract class BaseViewModel {
     final User to =
         await _dataService.findWebUser(message.to) ?? User(webUserId: message.to);
     final User from =
-        await _dataService.findWebUser(message.to) ?? User(webUserId: message.to);
+        await _dataService.findWebUser(message.from) ?? User(webUserId: message.from);
     newMessage.to.value = to;
     newMessage.from.value = from;
+
+    // Updating chat
+    //chat.unread++;
+    //await _dataService.saveChat(chat);
 
     // Binding to chat
     newMessage.chat.value = chat;

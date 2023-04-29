@@ -122,15 +122,15 @@ Future<void> main() async {
       List<Chat>? dbUserChats = await i.findAllChats(dbUser!.id);
 
       expect(dbUserChats, isNotNull);
-      expect(dbUserChats?.length, 2);
+      expect(dbUserChats.length, 2);
 
       // Here testing that backlink works also
-      expect(dbUserChats?.first.owners.single.id, user1.id);
+      expect(dbUserChats.first.owners.single.id, user1.id);
 
       // Test that removing chat removes from chatlist
       await i.removeChat(chat1.id);
       dbUserChats = await i.findAllChats(dbUser.id);
-      expect(dbUserChats?.length, 1);
+      expect(dbUserChats.length, 1);
 
       i.removeUser(user1.id);
       dbUserChats = await i.findAllChats(user1.id);
@@ -189,7 +189,18 @@ Future<void> main() async {
       expect(dbMsg2, isNull);
     });
 
-    test('findWebChat() test!', () => null);
+
+    test('findAllConnectedUsers working', () async {
+      chat1.owners.add(user1);
+      chat1.owners.add(user2);
+
+      await i.saveChat(chat1);
+
+      final list = await i.findAllConnectedUsers(user1.id);
+
+      expect(list.length, 1);
+    });
+
 
   });
 
