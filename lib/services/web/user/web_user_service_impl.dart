@@ -52,9 +52,7 @@ class WebUserService implements IWebUserService {
   Future<List<WebUser>> fetch(List<String?> ids) async {
     Cursor users = await r.table('users')
         .getAll(r.args(ids))
-        .filter({
-      'active' : true
-        })
+        .filter({'active' : true})
         .run(_connection);
 
     List userList = await users.toList();

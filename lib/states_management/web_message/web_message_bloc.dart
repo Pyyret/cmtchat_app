@@ -30,8 +30,8 @@ class WebMessageBloc extends Bloc<WebMessageEvent, WebMessageState> {
     }
 
     if(event is WebMessageSent) {
-      await _messageService.send(message: event.message);
-      yield WebMessageState.sent(event.message);
+      final webMessage = await _messageService.send(message: event.message);
+      yield WebMessageState.sent(webMessage);
     }
   }
 

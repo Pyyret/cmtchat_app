@@ -1,6 +1,7 @@
 import 'package:cmtchat_app/models/local/chat.dart';
 import 'package:cmtchat_app/models/local/message.dart';
 import 'package:cmtchat_app/models/local/user.dart';
+import 'package:cmtchat_app/models/web/receipt.dart';
 import 'package:cmtchat_app/models/web/web_message.dart';
 import 'package:cmtchat_app/services/local/data/dataservice_contract.dart';
 import 'package:flutter/foundation.dart';
@@ -9,9 +10,9 @@ import 'package:flutter/foundation.dart';
 
 abstract class BaseViewModel {
   final IDataService _dataService;
-  final User _user;
+  final User _mainUser;
 
-  BaseViewModel(this._dataService, this._user);
+  BaseViewModel(this._dataService, this._mainUser);
 
   @protected
   Future<void> addMessage(WebMessage message, Chat chat, ReceiptStatus status) async {
@@ -49,7 +50,7 @@ abstract class BaseViewModel {
       final user = User(webUserId: webUserId);
       chat = Chat();
       chat.owners.add(user);
-      chat.owners.add(_user);
+      chat.owners.add(_mainUser);
       _dataService.saveChat(chat);
     }
     return chat;

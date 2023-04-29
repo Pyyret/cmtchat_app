@@ -1,6 +1,7 @@
 import 'package:cmtchat_app/models/local/chat.dart';
 import 'package:cmtchat_app/models/local/message.dart';
 import 'package:cmtchat_app/models/local/user.dart';
+import 'package:cmtchat_app/models/web/receipt.dart';
 
 /// Interface for any form of local storage of chats & messages
 abstract class IDataService {
@@ -24,7 +25,7 @@ abstract class IDataService {
   Future<Message?> findMessage(int messageId);
   Future<List<Message>?> findAllMessages(int chatId);
   Future<void> removeMessage(int messageId);
-  //Future<void> updateMessageReceipt(String messageId, ReceiptStatus status);
+  Future<void> updateMessageReceipt(String messageId, Receipt receipt);
 
   Future<void> cleanDb();
 }

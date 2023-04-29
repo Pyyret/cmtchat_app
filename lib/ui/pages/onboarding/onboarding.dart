@@ -1,15 +1,16 @@
 import 'package:cmtchat_app/colors.dart';
 import 'package:cmtchat_app/states_management/onboarding/onboarding_cubit.dart';
 import 'package:cmtchat_app/states_management/onboarding/onboarding_state.dart';
+import 'package:cmtchat_app/ui/pages/onboarding/onboarding_router.dart';
 import 'package:cmtchat_app/ui/widgets/onboarding/logo.dart';
 import 'package:cmtchat_app/ui/widgets/onboarding/profile_upload.dart';
 import 'package:cmtchat_app/ui/widgets/shared/costum_text_field.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class Onboarding extends StatefulWidget {
-  const Onboarding({super.key});
+  final IOnboardingRouter router;
+  const Onboarding(this.router);
 
   @override
   State<StatefulWidget> createState() => _OnboardingState();
@@ -90,10 +91,15 @@ class _OnboardingState extends State<Onboarding> {
                 ),
               ),
               const Spacer(),
-              BlocBuilder<OnboardingCubit, OnboardingState>(
-                  builder: (context, state) => state is Loading
-                      ? Center(child: CircularProgressIndicator())
-                      : Container(),
+              BlocConsumer<OnboardingCubit, OnboardingState>(
+                builder: (context, state) => state is Loading
+                    ? const Center(child: CircularProgressIndicator())
+                    : Container(),
+                listener: (_, state) {
+                  if(state is OnboardingSuccess) {
+                    widget.router.onSessionSuccess(context, state.mainUser);
+                  }
+                },
               )
             ],
           ),

@@ -1,3 +1,4 @@
+import 'package:cmtchat_app/cache/local_cache.dart';
 import 'package:cmtchat_app/models/local/user.dart';
 import 'package:cmtchat_app/services/local/data/dataservice_contract.dart';
 import 'package:cmtchat_app/services/local/data/isar_dataservice.dart';
@@ -10,10 +11,12 @@ import 'package:cmtchat_app/states_management/onboarding/onboarding_cubit.dart';
 import 'package:cmtchat_app/states_management/web_message/web_message_bloc.dart';
 import 'package:cmtchat_app/ui/pages/home/home.dart';
 import 'package:cmtchat_app/ui/pages/onboarding/onboarding.dart';
+import 'package:cmtchat_app/ui/pages/onboarding/onboarding_router.dart';
 import 'package:cmtchat_app/viewmodels/chats_view_model.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:rethink_db_ns/rethink_db_ns.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'services/web/message/web_message_service_contract.dart';
 
@@ -23,8 +26,8 @@ class CompositionRoot {
   static late IWebUserService _webUserService;
   static late IDataService _dataService;
   static late IWebMessageService _webMessageService;
-
-  static late User _user;
+  static late ILocalCache _localCache;
+  static late WebMessageBloc _webMessageBloc;
 
   static configure() async {
     _r = RethinkDb();
@@ -32,38 +35,43 @@ class CompositionRoot {
     _webUserService = WebUserService(_r, _connection);
     _dataService = IsarService();
     _webMessageService = WebMessageService(_r, _connection);
+    final sp = await SharedPreferences.getInstance();
+    _localCache = LocalCache(sp);
+    _webMessageBloc = WebMessageBloc(_webMessageService);
 
     // Testing
-    _dataService.cleanDb();
-    _user = User(
-      webUserId: 'e75d1fb5-3961-498f-bb21-45ec8727e697',
-      username: 'Tor',
-      photoUrl: '',
-      active: true,
-      lastSeen: DateTime.now(),
-    );
+    // await sp.clear();
+    // await _dataService.cleanDb();
+  }
 
+  static Future<Widget> start() async {
+    final userId = _localCache.fetch('USER_ID');
+    if(userId.isEmpty) { return composeOnboardingUi(); }
+    else {
+      User? mainUser = await _dataService.findUser(userId['user_id']);
+      return composeHomeUi(mainUser!);
+    }
   }
 
   static Widget composeOnboardingUi() {
-    OnboardingCubit onboardingCubit = OnboardingCubit(_webUserService, _dataService);
+    OnboardingCubit onboardingCubit = OnboardingCubit(_webUserService, _dataService, _localCache);
+    IOnboardingRouter router = OnboardingRouter(composeHomeUi);
 
     return MultiBlocProvider(
         providers: [BlocProvider(create: (BuildContext context) => onboardingCubit)],
-        child: const Onboarding(),
+        child: Onboarding(router),
     );
   }
   
-  static Widget composeHomeUi() {
+  static Widget composeHomeUi(User mainUser) {
     HomeCubit homeCubit = HomeCubit(_webUserService);
-    WebMessageBloc webMessageBloc = WebMessageBloc(_webMessageService);
-    ChatsViewModel viewModel = ChatsViewModel(_dataService, _webUserService, _user);
+    ChatsViewModel viewModel = ChatsViewModel(_dataService, _webUserService, mainUser);
     ChatsCubit chatsCubit = ChatsCubit(viewModel);
     
     return MultiBlocProvider(
         providers: [
           BlocProvider(create: (BuildContext context) => homeCubit),
-          BlocProvider(create: (BuildContext context) => webMessageBloc),
+          BlocProvider(create: (BuildContext context) => _webMessageBloc),
           BlocProvider(create: (BuildContext context) => chatsCubit),
         ],
         child: const Home()

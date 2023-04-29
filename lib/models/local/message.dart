@@ -1,5 +1,6 @@
 import 'package:cmtchat_app/models/local/chat.dart';
 import 'package:cmtchat_app/models/local/user.dart';
+import 'package:cmtchat_app/models/web/receipt.dart';
 import 'package:isar/isar.dart';
 
 
@@ -26,6 +27,7 @@ class Message {
   // Receipt data
   @Enumerated(EnumType.name)
   ReceiptStatus? status;
+
   DateTime? receiptTimestamp;
 
 
@@ -39,5 +41,3 @@ class Message {
   });
 
 }
-
-enum ReceiptStatus { sent, delivered, read }

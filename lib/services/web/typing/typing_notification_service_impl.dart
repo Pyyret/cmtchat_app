@@ -9,8 +9,8 @@ import 'typing_notification_service_contract.dart';
 class TypingNotification implements ITypingNotification {
   final Connection _connection;
   final RethinkDb _r;
-  final _controller = StreamController<TypingEvent>.broadcast();
 
+  final _controller = StreamController<TypingEvent>.broadcast();
   late StreamSubscription _changeFeed;
   final IWebUserService _webUserService;
 

@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:cmtchat_app/models/local/chat.dart';
 import 'package:cmtchat_app/models/local/message.dart';
 import 'package:cmtchat_app/models/local/user.dart';
+import 'package:cmtchat_app/models/web/receipt.dart';
 import 'package:isar/isar.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -193,6 +194,17 @@ class IsarService implements IDataService {
   }
 
   @override
+  Future<void> updateMessageReceipt(String messageWebId, Receipt receipt) async {
+    final isar = await db;
+    await isar.txn(() async {
+      final message =isar.messages.filter().webIdEqualTo(messageWebId).findAllSync().single;
+      message.status = receipt.status;
+      message.receiptTimestamp = receipt.timestamp;
+      await isar.messages.put(message);
+    });
+  }
+
+  @override
   Future<void> removeMessage(int messageId) async {
     final isar = await db;
     isar.writeTxnSync(() => isar.messages.deleteSync(messageId));
@@ -218,4 +230,6 @@ class IsarService implements IDataService {
     final isar = await db;
     isar.writeTxnSync(() => isar.clearSync());
   }
+
+
 }

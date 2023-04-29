@@ -1,4 +1,3 @@
-import 'package:cmtchat_app/models/web/web_user.dart';
 import 'package:cmtchat_app/states_management/home/chats_cubit.dart';
 import 'package:cmtchat_app/states_management/home/home_cubit.dart';
 import 'package:cmtchat_app/states_management/home/home_state.dart';
@@ -23,9 +22,8 @@ class _HomeState extends State<Home> with AutomaticKeepAliveClientMixin {
     super.initState();
     context.read<ChatsCubit>().chats();
     context.read<HomeCubit>().activeUsers();
-
-    WebUser mainUser = context.read<ChatsCubit>().viewModel.getMainWebUser();
-    context.read<WebMessageBloc>().add(WebMessageEvent.onSubscribed(mainUser));
+    final mainWebUser = context.read<ChatsCubit>().viewModel.getMainWebUser();
+    context.read<WebMessageBloc>().add(WebMessageEvent.onSubscribed(mainWebUser));
   }
 
   @override

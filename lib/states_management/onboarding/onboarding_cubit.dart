@@ -1,4 +1,5 @@
 import 'package:bloc/bloc.dart';
+import 'package:cmtchat_app/cache/local_cache.dart';
 import 'package:cmtchat_app/models/local/user.dart';
 import 'package:cmtchat_app/models/web/web_user.dart';
 import 'package:cmtchat_app/services/local/data/dataservice_contract.dart';
@@ -9,8 +10,10 @@ import 'onboarding_state.dart';
 class OnboardingCubit extends Cubit<OnboardingState> {
   final IWebUserService _userService;
   final IDataService _dataService;
+  final ILocalCache _localCache;
 
-  OnboardingCubit(this._userService, this._dataService) : super(OnboardingInitial());
+  OnboardingCubit(this._userService, this._dataService, this._localCache)
+      : super(OnboardingInitial());
 
   Future<void> connect(String name) async {
     emit(Loading());
@@ -22,7 +25,11 @@ class OnboardingCubit extends Cubit<OnboardingState> {
     );
     final createdWebUser = await _userService.connect(webUser);
     final createdUser = User.fromWebUser(webUser: createdWebUser);
-    _dataService.saveUser(createdUser);
-    emit(OnboardingSuccess(createdWebUser, createdUser));
+    await _dataService.saveUser(createdUser);
+    await _localCache.save('USER_ID', {
+      'web_user_id' : createdUser.webUserId,
+      'user_id' : createdUser.id,
+    });
+    emit(OnboardingSuccess(createdUser));
   }
 }

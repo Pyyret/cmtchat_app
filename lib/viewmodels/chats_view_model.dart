@@ -1,6 +1,6 @@
 import 'package:cmtchat_app/models/local/chat.dart';
-import 'package:cmtchat_app/models/local/message.dart';
 import 'package:cmtchat_app/models/local/user.dart';
+import 'package:cmtchat_app/models/web/receipt.dart';
 import 'package:cmtchat_app/models/web/web_message.dart';
 import 'package:cmtchat_app/models/web/web_user.dart';
 import 'package:cmtchat_app/services/web/user/web_user_service_contract.dart';
@@ -11,19 +11,20 @@ import 'package:cmtchat_app/services/local/data/dataservice_contract.dart';
 class ChatsViewModel extends BaseViewModel {
   final IDataService _dataService;
   final IWebUserService _webUserService;
-  final User _user;
+  final User _mainUser;
 
-  ChatsViewModel(this._dataService, this._webUserService, this._user)
-      : super(_dataService, _user);
+  ChatsViewModel(this._dataService, this._webUserService, this._mainUser)
+      : super(_dataService, _mainUser);
+
 
   // Returns a WebUser representation of '_user'
-  WebUser getMainWebUser() => WebUser.fromUser(_user);
+  WebUser getMainWebUser() => WebUser.fromUser(_mainUser);
 
   // Get all chats that involve _user, update local chat information
   // (lastUpdate & unread).
   Future<List<Chat>> getChats() async {
     await _syncWebUsers();
-    return await _dataService.findAllChats(_user.id);
+    return await _dataService.findAllChats(_mainUser.id);
   }
 
   // Called whenever a new message is received in the UI-page 'chats'
@@ -36,7 +37,7 @@ class ChatsViewModel extends BaseViewModel {
   _syncWebUsers() async {
     // Creates a list of all relevant users webId
     List<String> usersWebIdList = List<String>.empty(growable: true);
-    final connectedUsers = await _dataService.findAllConnectedUsers(_user.id);
+    final connectedUsers = await _dataService.findAllConnectedUsers(_mainUser.id);
     for (User user in connectedUsers) { usersWebIdList.add(user.webUserId); }
 
     // Get a list of updated webUsers from webServer

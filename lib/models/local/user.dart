@@ -33,7 +33,6 @@ class User {
   @ignore
   factory User.fromWebUser({required WebUser webUser}) {
     final user = User(webUserId: webUser.webUserId!);
-    user.webUserId = webUser.webUserId!;
     user.username = webUser.username;
     user.photoUrl = webUser.photoUrl;
     user.active = webUser.active;
