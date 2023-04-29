@@ -2,8 +2,8 @@ part of 'typing_notification_bloc.dart';
 
 abstract class TypingNotificationEvent extends Equatable {
   const TypingNotificationEvent();
-  factory TypingNotificationEvent.onSubscribed(WebUser user, {required List<String> usersWithChat}) =>
-      Subscribed(user, usersWithChat: usersWithChat);
+  factory TypingNotificationEvent.onSubscribed({required WebUser user, required List<String> usersWithChat}) =>
+      Subscribed(user: user, usersWithChat: usersWithChat);
   factory TypingNotificationEvent.onTypingEventSent(TypingEvent event) =>
       TypingNotificationSent(event);
 
@@ -14,7 +14,7 @@ abstract class TypingNotificationEvent extends Equatable {
 class Subscribed extends TypingNotificationEvent {
   final WebUser user;
   final List<String> usersWithChat;
-  const Subscribed(this.user, {required this.usersWithChat});
+  const Subscribed({required this.user, required this.usersWithChat});
 
   @override
   List<Object> get props => [user, usersWithChat];

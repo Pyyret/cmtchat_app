@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 abstract class ILocalCache {
   Future<void> save(String key, Map<String, dynamic> json);
   Map<String, dynamic> fetch(String key);
+  Future<void> clear();
 }
 
 class LocalCache implements ILocalCache {
@@ -21,5 +22,8 @@ class LocalCache implements ILocalCache {
   Future<void> save(String key, Map<String, dynamic> json) async {
     await _sharedPreferences.setString(key, jsonEncode(json));
   }
+
+  @override
+  Future<void> clear() async => await _sharedPreferences.clear();
 
 }

@@ -1,3 +1,4 @@
+import 'package:cmtchat_app/models/local/user.dart';
 import 'package:cmtchat_app/states_management/home/chats_cubit.dart';
 import 'package:cmtchat_app/states_management/home/home_cubit.dart';
 import 'package:cmtchat_app/states_management/home/home_state.dart';
@@ -9,25 +10,27 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class Home extends StatefulWidget {
-  const Home();
+  final User mainUser;
+
+  const Home(this.mainUser, {super.key});
 
   @override
   State<Home> createState() => _HomeState();
 }
 
 class _HomeState extends State<Home> with AutomaticKeepAliveClientMixin {
+  late User _mainUser;
 
   @override
   void initState() {
     super.initState();
-    context.read<ChatsCubit>().chats();
-    context.read<HomeCubit>().activeUsers();
-    final mainWebUser = context.read<ChatsCubit>().viewModel.getMainWebUser();
-    context.read<WebMessageBloc>().add(WebMessageEvent.onSubscribed(mainWebUser));
+    _mainUser = widget.mainUser;
+    _initialSetup();
   }
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     return DefaultTabController(
         length: 2,
         child: Scaffold(
@@ -42,7 +45,7 @@ class _HomeState extends State<Home> with AutomaticKeepAliveClientMixin {
                       Padding(
                         padding: const EdgeInsets.only(left: 8.0),
                         child: Text(
-                          'name',
+                          _mainUser.username!,
                           style: Theme.of(context).textTheme.bodySmall?.copyWith(
                             fontSize: 14.0,
                             fontWeight: FontWeight.bold,
@@ -50,7 +53,7 @@ class _HomeState extends State<Home> with AutomaticKeepAliveClientMixin {
                         ),
                       ),
                       Padding(
-                        padding: EdgeInsets.only(left: 8.0),
+                        padding: const EdgeInsets.only(left: 8.0),
                         child: Text(
                           'online',
                           style: Theme.of(context).textTheme.bodySmall?.copyWith(
@@ -96,14 +99,23 @@ class _HomeState extends State<Home> with AutomaticKeepAliveClientMixin {
               ],
             ),
           ),
-          body: const TabBarView(
+          body: TabBarView(
             children: [
-              Chats(),
-              ActiveUsers(),
+              Chats(_mainUser),
+              const ActiveUsers(),
             ],
           ),
         ),
     );
+  }
+
+  _initialSetup() async {
+
+    final mainWebUser = await context.read<ChatsCubit>().viewModel.makeSureConnected();
+
+    context.read<ChatsCubit>().chats();
+    context.read<HomeCubit>().activeUsers(mainWebUser);
+    context.read<WebMessageBloc>().add(WebMessageEvent.onSubscribed(mainWebUser));
   }
 
   @override

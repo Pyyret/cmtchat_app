@@ -18,7 +18,7 @@ class _ActiveUsersState extends State<ActiveUsers> {
     return BlocBuilder<HomeCubit, HomeState>(
         builder: (_, state) {
           if(state is HomeLoading) {
-            return Center( child: CircularProgressIndicator());
+            return const Center( child: CircularProgressIndicator());
           }
           if(state is HomeSuccess) {
             return _buildList(state.onlineUsers);

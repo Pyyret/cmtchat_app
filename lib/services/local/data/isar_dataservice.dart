@@ -31,7 +31,7 @@ class IsarService implements IDataService {
   @override
   Future<void> saveUser(User user) async {
     final isar = await db;
-     isar.writeTxnSync(() => isar.users.putSync(user));
+     await isar.writeTxnSync(() async => isar.users.putSync(user));
   }
 
   @override
@@ -51,6 +51,7 @@ class IsarService implements IDataService {
     else { return list.single; }
   }
 
+  @override
   Future<List<User>> findAllConnectedUsers(Id userId)  async {
     final isar = await db;
     return isar.users
@@ -81,7 +82,7 @@ class IsarService implements IDataService {
   @override
   Future<Chat?> findChat(Id chatId) async {
     final isar = await db;
-    return isar.chats.get(chatId);
+    return await isar.chats.get(chatId);
     //Dont know why it wont WORK!!
     /*
     final isar = await db;
@@ -177,7 +178,7 @@ class IsarService implements IDataService {
   @override
   Future<void> saveMessage(Message message) async {
     final isar = await db;
-    return isar.writeTxnSync(() => isar.messages.putSync(message));
+    return await isar.writeTxnSync(() => isar.messages.putSync(message));
   }
 
   @override
@@ -196,8 +197,8 @@ class IsarService implements IDataService {
   @override
   Future<void> updateMessageReceipt(String messageWebId, Receipt receipt) async {
     final isar = await db;
-    await isar.txn(() async {
-      final message =isar.messages.filter().webIdEqualTo(messageWebId).findAllSync().single;
+    await isar.txnSync(() async {
+      final message = isar.messages.filter().webIdEqualTo(messageWebId).findAllSync().single;
       message.status = receipt.status;
       message.receiptTimestamp = receipt.timestamp;
       await isar.messages.put(message);
@@ -226,9 +227,10 @@ class IsarService implements IDataService {
   }
 
   /// Clear the entire database -- BE CAREFUL ///
+  @override
   Future<void> cleanDb() async {
     final isar = await db;
-    isar.writeTxnSync(() => isar.clearSync());
+    isar.writeTxnSync(() async => isar.clearSync());
   }
 
 

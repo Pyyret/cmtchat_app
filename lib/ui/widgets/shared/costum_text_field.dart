@@ -8,7 +8,7 @@ class CustomTextField extends StatelessWidget {
   final double height;
   final TextInputAction inputAction;
 
-  CustomTextField({
+  const CustomTextField({super.key,
     required this.hint,
     this.height = 54.0,
     required this.onchanged,

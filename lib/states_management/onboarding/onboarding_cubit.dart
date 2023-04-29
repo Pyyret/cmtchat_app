@@ -24,11 +24,11 @@ class OnboardingCubit extends Cubit<OnboardingState> {
         lastSeen: DateTime.now()
     );
     final createdWebUser = await _userService.connect(webUser);
-    final createdUser = User.fromWebUser(webUser: createdWebUser);
+    User createdUser = User.fromWebUser(webUser: createdWebUser);
     await _dataService.saveUser(createdUser);
     await _localCache.save('USER_ID', {
       'web_user_id' : createdUser.webUserId,
-      'user_id' : createdUser.id,
+      'user_id' : createdUser.id.toString(),
     });
     emit(OnboardingSuccess(createdUser));
   }

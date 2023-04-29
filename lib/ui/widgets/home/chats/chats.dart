@@ -1,5 +1,6 @@
 import 'package:cmtchat_app/colors.dart';
 import 'package:cmtchat_app/models/local/chat.dart';
+import 'package:cmtchat_app/models/local/user.dart';
 import 'package:cmtchat_app/states_management/home/chats_cubit.dart';
 import 'package:cmtchat_app/states_management/web_message/web_message_bloc.dart';
 import 'package:cmtchat_app/theme.dart';
@@ -9,7 +10,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 
 class Chats extends StatefulWidget {
-  const Chats();
+  final User  user;
+
+  const Chats(this.user);
 
   @override
   State<Chats> createState() => _ChatsState();
@@ -30,6 +33,7 @@ class _ChatsState extends State<Chats> {
     return BlocBuilder<ChatsCubit, List<Chat>>(
         builder: (_, chats) {
           this.chats = chats;
+          if(this.chats.isEmpty) { return Container(); }
           return _buildListView();
         });
   }

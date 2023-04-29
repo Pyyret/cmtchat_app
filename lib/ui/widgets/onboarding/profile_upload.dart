@@ -3,7 +3,7 @@ import 'package:cmtchat_app/theme.dart';
 import 'package:flutter/material.dart';
 
 class ProfileUpload extends StatelessWidget {
-  const ProfileUpload();
+  const ProfileUpload({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -11,7 +11,7 @@ class ProfileUpload extends StatelessWidget {
       height: 126.0,
       width: 126.0,
       child: Material(
-        color: isLightTheme(context) ? Color(0xFFF2F2F2) : Color(0xFF211E1E),
+        color: isLightTheme(context) ? const Color(0xFFF2F2F2) : const Color(0xFF211E1E),
         borderRadius: BorderRadius.circular(126.0),
         child: InkWell(
           borderRadius: BorderRadius.circular(126.0),

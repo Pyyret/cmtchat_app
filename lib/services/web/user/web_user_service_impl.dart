@@ -49,7 +49,7 @@ class WebUserService implements IWebUserService {
   }
 
   @override
-  Future<List<WebUser>> fetch(List<String?> ids) async {
+  Future<List<WebUser>> fetch(List<String> ids) async {
     Cursor users = await r.table('users')
         .getAll(r.args(ids))
         .filter({'active' : true})

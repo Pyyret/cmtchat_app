@@ -20,11 +20,33 @@ class ChatsViewModel extends BaseViewModel {
   // Returns a WebUser representation of '_user'
   WebUser getMainWebUser() => WebUser.fromUser(_mainUser);
 
+  Future<WebUser> makeSureConnected() async {
+    if(!_mainUser.active!) {
+      WebUser webUser = getMainWebUser();
+      webUser.lastSeen = DateTime.now();
+      webUser.active = true;
+      final connectedWebUser = await _webUserService.connect(webUser);
+      _mainUser.update(connectedWebUser);
+      await _dataService.saveUser(_mainUser);
+    }
+    return getMainWebUser();
+  }
+
   // Get all chats that involve _user, update local chat information
   // (lastUpdate & unread).
   Future<List<Chat>> getChats() async {
     await _syncWebUsers();
     return await _dataService.findAllChats(_mainUser.id);
+  }
+
+  // Creates a list of all relevant users webId
+  Future<List<String>> getConnectedUsersWebIdList() async {
+    List<String> usersWebIdList = List<String>.empty(growable: true);
+    final connectedUsers = await _dataService.findAllConnectedUsers(_mainUser.id);
+    for (User user in connectedUsers) {
+      usersWebIdList.add(user.webUserId);
+    }
+    return usersWebIdList;
   }
 
   // Called whenever a new message is received in the UI-page 'chats'
@@ -35,11 +57,7 @@ class ChatsViewModel extends BaseViewModel {
 
   // Update relevant local users with information from the webserver.
   _syncWebUsers() async {
-    // Creates a list of all relevant users webId
-    List<String> usersWebIdList = List<String>.empty(growable: true);
-    final connectedUsers = await _dataService.findAllConnectedUsers(_mainUser.id);
-    for (User user in connectedUsers) { usersWebIdList.add(user.webUserId); }
-
+    final usersWebIdList = await getConnectedUsersWebIdList();
     // Get a list of updated webUsers from webServer
     final updatedWebUsers = await _webUserService.fetch(usersWebIdList);
 

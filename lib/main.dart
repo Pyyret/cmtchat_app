@@ -13,7 +13,7 @@ Future<void> main() async {
 class MyApp extends StatelessWidget {
   final Widget firstPage;
 
-  const MyApp(this.firstPage);
+  const MyApp(this.firstPage, {super.key});
 
   // This widget is the root of your application.
   @override

@@ -29,6 +29,7 @@ class CompositionRoot {
   static late ILocalCache _localCache;
   static late WebMessageBloc _webMessageBloc;
 
+
   static configure() async {
     _r = RethinkDb();
     _connection = await _r.connect(host: '172.19.96.1', port: 28015);
@@ -40,15 +41,15 @@ class CompositionRoot {
     _webMessageBloc = WebMessageBloc(_webMessageService);
 
     // Testing
-    // await sp.clear();
-    // await _dataService.cleanDb();
+    //await sp.clear();
+    //await _dataService.cleanDb();
   }
 
   static Future<Widget> start() async {
     final userId = _localCache.fetch('USER_ID');
     if(userId.isEmpty) { return composeOnboardingUi(); }
     else {
-      User? mainUser = await _dataService.findUser(userId['user_id']);
+      User? mainUser = await _dataService.findUser(int.parse(userId['user_id']));
       return composeHomeUi(mainUser!);
     }
   }
@@ -74,7 +75,7 @@ class CompositionRoot {
           BlocProvider(create: (BuildContext context) => _webMessageBloc),
           BlocProvider(create: (BuildContext context) => chatsCubit),
         ],
-        child: const Home()
+        child: Home(mainUser)
     );
   }
 

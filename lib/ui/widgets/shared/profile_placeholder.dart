@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 class ProfilePlaceholder extends StatelessWidget {
   double size;
 
-  ProfilePlaceholder(this.size);
+  ProfilePlaceholder(this.size, {super.key});
 
   @override
   Widget build(BuildContext context) {

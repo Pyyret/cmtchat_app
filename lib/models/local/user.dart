@@ -9,8 +9,8 @@ part 'user.g.dart';
 @Collection()
 @Name('Users')
 class User {
-  Id id = Isar.autoIncrement;       // Automatically given by Isar
-  late final String webUserId ;              // Online-specific variables
+  Id id = Isar.autoIncrement;           // Automatically given by Isar
+  late final String webUserId ;         // Online-specific variables
 
   String? username;
   String? photoUrl;
@@ -30,7 +30,6 @@ class User {
     this.lastSeen
   });
 
-  @ignore
   factory User.fromWebUser({required WebUser webUser}) {
     final user = User(webUserId: webUser.webUserId!);
     user.username = webUser.username;
