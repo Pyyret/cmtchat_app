@@ -4,6 +4,7 @@ import 'package:cmtchat_app/models/local/user.dart';
 import 'package:cmtchat_app/states_management/home/chats_cubit.dart';
 import 'package:cmtchat_app/states_management/web_message/web_message_bloc.dart';
 import 'package:cmtchat_app/theme.dart';
+import 'package:cmtchat_app/ui/pages/home/home_router.dart';
 import 'package:cmtchat_app/ui/widgets/shared/profile_placeholder.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -11,8 +12,9 @@ import 'package:intl/intl.dart';
 
 class Chats extends StatefulWidget {
   final User  user;
+  final IHomeRouter  router;
 
-  const Chats(this.user);
+  const Chats(this.user, this.router);
 
   @override
   State<Chats> createState() => _ChatsState();
@@ -41,7 +43,15 @@ class _ChatsState extends State<Chats> {
   _buildListView() {
     return ListView.separated(
         padding: const EdgeInsets.only(top: 30.0, right: 16.0),
-        itemBuilder: (_, indx) => _chatItem(chats[indx]),
+        itemBuilder: (_, indx) => GestureDetector(
+          child: _chatItem(chats[indx]),
+          onTap: () async {
+            await widget.router
+                .onShowMessageThread(context, widget.user, chats[indx]);
+
+            await context.read<ChatsCubit>().chats();
+          },
+        ),
         separatorBuilder: (_, __) => const Divider(),
         itemCount: chats.length);
   }
