@@ -83,23 +83,6 @@ class IsarService implements IDataService {
   Future<Chat?> findChat(Id chatId) async {
     final isar = await db;
     return await isar.chats.get(chatId);
-    //Dont know why it wont WORK!!
-    /*
-    final isar = await db;
-    await isar.writeTxn(() async {
-      final chat = await isar.chats.get(chatId);
-      chat?.unread = isar.localMessages
-          .filter()
-          .chat((q) => q.idEqualTo(chatId))
-          .and()
-          .receipt((q) => q.statusEqualTo(ReceiptStatus.delivered))
-          .findAllSync()
-          .length;
-      await isar.chats.put(chat!);
-    });
-    return isar.chats.get(chatId);
-
-     */
   }
 
   @override
@@ -197,12 +180,11 @@ class IsarService implements IDataService {
   @override
   Future<void> updateMessageReceipt(String messageWebId, Receipt receipt) async {
     final isar = await db;
-    await isar.txnSync(() async {
-      final message = isar.messages.filter().webIdEqualTo(messageWebId).findAllSync().single;
-      message.status = receipt.status;
-      message.receiptTimestamp = receipt.timestamp;
-      await isar.messages.put(message);
-    });
+    final message = isar.messages.filter().webIdEqualTo(messageWebId).findAllSync().single;
+    message.status = receipt.status;
+    message.receiptTimestamp = receipt.timestamp;
+    isar.writeTxnSync(() => isar.messages.putSync(message));
+
   }
 
   @override

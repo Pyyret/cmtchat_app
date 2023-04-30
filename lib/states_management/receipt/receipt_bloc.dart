@@ -9,7 +9,6 @@ part 'receipt_event.dart';
 part 'receipt_state.dart';
 
 class ReceiptBloc extends Bloc<ReceiptEvent, ReceiptState> {
-
   final IReceiptService _receiptService;
   StreamSubscription? _subscription;
 
@@ -17,6 +16,7 @@ class ReceiptBloc extends Bloc<ReceiptEvent, ReceiptState> {
 
   @override
   Stream<ReceiptState> mapEventToState(ReceiptEvent event) async* {
+
     if(event is Subscribed) {
       await _subscription?.cancel();
       _subscription = _receiptService

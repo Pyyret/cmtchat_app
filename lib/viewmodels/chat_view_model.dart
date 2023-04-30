@@ -14,15 +14,10 @@ class ChatViewModel extends BaseViewModel {
 
   ChatViewModel(this._dataService, this._user) : super(_dataService, _user);
 
-  Future<List<Message>> getMessages(String webUserId) async {
-    List<Message> messages;
-    Chat? chat = await _dataService.findChatWith(webUserId);
-    if(chat == null) { messages = <Message>[]; }
-    else {
-      chat = chat;
-      messages = chat.messages.toList();
-    }
-    return messages;
+  Future<List<Message>> getMessages(Chat chat) async {
+    Chat? updatedChat = await _dataService.findChat(chat.id);
+    if(updatedChat == null) { return <Message>[]; }
+    return updatedChat.messages.toList();
   }
 
   Future<void> sentMessage(WebMessage message) async {
@@ -35,5 +30,9 @@ class ChatViewModel extends BaseViewModel {
   if(chat.id != thisChat?.id) { otherMessages++; }
   await addMessage(message, chat, ReceiptStatus.delivered);
 }
+
+  Future<void> updateMessageReceipt(Receipt receipt) async {
+    await _dataService.updateMessageReceipt(receipt.messageId, receipt);
+  }
 
 }
