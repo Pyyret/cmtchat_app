@@ -12,7 +12,7 @@ import 'package:intl/intl.dart';
 
 class Chats extends StatefulWidget {
   final User  user;
-  final IHomeRouter  router;
+  final IHomeRouter router;
 
   const Chats(this.user, this.router);
 
