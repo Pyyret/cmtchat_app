@@ -40,7 +40,7 @@ class ReceiverMessage extends StatelessWidget {
                   ),
                 ),
                 Padding(
-                  padding: EdgeInsets.only(top: 12.0, left: 12.0),
+                  padding: const EdgeInsets.only(top: 12.0, left: 12.0),
                   child: Align(
                     alignment: Alignment.bottomLeft,
                     child: Text(

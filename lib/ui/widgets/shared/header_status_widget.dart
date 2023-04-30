@@ -13,7 +13,7 @@ class HeaderStatus extends StatelessWidget {
       width: double.maxFinite,
       child: Row(
         children: [
-          ProfilePlaceholder(50),
+          const ProfilePlaceholder(50),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [

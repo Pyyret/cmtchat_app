@@ -57,7 +57,7 @@ class SenderMessage extends StatelessWidget {
             ),
           ),
           Padding(
-            padding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 20.0),
+            padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 20.0),
             child: Align(
               alignment: Alignment.centerRight,
               child: DecoratedBox(

@@ -11,7 +11,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 class ActiveUsers extends StatefulWidget {
   final User mainUser;
   final IHomeRouter router;
-  const ActiveUsers(this.mainUser, this.router);
+  const ActiveUsers(this.mainUser, this.router, {super.key});
 
   @override
   State<ActiveUsers> createState() => _ActiveUsersState();
@@ -33,7 +33,7 @@ class _ActiveUsersState extends State<ActiveUsers> {
   }
 
   _listItem(WebUser user) => ListTile(
-    leading: ProfilePlaceholder(50),
+    leading: const ProfilePlaceholder(50),
     title: Text(
       user.username,
       style: Theme.of(context).textTheme.titleSmall?.copyWith(

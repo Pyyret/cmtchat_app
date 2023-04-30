@@ -3,9 +3,9 @@ import 'package:cmtchat_app/theme.dart';
 import 'package:flutter/material.dart';
 
 class ProfilePlaceholder extends StatelessWidget {
-  double size;
+  final double size;
 
-  ProfilePlaceholder(this.size, {super.key});
+  const ProfilePlaceholder(this.size, {super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -13,7 +13,7 @@ class ProfilePlaceholder extends StatelessWidget {
       height: size,
       width: size,
       child: Material(
-        color: isLightTheme(context) ? Color(0xFFF2F2F2) : Color(0xFF211E1E),
+        color: isLightTheme(context) ? const Color(0xFFF2F2F2) : const Color(0xFF211E1E),
         borderRadius: BorderRadius.circular(size),
         child: InkWell(
           borderRadius: BorderRadius.circular(size),

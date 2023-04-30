@@ -27,82 +27,80 @@ class _OnboardingState extends State<Onboarding> {
       ),
       resizeToAvoidBottomInset: false,
       body: SafeArea(
-        child: Container(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              _logo(context),
-              const Spacer(flex: 2,),
-              const ProfileUpload(),
-              const Spacer(flex: 1),
-              Padding(
-                  padding: const EdgeInsets.only(left: 20.0, right: 20.0),
-                  child: CustomTextField(
-                    hint: 'Your name?',
-                    height: 45.0,
-                    onchanged: (val) {
-                      _username =  val;
-                    },
-                    inputAction: TextInputAction.done,
-                  ),
-              ),
-              const SizedBox(height: 30.0,),
-              Padding(
-                padding: const EdgeInsets.only(
-                  left: 25.0,
-                  right: 25.0,
-
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            _logo(context),
+            const Spacer(flex: 2,),
+            const ProfileUpload(),
+            const Spacer(flex: 1),
+            Padding(
+                padding: const EdgeInsets.only(left: 20.0, right: 20.0),
+                child: CustomTextField(
+                  hint: 'Your name?',
+                  height: 45.0,
+                  onchanged: (val) {
+                    _username =  val;
+                  },
+                  inputAction: TextInputAction.done,
                 ),
-                child: ElevatedButton(
-                    onPressed: () async {
-                      final error = _checkInputs();
-                      if(error.isNotEmpty) {
-                        final snackBar = SnackBar(
-                            content: Text(
-                              error,
-                              style: const TextStyle(fontSize: 14.0, fontWeight: FontWeight.bold
-                              ),
+            ),
+            const SizedBox(height: 30.0,),
+            Padding(
+              padding: const EdgeInsets.only(
+                left: 25.0,
+                right: 25.0,
+
+              ),
+              child: ElevatedButton(
+                  onPressed: () async {
+                    final error = _checkInputs();
+                    if(error.isNotEmpty) {
+                      final snackBar = SnackBar(
+                          content: Text(
+                            error,
+                            style: const TextStyle(fontSize: 14.0, fontWeight: FontWeight.bold
                             ),
-                        );
-                        ScaffoldMessenger.of(context).showSnackBar(snackBar);
-                        return;
-                      }
-                      await _connectSession();
-                    },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: kPrimary,
-                    elevation: 5.0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16.0),
-                    )
-                  ),
-                    child: Container(
-                      height: 45.0,
-                      alignment: Alignment.center,
-                      child: Text(
-                        'Create Chat',
-                        style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                          fontSize: 18.0,
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold
-                        ),
+                          ),
+                      );
+                      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                      return;
+                    }
+                    await _connectSession();
+                  },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: kPrimary,
+                  elevation: 5.0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16.0),
+                  )
+                ),
+                  child: Container(
+                    height: 45.0,
+                    alignment: Alignment.center,
+                    child: Text(
+                      'Create Chat',
+                      style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                        fontSize: 18.0,
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold
                       ),
                     ),
-                ),
+                  ),
               ),
-              const Spacer(),
-              BlocConsumer<OnboardingCubit, OnboardingState>(
-                builder: (context, state) => state is Loading
-                    ? const Center(child: CircularProgressIndicator())
-                    : Container(),
-                listener: (_, state) {
-                  if(state is OnboardingSuccess) {
-                    widget.router.onSessionSuccess(context, state.mainUser);
-                  }
-                },
-              )
-            ],
-          ),
+            ),
+            const Spacer(),
+            BlocConsumer<OnboardingCubit, OnboardingState>(
+              builder: (context, state) => state is Loading
+                  ? const Center(child: CircularProgressIndicator())
+                  : Container(),
+              listener: (_, state) {
+                if(state is OnboardingSuccess) {
+                  widget.router.onSessionSuccess(context, state.mainUser);
+                }
+              },
+            )
+          ],
         ),
       ),
     );

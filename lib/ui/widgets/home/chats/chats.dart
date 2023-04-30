@@ -14,7 +14,7 @@ class Chats extends StatefulWidget {
   final User  user;
   final IHomeRouter router;
 
-  const Chats(this.user, this.router);
+  const Chats(this.user, this.router, {super.key});
 
   @override
   State<Chats> createState() => _ChatsState();
@@ -58,7 +58,7 @@ class _ChatsState extends State<Chats> {
 
   _chatItem(Chat chat) => ListTile(
     contentPadding: const EdgeInsets.only(left: 16.0),
-    leading: ProfilePlaceholder(50),
+    leading: const ProfilePlaceholder(50),
     title: Text(
       chat.chatName ?? '',
       style: Theme.of(context).textTheme.titleSmall?.copyWith(

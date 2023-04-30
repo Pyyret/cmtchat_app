@@ -151,8 +151,8 @@ class _MessageThreadState extends State<MessageThread> {
   }
 
   _buildMessageInput(BuildContext context) {
-    final _border = OutlineInputBorder(
-      borderRadius: BorderRadius.all(Radius.circular(90.0)),
+    final border = OutlineInputBorder(
+      borderRadius: const BorderRadius.all(Radius.circular(90.0)),
       borderSide: isLightTheme(context)
           ? BorderSide.none
           : BorderSide(color: Colors.grey.withOpacity(0.3)),
@@ -172,12 +172,12 @@ class _MessageThreadState extends State<MessageThread> {
         cursorColor: kPrimary,
         onChanged: (val) {},
         decoration: InputDecoration(
-          contentPadding: EdgeInsets.only(left: 16.0, right: 16.0, bottom: 8.0),
-          enabledBorder: _border,
+          contentPadding: const EdgeInsets.only(left: 16.0, right: 16.0, bottom: 8.0),
+          enabledBorder: border,
           filled: true,
           fillColor:
           isLightTheme(context) ? kPrimary.withOpacity(0.1) : kBubbleDark,
-          focusedBorder: _border,
+          focusedBorder: border,
         ),
       ),
     );

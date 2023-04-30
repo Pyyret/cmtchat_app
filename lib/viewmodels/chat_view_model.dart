@@ -7,8 +7,8 @@ import 'package:cmtchat_app/services/local/data/dataservice_contract.dart';
 import 'package:cmtchat_app/viewmodels/base_view_model.dart';
 
 class ChatViewModel extends BaseViewModel {
-  IDataService _dataService;
-  User _user;
+  final IDataService _dataService;
+  final User _user;
   Chat? thisChat;
   int otherMessages = 0;
 
