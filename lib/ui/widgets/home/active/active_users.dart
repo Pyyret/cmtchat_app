@@ -18,6 +18,7 @@ class ActiveUsers extends StatefulWidget {
 }
 
 class _ActiveUsersState extends State<ActiveUsers> {
+
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<HomeCubit, HomeState>(

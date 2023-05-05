@@ -14,13 +14,13 @@ class Chats extends StatefulWidget {
   final User  user;
   final IHomeRouter router;
 
-  const Chats(this.user, this.router, {super.key});
+  const Chats(this.user, this.router);
 
   @override
   State<Chats> createState() => _ChatsState();
 }
 
-class _ChatsState extends State<Chats> {
+class _ChatsState extends State<Chats> with AutomaticKeepAliveClientMixin {
   var chats = [];
 
   @override
@@ -112,8 +112,11 @@ class _ChatsState extends State<Chats> {
     context.read<WebMessageBloc>().stream.listen((state) async {
       if(state is WebMessageReceivedSuccess) {
         await chatsCubit.viewModel.receivedMessage(state.message);
-        chatsCubit.chats();
+        await chatsCubit.chats();
       }
     });
   }
+
+  @override
+  bool get wantKeepAlive => true;
 }

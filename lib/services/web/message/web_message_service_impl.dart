@@ -13,7 +13,7 @@ class WebMessageService implements IWebMessageService {
   final IEncryption? _encryption;
 
   final StreamController<WebMessage> _controller = StreamController<WebMessage>.broadcast();
-  late StreamSubscription? _changeFeed;
+  StreamSubscription? _changeFeed;
 
   /// Constructor
   WebMessageService(this.r, this._connection, {IEncryption? encryption})
@@ -43,6 +43,14 @@ class WebMessageService implements IWebMessageService {
     await _changeFeed?.cancel();
     await _controller.close();
   }
+
+  @override
+  Future<void> cancelChangeFeed() async {
+    if(_changeFeed != null){
+      await _changeFeed?.cancel();
+    }
+  }
+
 
   _startRecievingMessages(WebUser user) {
     _changeFeed = r

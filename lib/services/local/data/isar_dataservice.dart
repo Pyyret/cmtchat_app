@@ -41,11 +41,11 @@ class IsarService implements IDataService {
   }
 
   @override
-  Future<User?> findWebUser(String webId) async {
+  Future<User?> findWebUser(String webUserId) async {
     final isar = await db;
     final list = isar.users
         .filter()
-        .webUserIdEqualTo(webId)
+        .webUserIdEqualTo(webUserId)
         .findAllSync();
     if(list.isEmpty) { return null; }
     else { return list.single; }

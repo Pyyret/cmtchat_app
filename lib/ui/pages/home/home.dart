@@ -14,7 +14,7 @@ class Home extends StatefulWidget {
   final User mainUser;
   final IHomeRouter router;
 
-  const Home(this.mainUser, this.router, {super.key});
+  const Home(this.mainUser, this.router);
 
   @override
   State<Home> createState() => _HomeState();

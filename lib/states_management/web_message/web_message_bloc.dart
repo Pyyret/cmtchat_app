@@ -20,6 +20,7 @@ class WebMessageBloc extends Bloc<WebMessageEvent, WebMessageState> {
   Stream<WebMessageState> mapEventToState(WebMessageEvent event) async* {
     if(event is Subscribed) {
       await _subscription?.cancel();
+      await _messageService.cancelChangeFeed();
       _subscription = _messageService
           .messageStream(activeUser: event.user)
           .listen((message) => add(_WebMessageReceived(message)));

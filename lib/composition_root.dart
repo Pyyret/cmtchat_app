@@ -41,7 +41,7 @@ class CompositionRoot {
 
   static configure() async {
     _r = RethinkDb();
-    _connection = await _r.connect(host: '172.19.96.1', port: 28015);
+    _connection = await _r.connect(host: '172.21.0.1', port: 28015);
     _webUserService = WebUserService(_r, _connection);
     _dataService = IsarService();
     _webMessageService = WebMessageService(_r, _connection);
@@ -50,8 +50,8 @@ class CompositionRoot {
     _webMessageBloc = WebMessageBloc(_webMessageService);
 
     // Testing
-    //await sp.clear();
-    //await _dataService.cleanDb();
+    await sp.clear();
+    await _dataService.cleanDb();
   }
 
   static Future<Widget> start() async {

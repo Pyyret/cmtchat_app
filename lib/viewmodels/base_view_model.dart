@@ -26,10 +26,10 @@ abstract class BaseViewModel {
         receiptTimestamp: DateTime.now());
 
     // Binding to sender and receiver
-    final User to =
-        await _dataService.findWebUser(message.to) ?? User(webUserId: message.to);
-    final User from =
-        await _dataService.findWebUser(message.from) ?? User(webUserId: message.from);
+    User? to = await _dataService.findWebUser(message.to);
+    to ??= User(webUserId: message.to);
+    User? from = await _dataService.findWebUser(message.from);
+    from ??= User(webUserId: message.from);
     newMessage.to.value = to;
     newMessage.from.value = from;
 
@@ -47,14 +47,17 @@ abstract class BaseViewModel {
   Future<Chat> getChatWith(String webUserId) async {
     Chat? chat = await _dataService.findChatWith(webUserId);
     if(chat == null) {
-      final user = User(webUserId: webUserId);
-      chat = Chat();
-      chat.owners.add(user);
+      User? chatMate = await _dataService.findWebUser(webUserId);
+      chatMate ??= User(webUserId: webUserId);
+      chat = Chat(chatName: chatMate.username);
+      chat.owners.add(chatMate);
       chat.owners.add(_mainUser);
-      _dataService.saveChat(chat);
+      await _dataService.saveChat(chat);
     }
     return chat;
   }
+
+
 
 }
 

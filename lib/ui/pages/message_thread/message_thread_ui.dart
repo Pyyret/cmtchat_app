@@ -45,12 +45,12 @@ class _MessageThreadState extends State<MessageThread> {
   void initState() {
     super.initState();
     chat = widget.chat;
+    final mainWebUser = WebUser.fromUser(widget.mainUser);
     receiver =
     chat.owners.filter().not().idEqualTo(widget.mainUser.id).findFirstSync()!;
     _updateOnMessageReceived();
     _updateOnReceiptReceived();
-    context.read<ReceiptBloc>()
-        .add(ReceiptEvent.onSubscribed(WebUser.fromUser(widget.mainUser)));
+    context.read<ReceiptBloc>().add(ReceiptEvent.onSubscribed(mainWebUser));
   }
 
   @override
@@ -212,7 +212,7 @@ class _MessageThreadState extends State<MessageThread> {
     messageThreadCubit.messages(chat);
     _subscription = widget.webMessageBloc.stream.listen((state) async {
       if (state is WebMessageReceivedSuccess) {
-        await messageThreadCubit.viewModel.receivedMessage(state.message);
+        //await messageThreadCubit.viewModel.receivedMessage(state.message);
         final receipt = Receipt(
             recipient: state.message.from,
             messageId: state.message.webId,
@@ -224,20 +224,17 @@ class _MessageThreadState extends State<MessageThread> {
       if (state is WebMessageSentSuccess) {
         await messageThreadCubit.viewModel.sentMessage(state.message);
       }
-      messageThreadCubit.messages(chat);
+      await messageThreadCubit.messages(chat);
     });
   }
 
   void _updateOnReceiptReceived() {
     final messageThreadCubit = context.read<MessageThreadCubit>();
-    context
-        .read<ReceiptBloc>()
-        .stream
-        .listen((state) async {
+    context.read<ReceiptBloc>().stream.listen((state) async {
       if (state is ReceiptReceivedSuccess) {
         await messageThreadCubit.viewModel.updateMessageReceipt(state.receipt);
-        messageThreadCubit.messages(chat);
-        widget.chatsCubit.chats();
+        await messageThreadCubit.messages(chat);
+        await widget.chatsCubit.chats();
       }
     });
   }
