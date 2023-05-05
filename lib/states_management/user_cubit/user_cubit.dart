@@ -1,4 +1,5 @@
-import 'package:bloc/bloc.dart';
+
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:cmtchat_app/cache/local_cache.dart';
 import 'package:cmtchat_app/models/local/user.dart';
 import 'package:cmtchat_app/models/web/web_user.dart';
@@ -12,18 +13,23 @@ class UserCubit extends Cubit<UserState> {
   final ILocalCache _localCache;
 
   UserCubit(this._userService, this._dataService, this._localCache)
-      : super(UserInitial()) { checkCache(); }
+      : super(UserInitial());
 
 
   Future<void> checkCache() async {
     emit(Loading());
     // Check local cache for a previously logged in user
     final cachedUserId = _localCache.fetch('USER_ID');
-    User? cachedUser = await _dataService
-        .findUser(int.parse(cachedUserId['user_id']));
+    User? cachedUser;
+
+    // Check localDb for user with the cashed user id
+    if(cachedUserId.isNotEmpty) {
+      cachedUser = await _dataService
+          .findUser(int.parse(cachedUserId['user_id']));
+    }
 
     // If found in the localDb => Connect to webserver and update
-    if(cachedUserId.isNotEmpty && cachedUser != null) {
+    if(cachedUser != null) {
       final cachedWebUser = WebUser.fromUser(cachedUser)
         ..lastSeen = DateTime.now()
         ..active = true;
@@ -31,7 +37,7 @@ class UserCubit extends Cubit<UserState> {
       cachedUser.update(connectedWebUser);
 
       // Then save in cache and update state
-      _saveAndEmit(cachedUser);
+      return _saveAndEmit(cachedUser);
     }
 
     // Otherwise emit NoUser state for OnboardingUi to build
@@ -52,7 +58,7 @@ class UserCubit extends Cubit<UserState> {
     WebUser connectedWebUser = await _userService.connect(webUser);
     User connectedUser = User.fromWebUser(webUser: connectedWebUser);
 
-    _saveAndEmit(connectedUser);
+    return _saveAndEmit(connectedUser);
   }
 
   // Saves connected user to localDb, cache, and emits UserConnectSuccess state

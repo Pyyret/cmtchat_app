@@ -12,10 +12,13 @@ import 'package:cmtchat_app/states_management/home/chats_cubit.dart';
 import 'package:cmtchat_app/states_management/home/home_cubit.dart';
 import 'package:cmtchat_app/states_management/message_thread/message_thread_cubit.dart';
 import 'package:cmtchat_app/states_management/receipt/receipt_bloc.dart';
+import 'package:cmtchat_app/states_management/user_cubit/user_cubit.dart';
+import 'package:cmtchat_app/states_management/user_cubit/user_state.dart';
 import 'package:cmtchat_app/states_management/web_message/web_message_bloc.dart';
 import 'package:cmtchat_app/ui/pages/home/home.dart';
 import 'package:cmtchat_app/ui/pages/home/home_router.dart';
 import 'package:cmtchat_app/ui/pages/message_thread/message_thread_ui.dart';
+import 'package:cmtchat_app/ui/pages/onboarding/onboarding.dart';
 import 'package:cmtchat_app/viewmodels/chat_view_model.dart';
 import 'package:cmtchat_app/viewmodels/chats_view_model.dart';
 import 'package:flutter/cupertino.dart';
@@ -41,8 +44,8 @@ class CompositionRoot {
   // Blocs/Cubits
   static late UserCubit _userCubit;
   static late WebMessageBloc _webMessageBloc;
-  static late ChatsCubit _chatsCubit;
 
+  static late ChatsCubit _chatsCubit;
   static late ChatsViewModel _chatsViewModel;
 
 
@@ -70,15 +73,15 @@ class CompositionRoot {
     return BlocProvider(
         create: (BuildContext context) => _userCubit,
         child: BlocConsumer<UserCubit, UserState>(
-
-          listener: (context, state) async {
+          listener: (context, state) {
             if(state is UserConnectSuccess) {
-              _chatsViewModel = ChatsViewModel(_dataService, _webUserService,
-                  state.user);
+              _chatsViewModel = ChatsViewModel(
+                  _dataService, _webUserService, state.user);
               _chatsCubit = ChatsCubit(_chatsViewModel);
             }},
 
           builder: (context, state) {
+            if(state is UserInitial) { context.read<UserCubit>().checkCache(); }
             if(state is UserConnectSuccess) { return composeHomeUi(state.user); }
 
             return composeOnboardingUi();
