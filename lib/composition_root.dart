@@ -1,7 +1,6 @@
 import 'package:cmtchat_app/cache/local_cache.dart';
 import 'package:cmtchat_app/models/local/chat.dart';
 import 'package:cmtchat_app/models/local/user.dart';
-import 'package:cmtchat_app/models/web/web_user.dart';
 import 'package:cmtchat_app/services/local/data/dataservice_contract.dart';
 import 'package:cmtchat_app/services/local/data/isar_dataservice.dart';
 import 'package:cmtchat_app/services/web/message/web_message_service_impl.dart';
@@ -12,14 +11,14 @@ import 'package:cmtchat_app/services/web/user/web_user_service_impl.dart';
 import 'package:cmtchat_app/states_management/home/chats_cubit.dart';
 import 'package:cmtchat_app/states_management/home/home_cubit.dart';
 import 'package:cmtchat_app/states_management/message_thread/message_thread_cubit.dart';
-import 'package:cmtchat_app/states_management/onboarding/onboarding_cubit.dart';
 import 'package:cmtchat_app/states_management/receipt/receipt_bloc.dart';
+import 'package:cmtchat_app/states_management/user_cubit/user_cubit.dart';
+import 'package:cmtchat_app/states_management/user_cubit/user_state.dart';
 import 'package:cmtchat_app/states_management/web_message/web_message_bloc.dart';
 import 'package:cmtchat_app/ui/pages/home/home.dart';
 import 'package:cmtchat_app/ui/pages/home/home_router.dart';
 import 'package:cmtchat_app/ui/pages/message_thread/message_thread_ui.dart';
 import 'package:cmtchat_app/ui/pages/onboarding/onboarding.dart';
-import 'package:cmtchat_app/ui/pages/onboarding/onboarding_router.dart';
 import 'package:cmtchat_app/viewmodels/chat_view_model.dart';
 import 'package:cmtchat_app/viewmodels/chats_view_model.dart';
 import 'package:flutter/cupertino.dart';
@@ -43,6 +42,7 @@ class CompositionRoot {
   static late IWebMessageService _webMessageService;
 
   // Blocs/Cubits
+  static late UserCubit _userCubit;
   static late WebMessageBloc _webMessageBloc;
   static late ChatsCubit _chatsCubit;
 
@@ -61,6 +61,7 @@ class CompositionRoot {
     _webMessageService = WebMessageService(_r, _connection);
 
     _webMessageBloc = WebMessageBloc(_webMessageService);
+    _userCubit = UserCubit(_webUserService, _dataService, _localCache);
 
     // Testing
     //await sp.clear();
@@ -68,43 +69,35 @@ class CompositionRoot {
   }
 
 
-  static Future<Widget> start() async {
-    final userId = _localCache.fetch('USER_ID');
-    if(userId.isEmpty) { return composeOnboardingUi(); }
-    else {
-      User? mainUser = await _dataService.findUser(int.parse(userId['user_id']));
+  static Future<Widget> director() async {
+    return BlocProvider(
+        create: (BuildContext context) => _userCubit,
+        child: BlocConsumer<UserCubit, UserState>(
 
-      return initUser(mainUser!);
-    }
-  }
+          listener: (context, state) async {
+            if(state is UserInitial) {
+              await context.read<UserCubit>().checkCache();
+            }
+            if(state is UserConnectSuccess) {
+              _chatsViewModel = ChatsViewModel(_dataService, _webUserService,
+                  state.user);
+              _chatsCubit = ChatsCubit(_chatsViewModel);
+            }},
 
+          builder: (context, state) {
+            if(state is UserConnectSuccess) { return composeHomeUi(state.user); }
 
-  static Widget composeOnboardingUi() {
-    OnboardingCubit onboardingCubit = OnboardingCubit(_webUserService, _dataService, _localCache);
-    IOnboardingRouter router = OnboardingRouter(composeHomeUi);
-
-    return MultiBlocProvider(
-      providers: [BlocProvider(create: (BuildContext context) => onboardingCubit)],
-      child: Onboarding(router),
+            return composeOnboardingUi();
+          },
+        ),
     );
   }
 
-
-  static Future<Widget> initUser(User mainUser) async {
-    // Make sure user is set to active, timestamp now, and saved to localDb
-    WebUser webUser = WebUser.fromUser(mainUser);
-    webUser.lastSeen = DateTime.now();
-    webUser.active = true;
-    final connectedWebUser = await _webUserService.connect(webUser);
-    mainUser.update(connectedWebUser);
-    await _dataService.saveUser(mainUser);
-
-    // Init user-dependant elements
-    _chatsViewModel = ChatsViewModel(_dataService, _webUserService, mainUser);
-    _chatsCubit = ChatsCubit(_chatsViewModel);
-
-    // Return HomeUi
-    return composeHomeUi(mainUser);
+  static Widget composeOnboardingUi() {
+    return BlocProvider(
+      create: (BuildContext context) => _userCubit,
+      child: const Onboarding(),
+    );
   }
 
 

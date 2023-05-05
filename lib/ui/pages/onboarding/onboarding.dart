@@ -1,7 +1,6 @@
 import 'package:cmtchat_app/colors.dart';
-import 'package:cmtchat_app/states_management/onboarding/onboarding_cubit.dart';
-import 'package:cmtchat_app/states_management/onboarding/onboarding_state.dart';
-import 'package:cmtchat_app/ui/pages/onboarding/onboarding_router.dart';
+import 'package:cmtchat_app/states_management/user_cubit/user_cubit.dart';
+import 'package:cmtchat_app/states_management/user_cubit/user_state.dart';
 import 'package:cmtchat_app/ui/widgets/onboarding/logo.dart';
 import 'package:cmtchat_app/ui/widgets/onboarding/profile_upload.dart';
 import 'package:cmtchat_app/ui/widgets/shared/costum_text_field.dart';
@@ -9,8 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class Onboarding extends StatefulWidget {
-  final IOnboardingRouter router;
-  const Onboarding(this.router, {super.key});
+  const Onboarding({super.key});
 
   @override
   State<StatefulWidget> createState() => _OnboardingState();
@@ -66,7 +64,7 @@ class _OnboardingState extends State<Onboarding> {
                       ScaffoldMessenger.of(context).showSnackBar(snackBar);
                       return;
                     }
-                    await _connectSession();
+                    await context.read<UserCubit>().create(_username);
                   },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: kPrimary,
@@ -90,15 +88,10 @@ class _OnboardingState extends State<Onboarding> {
               ),
             ),
             const Spacer(),
-            BlocConsumer<OnboardingCubit, OnboardingState>(
+            BlocBuilder<UserCubit, UserState>(
               builder: (context, state) => state is Loading
                   ? const Center(child: CircularProgressIndicator())
                   : Container(),
-              listener: (_, state) {
-                if(state is OnboardingSuccess) {
-                  widget.router.onSessionSuccess(context, state.mainUser);
-                }
-              },
             )
           ],
         ),
@@ -126,10 +119,6 @@ class _OnboardingState extends State<Onboarding> {
                 ?.copyWith(fontWeight: FontWeight.bold)),
       ],
     );
-  }
-
-  _connectSession() async {
-    await context.read<OnboardingCubit>().connect(_username);
   }
 
   String _checkInputs() {
