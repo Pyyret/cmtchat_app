@@ -8,14 +8,12 @@ import 'receipt_service_contract.dart';
 class ReceiptService implements IReceiptService {
   final Connection _connection;
   final RethinkDb r;
-  late final StreamController<Receipt> _controller;
+  final StreamController<Receipt> _controller = StreamController<Receipt>.broadcast();
 
-  late StreamSubscription _changeFeed;
+  StreamSubscription? _changeFeed;
 
   /// Constructor
-  ReceiptService(this.r, this._connection){
-    _controller = StreamController<Receipt>.broadcast();
-  }
+  ReceiptService(this.r, this._connection);
 
   /// Methods
   @override
@@ -29,21 +27,21 @@ class ReceiptService implements IReceiptService {
   }
 
   @override
-  Stream<Receipt> receiptStream(WebUser user) {
-    _startRecievingReceipts(user);
+  Stream<Receipt> receiptStream({required WebUser activeUser}) {
+    _startRecievingReceipts(activeUser);
     return _controller.stream;
   }
 
   @override
   dispose() {
-    _changeFeed.cancel();
+    _changeFeed?.cancel();
     _controller.close();
   }
 
-  _startRecievingReceipts(WebUser user) {
+  _startRecievingReceipts(WebUser activeUser) {
     _changeFeed = r
         .table('receipts')
-        .filter({'recipient' : user.webUserId})
+        .filter({'recipient' : activeUser.webUserId})
         .changes({'include_initial': true})
         .run(_connection)
         .asStream()
@@ -52,8 +50,8 @@ class ReceiptService implements IReceiptService {
           event.forEach((feedData) {
             if(feedData['new_val'] == null) return;
             final receipt = _receiptFromFeed(feedData);
-            _removeDeliveredReceipt(receipt);
             _controller.sink.add(receipt);
+            _removeDeliveredReceipt(receipt);
           })
               .onError((err, stackTrace) => print(err));
         });
@@ -64,10 +62,10 @@ class ReceiptService implements IReceiptService {
     return Receipt.fromJson(data);
   }
 
-  _removeDeliveredReceipt(Receipt receipt) {
+  _removeDeliveredReceipt(Receipt receipt) async {
     r.table('receipts')
         .get(receipt.id)
-        .delete({'return_changes : false'})
+        .delete({'return_changes': false})
         .run(_connection);
   }
 }

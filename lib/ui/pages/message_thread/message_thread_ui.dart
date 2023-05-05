@@ -36,6 +36,7 @@ class _MessageThreadState extends State<MessageThread> {
   final ScrollController _scrollController = ScrollController();
   final TextEditingController _textEditingController = TextEditingController();
 
+  late final User mainUser;
   late final Chat chat;
   late final User receiver;
   late StreamSubscription _subscription;
@@ -44,10 +45,11 @@ class _MessageThreadState extends State<MessageThread> {
   @override
   void initState() {
     super.initState();
+    mainUser = widget.mainUser;
     chat = widget.chat;
-    final mainWebUser = WebUser.fromUser(widget.mainUser);
+    final mainWebUser = WebUser.fromUser(mainUser);
     receiver =
-    chat.owners.filter().not().idEqualTo(widget.mainUser.id).findFirstSync()!;
+    chat.owners.filter().not().idEqualTo(mainUser.id).findFirstSync()!;
     _updateOnMessageReceived();
     _updateOnReceiptReceived();
     context.read<ReceiptBloc>().add(ReceiptEvent.onSubscribed(mainWebUser));
@@ -211,6 +213,7 @@ class _MessageThreadState extends State<MessageThread> {
     final messageThreadCubit = context.read<MessageThreadCubit>();
     messageThreadCubit.messages(chat);
     _subscription = widget.webMessageBloc.stream.listen((state) async {
+      /*
       if (state is WebMessageReceivedSuccess) {
         //await messageThreadCubit.viewModel.receivedMessage(state.message);
         final receipt = Receipt(
@@ -221,6 +224,8 @@ class _MessageThreadState extends State<MessageThread> {
         );
         context.read<ReceiptBloc>().add(ReceiptEvent.onReceiptSent(receipt));
       }
+
+       */
       if (state is WebMessageSentSuccess) {
         await messageThreadCubit.viewModel.sentMessage(state.message);
       }

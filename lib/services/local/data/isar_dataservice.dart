@@ -183,7 +183,7 @@ class IsarService implements IDataService {
     final message = isar.messages.filter().webIdEqualTo(messageWebId).findAllSync().single;
     message.status = receipt.status;
     message.receiptTimestamp = receipt.timestamp;
-    isar.writeTxnSync(() => isar.messages.putSync(message));
+    await isar.writeTxn(() => isar.messages.put(message));
 
   }
 

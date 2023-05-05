@@ -20,7 +20,7 @@ class ReceiptBloc extends Bloc<ReceiptEvent, ReceiptState> {
     if(event is Subscribed) {
       await _subscription?.cancel();
       _subscription = _receiptService
-          .receiptStream(event.user)
+          .receiptStream(activeUser: event.user)
           .listen((receipt) => add(_ReceiptReceived(receipt)));
     }
 

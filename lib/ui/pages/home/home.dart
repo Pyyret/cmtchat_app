@@ -1,4 +1,5 @@
 import 'package:cmtchat_app/models/local/user.dart';
+import 'package:cmtchat_app/models/web/web_user.dart';
 import 'package:cmtchat_app/states_management/home/chats_cubit.dart';
 import 'package:cmtchat_app/states_management/home/home_cubit.dart';
 import 'package:cmtchat_app/states_management/home/home_state.dart';
@@ -14,20 +15,25 @@ class Home extends StatefulWidget {
   final User mainUser;
   final IHomeRouter router;
 
-  const Home(this.mainUser, this.router);
+  const Home(this.mainUser, this.router, {super.key});
 
   @override
   State<Home> createState() => _HomeState();
 }
 
 class _HomeState extends State<Home> with AutomaticKeepAliveClientMixin {
-  late User _mainUser;
+  late final User _mainUser;
 
   @override
   void initState() {
     super.initState();
     _mainUser = widget.mainUser;
-    _initialSetup();
+    final mainWebUser = WebUser.fromUser(_mainUser);
+    _updateChatsOnMessageReceived();
+
+    context.read<ChatsCubit>().chats();
+    context.read<HomeCubit>().activeUsers(mainWebUser);
+    context.read<WebMessageBloc>().add(WebMessageEvent.onSubscribed(mainWebUser));
   }
 
   @override
@@ -84,13 +90,14 @@ class _HomeState extends State<Home> with AutomaticKeepAliveClientMixin {
     );
   }
 
-  _initialSetup() async {
-
-    final mainWebUser = await context.read<ChatsCubit>().viewModel.makeSureConnected();
-
-    context.read<ChatsCubit>().chats();
-    context.read<HomeCubit>().activeUsers(mainWebUser);
-    context.read<WebMessageBloc>().add(WebMessageEvent.onSubscribed(mainWebUser));
+  _updateChatsOnMessageReceived() {
+    final chatsCubit = context.read<ChatsCubit>();
+    context.read<WebMessageBloc>().stream.listen((state) async {
+      if(state is WebMessageReceivedSuccess) {
+        await chatsCubit.viewModel.receivedMessage(state.message);
+        await chatsCubit.chats();
+      }
+    });
   }
 
   @override
