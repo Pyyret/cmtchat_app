@@ -42,6 +42,7 @@ class UserCubit extends Cubit<UserState> {
 
     // Otherwise emit NoUser state for OnboardingUi to build
     emit(NoUser());
+    return;
   }
 
 
@@ -66,5 +67,6 @@ class UserCubit extends Cubit<UserState> {
     await _dataService.saveUser(connectedUser);
     await _localCache.save('USER_ID', {'user_id': connectedUser.id.toString()});
     emit(UserConnectSuccess(connectedUser));
+    return;
   }
 }
