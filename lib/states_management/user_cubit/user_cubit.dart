@@ -31,11 +31,12 @@ class UserCubit extends Cubit<UserState> {
       cachedUser.update(connectedWebUser);
 
       // Then save in cache and update state
-      _saveAndEmit(cachedUser);
+      return _saveAndEmit(cachedUser);
     }
 
     // Otherwise emit NoUser state for OnboardingUi to build
     emit(NoUser());
+    return;
   }
 
 
@@ -52,7 +53,7 @@ class UserCubit extends Cubit<UserState> {
     WebUser connectedWebUser = await _userService.connect(webUser);
     User connectedUser = User.fromWebUser(webUser: connectedWebUser);
 
-    _saveAndEmit(connectedUser);
+    return _saveAndEmit(connectedUser);
   }
 
   // Saves connected user to localDb, cache, and emits UserConnectSuccess state
@@ -60,5 +61,6 @@ class UserCubit extends Cubit<UserState> {
     await _dataService.saveUser(connectedUser);
     await _localCache.save('USER_ID', {'user_id': connectedUser.id.toString()});
     emit(UserConnectSuccess(connectedUser));
+    return;
   }
 }
