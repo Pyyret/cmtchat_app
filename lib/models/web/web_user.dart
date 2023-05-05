@@ -9,10 +9,11 @@ class WebUser {
   String? _webUserId;
 
   WebUser({
-    required this.username,
-    required this.photoUrl,
-    required this.active,
-    required this.lastSeen});
+    this.username = '',
+    this.photoUrl = '',
+    this.active = false,
+    required this.lastSeen,
+  });
 
   Map<String, dynamic> toJson() {
     var data = {
