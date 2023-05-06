@@ -1,4 +1,4 @@
-import 'package:cmtchat_app/cache/local_cache.dart';
+import 'package:cmtchat_app/cache/local_cache_service.dart';
 import 'package:cmtchat_app/models/local/chat.dart';
 import 'package:cmtchat_app/models/local/user.dart';
 import 'package:cmtchat_app/services/local/data/dataservice_contract.dart';
@@ -10,6 +10,7 @@ import 'package:cmtchat_app/services/web/user/web_user_service_contract.dart';
 import 'package:cmtchat_app/services/web/user/web_user_service_impl.dart';
 import 'package:cmtchat_app/states_management/home/chats_cubit.dart';
 import 'package:cmtchat_app/states_management/home/home_cubit.dart';
+import 'package:cmtchat_app/states_management/home/home_cubit2.dart';
 import 'package:cmtchat_app/states_management/message_thread/message_thread_cubit.dart';
 import 'package:cmtchat_app/states_management/receipt/receipt_bloc.dart';
 import 'package:cmtchat_app/states_management/user_cubit/user_cubit.dart';
@@ -17,10 +18,12 @@ import 'package:cmtchat_app/states_management/user_cubit/user_state.dart';
 import 'package:cmtchat_app/states_management/web_message/web_message_bloc.dart';
 import 'package:cmtchat_app/ui/pages/home/home.dart';
 import 'package:cmtchat_app/ui/pages/home/home_router.dart';
+import 'package:cmtchat_app/ui/pages/home/home_ui.dart';
 import 'package:cmtchat_app/ui/pages/message_thread/message_thread_ui.dart';
-import 'package:cmtchat_app/ui/pages/onboarding/onboarding.dart';
+import 'package:cmtchat_app/ui/pages/onboarding.dart';
 import 'package:cmtchat_app/viewmodels/chat_view_model.dart';
 import 'package:cmtchat_app/viewmodels/chats_view_model.dart';
+import 'package:cmtchat_app/viewmodels/home_view_model.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:rethink_db_ns/rethink_db_ns.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -48,6 +51,9 @@ class CompositionRoot {
   static late ChatsCubit _chatsCubit;
   static late ChatsViewModel _chatsViewModel;
 
+  static late HomeViewModel _homeViewModel;
+
+
 
   static configure() async {
     final sp = await SharedPreferences.getInstance();
@@ -63,6 +69,8 @@ class CompositionRoot {
     _webMessageBloc = WebMessageBloc(_webMessageService);
     _userCubit = UserCubit(_webUserService, _dataService, _localCache);
 
+    _homeViewModel = HomeViewModel(_dataService, _webUserService);
+
     // Testing
     //await sp.clear();
     //await _dataService.cleanDb();
@@ -75,14 +83,17 @@ class CompositionRoot {
         child: BlocConsumer<UserCubit, UserState>(
           listener: (context, state) {
             if(state is UserConnectSuccess) {
+              /*
               _chatsViewModel = ChatsViewModel(
                   _dataService, _webUserService, state.user);
               _chatsCubit = ChatsCubit(_chatsViewModel);
+
+               */
             }},
 
           builder: (context, state) {
             if(state is UserInitial) { context.read<UserCubit>().checkCache(); }
-            if(state is UserConnectSuccess) { return composeHomeUi(state.user); }
+            if(state is UserConnectSuccess) { return composeHome(state.user); }
 
             return composeOnboardingUi();
           },
@@ -97,6 +108,20 @@ class CompositionRoot {
     );
   }
 
+
+  static Widget composeHome(User user) {
+    HomeCubit2 homeCubit2 = HomeCubit2(user, _homeViewModel);
+
+    return MultiBlocProvider(
+        providers: [
+          BlocProvider(create: (BuildContext context) => _userCubit),
+          BlocProvider(create: (BuildContext context) => homeCubit2),
+          //BlocProvider(create: (BuildContext context) => _webMessageBloc),
+          //BlocProvider(create: (BuildContext context) => _chatsCubit),
+        ],
+        child: HomeUi(user),
+    );
+  }
 
   static Widget composeHomeUi(User mainUser) {
     HomeCubit homeCubit = HomeCubit(_webUserService);

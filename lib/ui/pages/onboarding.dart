@@ -1,7 +1,7 @@
 import 'package:cmtchat_app/colors.dart';
 import 'package:cmtchat_app/states_management/user_cubit/user_cubit.dart';
 import 'package:cmtchat_app/states_management/user_cubit/user_state.dart';
-import 'package:cmtchat_app/ui/widgets/onboarding/logo.dart';
+import 'package:cmtchat_app/ui/widgets/shared/logo.dart';
 import 'package:cmtchat_app/ui/widgets/onboarding/profile_upload.dart';
 import 'package:cmtchat_app/ui/widgets/shared/costum_text_field.dart';
 import 'package:flutter/material.dart';

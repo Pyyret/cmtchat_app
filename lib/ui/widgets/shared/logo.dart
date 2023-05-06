@@ -6,8 +6,8 @@ class Logo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: 70,
+    return SizedBox(
+      height: 90,
       child: isLightTheme(context)
           ? Image.asset('assets/logo.png', fit: BoxFit.contain)
           : Image.asset('asset/logo.png', fit: BoxFit.contain)

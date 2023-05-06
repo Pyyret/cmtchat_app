@@ -10,9 +10,9 @@ import 'package:flutter/foundation.dart';
 
 abstract class BaseViewModel {
   final IDataService _dataService;
-  final User _mainUser;
+  final User _user;
 
-  BaseViewModel(this._dataService, this._mainUser);
+  BaseViewModel(this._dataService, this._user);
 
   @protected
   Future<void> addMessage(WebMessage message, Chat chat, ReceiptStatus status) async {
@@ -51,7 +51,7 @@ abstract class BaseViewModel {
       chatMate ??= User(webUserId: webUserId);
       chat = Chat(chatName: chatMate.username);
       chat.owners.add(chatMate);
-      chat.owners.add(_mainUser);
+      chat.owners.add(_user);
       await _dataService.saveChat(chat);
     }
     return chat;
