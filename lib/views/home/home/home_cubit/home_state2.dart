@@ -1,31 +1,27 @@
-import 'package:cmtchat_app/models/local/user.dart';
+import 'package:cmtchat_app/collections/chat_message_collection.dart';
+import 'package:cmtchat_app/collections/user_webuser_collection.dart';
 import 'package:equatable/equatable.dart';
 
 abstract class HomeState2 extends Equatable {
-  User? get user;
+  final List<Chat> chatList;
+  final List<WebUser> activeUserList;
+  const HomeState2(this.chatList, this.activeUserList);
 }
 
 class HomeInit extends HomeState2 {
+  HomeInit() : super([], []);
   @override
-  List<Object> get props => [];
-
-  @override
-  User? get user => null;
+  List<Object> get props => [chatList, activeUserList];
 }
 
-class HomeUser extends HomeState2 {
+class LoadingHome extends HomeState2 {
+  LoadingHome() : super([], []);
   @override
-  final User user;
-  HomeUser(this.user);
-  @override
-  List<Object> get props => [user];
+  List<Object> get props => [chatList, activeUserList];
 }
 
-class UserUpdated extends HomeState2 {
+class SyncedHome extends HomeState2 {
+  const SyncedHome(super.chatList, super.activeUserList);
   @override
-  final User user;
-  UserUpdated(this.user);
-  @override
-  List<Object> get props => [user];
-
+  List<Object> get props => [chatList, activeUserList];
 }

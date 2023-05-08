@@ -31,7 +31,7 @@ class IsarService implements IDataService {
   @override
   Future<void> saveUser(User user) async {
     final isar = await db;
-     await isar.writeTxnSync(() async => isar.users.putSync(user));
+    isar.writeTxnSync(() => isar.users.putSync(user));
   }
 
   @override
@@ -74,8 +74,10 @@ class IsarService implements IDataService {
 
   // Returns the id of the new or updated chat
   @override
-  Future<void> saveChat(Chat chat) async {
+  Future<void> saveChat(Chat chat, Id userId) async {
     final isar = await db;
+    isar.writeTxnSync(() => isar.chats.putSync(chat));
+    await _updateChatVariables(chat, userId);
     return isar.writeTxnSync(() => isar.chats.putSync(chat));
   }
 
@@ -106,27 +108,7 @@ class IsarService implements IDataService {
         .findAllSync()
         .toList();
 
-    for(Chat chat in chats) {
-      chat.unread = chat.messages
-          .filter()
-          .statusEqualTo(ReceiptStatus.delivered)
-          .findAllSync()
-          .length;
-
-      chat.lastUpdate = chat.messages
-          .filter()
-          .sortByTimestamp()
-          .findAllSync()
-          .last
-          .timestamp;
-
-      chat.chatName = chat.owners
-          .filter()
-          .not()
-          .idEqualTo(userId)
-          .findFirstSync()
-          ?.username;
-    }
+    for (Chat chat in chats) { await _updateChatVariables(chat, userId); }
 
     await isar.writeTxn(() async {
       for(Chat chat in chats) {
@@ -140,6 +122,35 @@ class IsarService implements IDataService {
         .sortByLastUpdateDesc()
         .findAllSync()
         .toList();
+  }
+
+  Future<Chat> _updateChatVariables(Chat chat, Id userId) async {
+    chat.unread = chat.messages
+        .filter()
+        .statusEqualTo(ReceiptStatus.delivered)
+        .findAllSync()
+        .length;
+
+    await chat.messages
+        .filter()
+        .sortByTimestampDesc()
+        .findFirst().then((message) {
+      if(message != null) {
+        print('tudeluu');
+        chat.lastUpdate = message.timestamp;
+        chat.lastMessageContents = message.contents;
+      }
+    });
+
+    chat.chatName = chat.owners
+        .filter()
+        .not()
+        .idEqualTo(userId)
+        .findFirstSync()
+        ?.username
+        ?? 'unnamed';
+
+    return chat;
   }
 
   // Also removes all messages linked to the chat.

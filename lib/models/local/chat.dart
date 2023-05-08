@@ -9,9 +9,11 @@ part 'chat.g.dart';
 @Name('Chats')
 class Chat {
   Id id = Isar.autoIncrement;     // Automatically given by Isar
+  String chatName;
 
   int unread = 0;
   DateTime lastUpdate = DateTime.now();
+  String lastMessageContents = 'nothing here';
 
   // Links to the owner of the chatroom
   @Backlink(to: 'chats')
@@ -20,12 +22,9 @@ class Chat {
   // Links to messages in chatroom
   final messages = IsarLinks<Message>();
 
-  // Optional
-  String? chatName;
-
 
   /// Constructor
-  Chat({this.chatName});
+  Chat({this.chatName = ''});
 
   /*
 

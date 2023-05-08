@@ -49,10 +49,10 @@ abstract class BaseViewModel {
     if(chat == null) {
       User? chatMate = await _dataService.findWebUser(webUserId);
       chatMate ??= User(webUserId: webUserId);
-      chat = Chat(chatName: chatMate.username);
+      chat = Chat();
       chat.owners.add(chatMate);
       chat.owners.add(_user);
-      await _dataService.saveChat(chat);
+      await _dataService.saveChat(chat, _user.id);
     }
     return chat;
   }

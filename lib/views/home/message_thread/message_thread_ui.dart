@@ -1,15 +1,9 @@
 import 'dart:async';
 
 import 'package:cmtchat_app/collections/chat_message_collection.dart';
+import 'package:cmtchat_app/collections/home_collection.dart';
 import 'package:cmtchat_app/collections/message_thread_collection.dart';
 import 'package:cmtchat_app/collections/user_webuser_collection.dart';
-
-
-
-import 'package:cmtchat_app/views/home/shared_blocs/web_message/web_message_bloc.dart';
-import 'package:cmtchat_app/views/home/shared_blocs/receipt_bloc/receipt_bloc.dart';
-
-import 'package:cmtchat_app/views/home/chats/chats_cubit/chats_cubit.dart';
 
 import 'package:cmtchat_app/colors.dart';
 import 'package:cmtchat_app/theme.dart';
@@ -20,13 +14,13 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:isar/isar.dart';
 
 class MessageThread extends StatefulWidget {
-  final User mainUser;
-  final Chat chat;
-  final WebMessageBloc webMessageBloc;
-  final ChatsCubit chatsCubit;
+  final User _user;
+  final Chat _chat;
+  final WebMessageBloc _webMessageBloc;
+  final HomeCubit2 _homeCubit;
 
-  const MessageThread(this.mainUser, this.chat, this.webMessageBloc,
-      this.chatsCubit, {super.key});
+  const MessageThread(this._user, this._chat, this._webMessageBloc, this._homeCubit,
+      {super.key});
 
   @override
   State<MessageThread> createState() => _MessageThreadState();
@@ -36,23 +30,24 @@ class _MessageThreadState extends State<MessageThread> {
   final ScrollController _scrollController = ScrollController();
   final TextEditingController _textEditingController = TextEditingController();
 
-  late final User mainUser;
-  late final Chat chat;
-  late final User receiver;
-  late StreamSubscription _subscription;
+  late final User _user;
+  late final Chat _chat;
+  late final WebMessageBloc _webMessageBloc;
+  late final User _receiver;
+  late final StreamSubscription _subscription;
   List<Message> messages = [];
 
   @override
   void initState() {
     super.initState();
-    mainUser = widget.mainUser;
-    chat = widget.chat;
-    final mainWebUser = WebUser.fromUser(mainUser);
-    receiver =
-    chat.owners.filter().not().idEqualTo(mainUser.id).findFirstSync()!;
+    _user = widget._user;
+    _chat = widget._chat;
+    _webMessageBloc = widget._webMessageBloc;
+    _receiver = _chat.owners.filter().not().idEqualTo(_user.id).findFirstSync()!;
     _updateOnMessageReceived();
     _updateOnReceiptReceived();
-    context.read<ReceiptBloc>().add(ReceiptEvent.onSubscribed(mainWebUser));
+    final webUser = WebUser.fromUser(_user);
+    context.read<ReceiptBloc>().add(ReceiptEvent.onSubscribed(webUser));
   }
 
   @override
@@ -65,15 +60,18 @@ class _MessageThreadState extends State<MessageThread> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             IconButton(
-              onPressed: () => Navigator.of(context).pop(true),
+              onPressed: () {
+                widget._homeCubit.update();
+                Navigator.of(context).pop(true);
+              },
               icon: const Icon(Icons.arrow_back_ios_rounded),
               color: isLightTheme(context) ? Colors.black : Colors.white,
             ),
             Expanded(
               child: HeaderStatus(
-                receiver.username ?? '',
-                receiver.photoUrl ?? '',
-                receiver.active ?? true,
+                _receiver.username ?? '',
+                _receiver.photoUrl ?? '',
+                _receiver.active ?? true,
               ),
             ),
           ],
@@ -189,7 +187,7 @@ class _MessageThreadState extends State<MessageThread> {
       ListView.builder(
         padding: const EdgeInsets.only(top: 16.0, left: 16.0, bottom: 20.0),
         itemBuilder: (_, indx) {
-          if (messages[indx].from.value!.id == receiver.id) {
+          if (messages[indx].from.value!.id == _receiver.id) {
             _sendReceipt(messages[indx]);
             return Padding(
               padding: const EdgeInsets.only(bottom: 8.0),
@@ -211,8 +209,8 @@ class _MessageThreadState extends State<MessageThread> {
 
   void _updateOnMessageReceived() {
     final messageThreadCubit = context.read<MessageThreadCubit>();
-    messageThreadCubit.messages(chat);
-    _subscription = widget.webMessageBloc.stream.listen((state) async {
+    messageThreadCubit.messages(_chat);
+    _subscription = _webMessageBloc.stream.listen((state) async {
       /*
       if (state is WebMessageReceivedSuccess) {
         //await messageThreadCubit.viewModel.receivedMessage(state.message);
@@ -229,7 +227,7 @@ class _MessageThreadState extends State<MessageThread> {
       if (state is WebMessageSentSuccess) {
         await messageThreadCubit.viewModel.sentMessage(state.message);
       }
-      await messageThreadCubit.messages(chat);
+      await messageThreadCubit.messages(_chat);
     });
   }
 
@@ -238,24 +236,22 @@ class _MessageThreadState extends State<MessageThread> {
     context.read<ReceiptBloc>().stream.listen((state) async {
       if (state is ReceiptReceivedSuccess) {
         await messageThreadCubit.viewModel.updateMessageReceipt(state.receipt);
-        await messageThreadCubit.messages(chat);
-        await widget.chatsCubit.chats();
+        await messageThreadCubit.messages(_chat);
       }
     });
   }
 
   _sendMessage() {
     if(_textEditingController.text.trim().isEmpty) { return; }
-
     final webMessage = WebMessage(
-        to: receiver.webUserId,
-        from: widget.mainUser.webUserId,
+        to: _receiver.webUserId,
+        from: _user.webUserId,
         timestamp: DateTime.now(),
         contents: _textEditingController.text
     );
 
     final sendMessageEvent = WebMessageEvent.onMessageSent(webMessage);
-    widget.webMessageBloc.add(sendMessageEvent);
+    widget._webMessageBloc.add(sendMessageEvent);
 
     _textEditingController.clear();
   }

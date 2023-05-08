@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await CompositionRoot.configure();
-  final firstPage = await CompositionRoot.director();
+  final firstPage = CompositionRoot.director();
   runApp(MyApp(firstPage));
 }
 

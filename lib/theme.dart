@@ -5,16 +5,27 @@ import 'colors.dart';
 
 const appBarTheme = AppBarTheme(
   centerTitle: false,
-  elevation: 0,
-  backgroundColor: Colors.white,
+  elevation: 8,
+  backgroundColor: Colors.blueGrey,
+  titleTextStyle: TextStyle(
+    color: Colors.white,
+    fontWeight: FontWeight.bold,
+    fontSize: 50,
+  ),
+  toolbarTextStyle: TextStyle(
+    color: Colors.black87,
+    fontWeight: FontWeight.bold,
+    fontSize: 30,
+  ),
 );
 
 final tabBarTheme = TabBarTheme(
-  indicatorSize: TabBarIndicatorSize.label,
+  labelColor: Colors.black,
   unselectedLabelColor: Colors.black54,
+  indicatorSize: TabBarIndicatorSize.label,
   indicator: BoxDecoration(
-    borderRadius: BorderRadius.circular(16.0),
-    color: kPrimary,
+    color: Colors.blueGrey,
+    borderRadius: BorderRadius.circular(8.0),
   ),
 );
 

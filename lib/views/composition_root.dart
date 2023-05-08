@@ -5,6 +5,7 @@ import 'package:cmtchat_app/collections/localservice_collection.dart';
 import 'package:cmtchat_app/collections/message_thread_collection.dart';
 import 'package:cmtchat_app/collections/user_webuser_service_collection.dart';
 import 'package:cmtchat_app/collections/viewmodels_collection.dart';
+import 'package:cmtchat_app/viewmodels/user_view_model.dart';
 
 import 'package:flutter/cupertino.dart';
 import 'package:rethink_db_ns/rethink_db_ns.dart';
@@ -27,13 +28,16 @@ class CompositionRoot {
   static late IWebMessageService _webMessageService;
 
   // Blocs/Cubits
-  static late AppCubit _userCubit;
   static late WebMessageBloc _webMessageBloc;
-
+  static late AppCubit _appCubit;
+  static late HomeCubit2 _homeCubit2;
   static late ChatsCubit _chatsCubit;
-  static late ChatsViewModel _chatsViewModel;
 
+  static late ChatsViewModel _chatsViewModel;
+  static late UserViewModel _userViewModel;
   static late HomeViewModel _homeViewModel;
+
+  static late IHomeRouter _homeRouter;
 
 
 
@@ -49,9 +53,14 @@ class CompositionRoot {
     _webMessageService = WebMessageService(_r, _connection);
 
     _webMessageBloc = WebMessageBloc(_webMessageService);
-    _userCubit = AppCubit(_webUserService, _dataService, _localCacheService);
 
+    _userViewModel = UserViewModel(_webUserService, _dataService, _localCacheService);
     _homeViewModel = HomeViewModel(_dataService, _webUserService);
+    _homeRouter = HomeRouter(showMessageThread: composeMessageThreadUi);
+
+    _appCubit = AppCubit(_userViewModel);
+    _homeCubit2 = HomeCubit2(_homeViewModel);
+
 
     // Testing
     //await sp.clear();
@@ -59,49 +68,31 @@ class CompositionRoot {
   }
 
 
-  static Future<Widget> director() async {
+  static BlocProvider<AppCubit> director() {
     return BlocProvider(
-        create: (BuildContext context) => _userCubit,
-        child: BlocConsumer<AppCubit, AppState>(
-          listener: (context, state) {
-            if(state is UserConnectSuccess) {
-              /*
-              _chatsViewModel = ChatsViewModel(
-                  _dataService, _webUserService, state.user);
-              _chatsCubit = ChatsCubit(_chatsViewModel);
-
-               */
-            }},
-
+        create: (BuildContext context) => _appCubit,
+        child: BlocBuilder<AppCubit, AppState>(
           builder: (context, state) {
-            if(state is AppInitial) { context.read<AppCubit>().checkCache(); }
-            if(state is UserConnectSuccess) { return composeHome(state.user); }
-
-            return composeOnboardingUi();
+            if(state is AppInitial) { context.read<AppCubit>().loginFromCache(); }
+            if(state is UserConnectSuccess) { return composeHome(); }
+            else {
+              return const Onboarding();
+            }
           },
-        ),
-    );
-  }
-
-  static Widget composeOnboardingUi() {
-    return BlocProvider(
-      create: (BuildContext context) => _userCubit,
-      child: const Onboarding(),
+        )
     );
   }
 
 
-  static Widget composeHome(User user) {
-    HomeCubit2 homeCubit2 = HomeCubit2(user, _homeViewModel);
-
+  static Widget composeHome() {
     return MultiBlocProvider(
         providers: [
-          BlocProvider(create: (BuildContext context) => _userCubit),
-          BlocProvider(create: (BuildContext context) => homeCubit2),
-          //BlocProvider(create: (BuildContext context) => _webMessageBloc),
+          BlocProvider(create: (BuildContext context) => _appCubit),
+          BlocProvider(create: (BuildContext context) => _homeCubit2),
+          BlocProvider(create: (BuildContext context) => _webMessageBloc),
           //BlocProvider(create: (BuildContext context) => _chatsCubit),
         ],
-        child: HomeUi(user),
+        child: HomeUi(_homeRouter),
     );
   }
 
@@ -131,7 +122,7 @@ class CompositionRoot {
           BlocProvider(create: (BuildContext context) => messageThreadCubit),
           BlocProvider(create: (BuildContext context) => receiptBloc),
         ],
-        child: MessageThread(mainUser,chat,  _webMessageBloc, _chatsCubit),
+        child: MessageThread(mainUser, chat,  _webMessageBloc, _homeCubit2),
     );
   }
 }

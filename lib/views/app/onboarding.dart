@@ -51,7 +51,7 @@ class _OnboardingState extends State<Onboarding> {
 
               ),
               child: ElevatedButton(
-                  onPressed: () async {
+                  onPressed: () {
                     final error = _checkInputs();
                     if(error.isNotEmpty) {
                       final snackBar = SnackBar(
@@ -62,9 +62,9 @@ class _OnboardingState extends State<Onboarding> {
                           ),
                       );
                       ScaffoldMessenger.of(context).showSnackBar(snackBar);
-                      return;
                     }
-                    await context.read<AppCubit>().create(_username);
+                    else { context.read<AppCubit>().newUserLogin(_username); }
+
                   },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: kPrimary,

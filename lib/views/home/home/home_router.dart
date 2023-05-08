@@ -12,12 +12,12 @@ class HomeRouter implements IHomeRouter {
   HomeRouter({required this.showMessageThread});
 
   @override
-  Future<void> onShowMessageThread(BuildContext context, User mainUser,
+  Future<void> onShowMessageThread(BuildContext context, User user,
       Chat chat) {
     return Navigator.push(
         context,
         MaterialPageRoute(
-            builder: (_) => showMessageThread(mainUser, chat),
+            builder: (_) => showMessageThread(user, chat),
         ),
     );
   }
