@@ -1,14 +1,14 @@
 import 'package:cmtchat_app/collections/localservice_collection.dart';
 import 'package:cmtchat_app/collections/user_webuser_service_collection.dart';
 
-class UserViewModel {
+class AppViewModel {
   final IWebUserService _webUserService;
   final IDataService _dataService;
   final ILocalCacheService _localCacheService;
 
   late User _user;
 
-  UserViewModel(this._webUserService, this._dataService, this._localCacheService);
+  AppViewModel(this._webUserService, this._dataService, this._localCacheService);
 
   User get user => _user;
 

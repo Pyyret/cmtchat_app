@@ -33,7 +33,7 @@ class _ChatsState extends State<Chats> {
   @override
   Widget build(BuildContext context) {
     final List<Chat> chatList = context.select(
-            (HomeCubit2 cubit) => cubit.state.chatList);
+            (HomeCubit cubit) => cubit.state.chatList);
     return ListView.separated(
         padding: const EdgeInsets.only(top: 30.0, right: 16.0),
         itemBuilder: (_, indx) => GestureDetector(

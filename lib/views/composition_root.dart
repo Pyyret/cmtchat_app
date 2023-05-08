@@ -2,10 +2,13 @@ import 'package:cmtchat_app/collections/app_collection.dart';
 import 'package:cmtchat_app/collections/chat_message_collection.dart';
 import 'package:cmtchat_app/collections/home_collection.dart';
 import 'package:cmtchat_app/collections/localservice_collection.dart';
-import 'package:cmtchat_app/collections/message_thread_collection.dart';
 import 'package:cmtchat_app/collections/user_webuser_service_collection.dart';
 import 'package:cmtchat_app/collections/viewmodels_collection.dart';
-import 'package:cmtchat_app/viewmodels/user_view_model.dart';
+import 'package:cmtchat_app/views/home/home/chat/chat_cubit/chat_cubit.dart';
+import 'package:cmtchat_app/views/home/home/chat/chat_view.dart';
+
+import 'package:cmtchat_app/views/home/shared_blocs/receipt_bloc/receipt_bloc.dart';
+import 'package:cmtchat_app/views/home/shared_blocs/web_message/web_message_bloc.dart';
 
 import 'package:flutter/cupertino.dart';
 import 'package:rethink_db_ns/rethink_db_ns.dart';
@@ -26,15 +29,15 @@ class CompositionRoot {
   // Web services
   static late IWebUserService _webUserService;
   static late IWebMessageService _webMessageService;
+  static late IReceiptService _receiptService;
 
   // Blocs/Cubits
   static late WebMessageBloc _webMessageBloc;
+  static late ReceiptBloc _receiptBloc;
   static late AppCubit _appCubit;
-  static late HomeCubit2 _homeCubit2;
-  static late ChatsCubit _chatsCubit;
+  static late HomeCubit _homeCubit;
 
-  static late ChatsViewModel _chatsViewModel;
-  static late UserViewModel _userViewModel;
+  static late AppViewModel _userViewModel;
   static late HomeViewModel _homeViewModel;
 
   static late IHomeRouter _homeRouter;
@@ -51,15 +54,18 @@ class CompositionRoot {
 
     _webUserService = WebUserService(_r, _connection);
     _webMessageService = WebMessageService(_r, _connection);
+    _receiptService = ReceiptService(_r, _connection);
 
     _webMessageBloc = WebMessageBloc(_webMessageService);
+    _receiptBloc = ReceiptBloc(_receiptService);
 
-    _userViewModel = UserViewModel(_webUserService, _dataService, _localCacheService);
-    _homeViewModel = HomeViewModel(_dataService, _webUserService);
+
+    _userViewModel = AppViewModel(_webUserService, _dataService, _localCacheService);
+    _homeViewModel = HomeViewModel(_dataService, _webUserService,_receiptBloc);
     _homeRouter = HomeRouter(showMessageThread: composeMessageThreadUi);
 
     _appCubit = AppCubit(_userViewModel);
-    _homeCubit2 = HomeCubit2(_homeViewModel);
+    _homeCubit = HomeCubit(_homeViewModel);
 
 
     // Testing
@@ -74,7 +80,7 @@ class CompositionRoot {
         child: BlocBuilder<AppCubit, AppState>(
           builder: (context, state) {
             if(state is AppInitial) { context.read<AppCubit>().loginFromCache(); }
-            if(state is UserConnectSuccess) { return composeHome(); }
+            if(state is UserConnectSuccess) { return composeHomeUi(); }
             else {
               return const Onboarding();
             }
@@ -84,45 +90,29 @@ class CompositionRoot {
   }
 
 
-  static Widget composeHome() {
+  static Widget composeHomeUi() {
     return MultiBlocProvider(
         providers: [
           BlocProvider(create: (BuildContext context) => _appCubit),
-          BlocProvider(create: (BuildContext context) => _homeCubit2),
+          BlocProvider(create: (BuildContext context) => _homeCubit),
           BlocProvider(create: (BuildContext context) => _webMessageBloc),
-          //BlocProvider(create: (BuildContext context) => _chatsCubit),
+          BlocProvider(create: (BuildContext context) => _receiptBloc),
         ],
-        child: HomeUi(_homeRouter),
-    );
-  }
-
-  static Widget composeHomeUi(User mainUser) {
-    HomeCubit homeCubit = HomeCubit(_webUserService);
-    IHomeRouter router = HomeRouter(showMessageThread: composeMessageThreadUi);
-    
-    return MultiBlocProvider(
-        providers: [
-          BlocProvider(create: (BuildContext context) => homeCubit),
-          BlocProvider(create: (BuildContext context) => _webMessageBloc),
-          BlocProvider(create: (BuildContext context) => _chatsCubit),
-        ],
-        child: Home(mainUser, router)
+        child: Home(_homeRouter),
     );
   }
 
 
-  static Widget composeMessageThreadUi(User mainUser, Chat chat) {
-    ChatViewModel viewModel = ChatViewModel(_dataService, mainUser);
-    MessageThreadCubit messageThreadCubit = MessageThreadCubit(viewModel);
-    IReceiptService receiptService = ReceiptService(_r, _connection);
-    ReceiptBloc receiptBloc = ReceiptBloc(receiptService);
+  static Widget composeMessageThreadUi(User user, Chat chat) {
 
     return MultiBlocProvider(
         providers: [
-          BlocProvider(create: (BuildContext context) => messageThreadCubit),
-          BlocProvider(create: (BuildContext context) => receiptBloc),
+          BlocProvider(create: (BuildContext context) => _homeCubit),
+          BlocProvider(create: (BuildContext context) => _webMessageBloc),
+          BlocProvider(create: (BuildContext context) => ChatCubit(
+              _dataService, _receiptBloc, user, chat)),
         ],
-        child: MessageThread(mainUser, chat,  _webMessageBloc, _homeCubit2),
+        child: const ChatView(),
     );
   }
 }

@@ -8,11 +8,10 @@ import 'package:cmtchat_app/viewmodels/base_view_model.dart';
 
 class ChatViewModel extends BaseViewModel {
   final IDataService _dataService;
-  final User _user;
   Chat? thisChat;
   int otherMessages = 0;
 
-  ChatViewModel(this._dataService, this._user) : super(_dataService, _user);
+  ChatViewModel(this._dataService, User user) : super(_dataService, user);
 
   Future<List<Message>> getMessages(Chat chat) async {
     Chat? updatedChat = await _dataService.findChat(chat.id);

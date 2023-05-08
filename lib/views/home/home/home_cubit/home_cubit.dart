@@ -1,26 +1,36 @@
-import 'package:cmtchat_app/models/web/web_user.dart';
-import 'package:cmtchat_app/services/web/user/web_user_service_contract.dart';
-import 'package:cmtchat_app/views/home/home/home_cubit/home_state.dart';
+import 'package:bloc/bloc.dart';
+import 'package:cmtchat_app/collections/chat_message_collection.dart';
+import 'package:cmtchat_app/viewmodels/home_view_model.dart';
 
-import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../collections/user_webuser_service_collection.dart';
+import 'home_state.dart';
 
 class HomeCubit extends Cubit<HomeState> {
-  final IWebUserService _userService;
+  final HomeViewModel _homeViewModel;
 
-  HomeCubit(this._userService) : super(HomeInitial());
+  HomeCubit(this._homeViewModel) : super(HomeInitial());
 
-  Future<WebUser> connect(WebUser webUser) async {
-    webUser.lastSeen = DateTime.now();
-    webUser.active = true;
-
-    await _userService.connect(webUser);
-    return webUser;
+  void initialize({required User user}) {
+    _homeViewModel.setUser(user);
+    update();
   }
 
-  Future<void> activeUsers(WebUser webUser) async {
+  Future<Chat> getChatWith(String webUserId) async {
+    final chat = await _homeViewModel.getChatWith(webUserId);
+    update();
+    return chat!;
+  }
+
+
+  Future<void> receivedMessage(WebMessage webMessage) async {
+    await _homeViewModel.receivedMessage(webMessage);
+    await update();
+  }
+
+  Future<void> update() async {
     emit(HomeLoading());
-    final users = await _userService.online();
-    users.removeWhere((user) => user.webUserId == webUser.webUserId);
-    emit(HomeSuccess(users));
+    List<Chat> chatList = await _homeViewModel.getChats();
+    List<WebUser> activeUserList = await _homeViewModel.activeUsers();
+    emit(HomeSynced(chatList, activeUserList));
   }
 }

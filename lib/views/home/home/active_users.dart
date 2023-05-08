@@ -30,7 +30,7 @@ class _ActiveUsersState extends State<ActiveUsers> {
   @override
   Widget build(BuildContext context) {
     final List<WebUser> activeUserList = context.select(
-            (HomeCubit2 cubit) => cubit.state.activeUserList);
+            (HomeCubit cubit) => cubit.state.activeUserList);
     return _buildList(activeUserList);
   }
 
@@ -47,11 +47,14 @@ class _ActiveUsersState extends State<ActiveUsers> {
 
   _buildList(List<WebUser> users) => ListView.separated(
       padding: const EdgeInsets.only(top: 30.0, right: 16.0),
-      itemBuilder: (BuildContext context, indx) => GestureDetector(
+      itemBuilder: (_, indx) => GestureDetector(
         child: _listItem(users[indx]),
-        onTap: () => context.read<HomeCubit2>()
-            .getChatWith(users[indx].webUserId!)
-            .then((chat) => router.onShowMessageThread(context, user, chat)),
+        onTap: () async {
+          final chat = await context.read<HomeCubit>()
+              .getChatWith(users[indx].webUserId!);
+          print(chat.owners.toList());
+          await router.onShowMessageThread(context, user, chat);
+          },
       ),
       separatorBuilder: (_, __) => const Divider(),
       itemCount: users.length,

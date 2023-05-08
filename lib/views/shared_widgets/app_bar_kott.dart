@@ -87,7 +87,6 @@ class AppBarKott extends StatelessWidget with PreferredSizeWidget {
         GestureDetector(
           child: const Logo(),
           onTap: () {
-            print('tap');
             //context.read<HomeCubit2>().changeUserStatus();
           },
         ),

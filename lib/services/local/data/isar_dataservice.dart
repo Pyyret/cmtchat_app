@@ -31,7 +31,7 @@ class IsarService implements IDataService {
   @override
   Future<void> saveUser(User user) async {
     final isar = await db;
-    isar.writeTxnSync(() => isar.users.putSync(user));
+    await isar.writeTxn(() async => await isar.users.put(user));
   }
 
   @override
@@ -74,7 +74,7 @@ class IsarService implements IDataService {
 
   // Returns the id of the new or updated chat
   @override
-  Future<void> saveChat(Chat chat, Id userId) async {
+  Future<int> saveChat(Chat chat, Id userId) async {
     final isar = await db;
     isar.writeTxnSync(() => isar.chats.putSync(chat));
     await _updateChatVariables(chat, userId);
@@ -86,6 +86,14 @@ class IsarService implements IDataService {
     final isar = await db;
     return await isar.chats.get(chatId);
   }
+
+
+  @override
+  Future<Stream<Chat?>> chatUpdateStream(Id chatId) async {
+    final isar = await db;
+    return isar.chats.watchObject(chatId, fireImmediately: true);
+  }
+
 
   @override
   Future<Chat?> findChatWith(String webUserId) async {
@@ -136,7 +144,6 @@ class IsarService implements IDataService {
         .sortByTimestampDesc()
         .findFirst().then((message) {
       if(message != null) {
-        print('tudeluu');
         chat.lastUpdate = message.timestamp;
         chat.lastMessageContents = message.contents;
       }
@@ -195,7 +202,6 @@ class IsarService implements IDataService {
     message.status = receipt.status;
     message.receiptTimestamp = receipt.timestamp;
     await isar.writeTxn(() => isar.messages.put(message));
-
   }
 
   @override

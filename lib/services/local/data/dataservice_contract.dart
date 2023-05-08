@@ -14,8 +14,9 @@ abstract class IDataService {
   Future<void> removeUser(int userId);
 
   /// Chat
-  Future<void> saveChat(Chat chat, int userId);
+  Future<int> saveChat(Chat chat, int userId);
   Future<Chat?> findChat(int chatId);
+  Future<Stream<Chat?>> chatUpdateStream(int chatId);
   Future<Chat?> findChatWith(String webUserId);
   Future<List<Chat>> findAllChats(int userId);
   Future<void> removeChat(int chatId);

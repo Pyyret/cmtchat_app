@@ -1,105 +1,105 @@
-import 'package:cmtchat_app/collections/chats_collection.dart';
-import 'package:cmtchat_app/collections/home_cubit_collection.dart';
+import 'package:cmtchat_app/collections/app_collection.dart';
+import 'package:cmtchat_app/collections/home_collection.dart';
 import 'package:cmtchat_app/collections/user_webuser_collection.dart';
 
-import 'package:cmtchat_app/views/home/active_users/active_users.dart';
-
-import 'package:cmtchat_app/views/home/home/home_router.dart';
 import 'package:cmtchat_app/views/home/shared_blocs/web_message/web_message_bloc.dart';
-import 'package:cmtchat_app/views/shared_widgets/header_status_widget.dart';
+import 'package:cmtchat_app/views/shared_widgets/app_bar_kott.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class Home extends StatefulWidget {
-  final User mainUser;
-  final IHomeRouter router;
-
-  const Home(this.mainUser, this.router, {super.key});
+  final IHomeRouter _homeRouter;
+  const Home(this._homeRouter, {super.key});
 
   @override
   State<Home> createState() => _HomeState();
 }
 
-class _HomeState extends State<Home> with AutomaticKeepAliveClientMixin {
-  late final User _mainUser;
+class _HomeState extends State<Home> {
+  late final IHomeRouter router;
 
   @override
   void initState() {
     super.initState();
-    _mainUser = widget.mainUser;
-    final mainWebUser = WebUser.fromUser(_mainUser);
+    router = widget._homeRouter;
     _updateChatsOnMessageReceived();
-
-    context.read<ChatsCubit>().chats();
-    context.read<HomeCubit>().activeUsers(mainWebUser);
-    context.read<WebMessageBloc>().add(WebMessageEvent.onSubscribed(mainWebUser));
   }
 
   @override
   Widget build(BuildContext context) {
-    super.build(context);
+    final AppState appState = context.select((AppCubit cubit) => cubit.state);
+    final User user = context.select((AppCubit cubit) => cubit.user);
+
+    // If user is not properly connected, redireck back in AppState
+    if (appState is! UserConnectSuccess) {
+      context.read<AppCubit>().emit(NoUserConnect());
+    }
+
     return DefaultTabController(
-        length: 2,
-        child: Scaffold(
-          appBar: AppBar(
-            title: HeaderStatus(
-                _mainUser.username ?? '',
-                _mainUser.photoUrl ?? '',
-                _mainUser.active ?? true,
-            ),
-            bottom: TabBar(
-              indicatorPadding: const EdgeInsets.only(top: 10.0, bottom: 10.0),
-              tabs: [
-                Tab(
-                  child: Container(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(16.0),
+      length: 2,
+      child: Scaffold(
+          appBar: const AppBarKott(),
+          body: SafeArea(
+            child: Column(
+                children: [
+                  TabBar(
+                    indicatorPadding: const EdgeInsets.symmetric(
+                      vertical: 8.0,
+                      horizontal: 20,
                     ),
-                    child: const Align(
-                      alignment: Alignment.center,
-                      child: Text('Messages'),
-                    ),
-                  ),
-                ),
-                Tab(
-                  child: Container(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(16.0),
-                    ),
-                    child: Align(
-                      alignment: Alignment.center,
-                      child: BlocBuilder<HomeCubit, HomeState>(
-                          builder: (_, state) =>state is HomeSuccess
-                              ? Text('Active(${state.onlineUsers.length})')
-                              : const Text('Active(0)')
+                    tabs: [
+                      const Tab(
+                        child: Align(
+                          alignment: Alignment.center,
+                          child: Text('Chats'),
+                        ),
                       ),
-                    ),
+                      Tab(
+                        child: Align(
+                          alignment: Alignment.center,
+                          child: Builder(
+                            builder: (context) {
+                              final activeUserList = context.select(
+                                      (HomeCubit cubit) => cubit.state.activeUserList);
+                              return Text('Online (${activeUserList.length})'
+                              );
+                            },
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                )
-              ],
+                  BlocBuilder<HomeCubit, HomeState>(
+                    builder: (context, state) {
+                      if(state is HomeInitial) {
+                        context.read<HomeCubit>().initialize(user: user);
+                        WebUser webUser = WebUser.fromUser(user);
+                        context.read<WebMessageBloc>().add(WebMessageEvent.onSubscribed(webUser));
+                        return const Center( child: CircularProgressIndicator());
+                      }
+                      return Expanded(
+                        child: TabBarView(
+                            children: [
+                              Chats(user, router),
+                              ActiveUsers(user, router),
+                            ]),
+                      );
+                    }),
+                ],
+            ),
+
+
             ),
           ),
-          body: TabBarView(
-            children: [
-              Chats(_mainUser, widget.router),
-              ActiveUsers(_mainUser, widget.router),
-            ],
-          ),
-        ),
     );
   }
 
   _updateChatsOnMessageReceived() {
-    final chatsCubit = context.read<ChatsCubit>();
     context.read<WebMessageBloc>().stream.listen((state) async {
-      if(state is WebMessageReceivedSuccess) {
-        await chatsCubit.viewModel.receivedMessage(state.message);
-        await chatsCubit.chats();
+      if (state is WebMessageReceivedSuccess) {
+        await context.read<HomeCubit>().receivedMessage(state.message);
       }
     });
   }
-
-  @override
-  bool get wantKeepAlive => true;
 }

@@ -1,5 +1,7 @@
 import 'package:cmtchat_app/collections/chat_message_collection.dart';
 import 'package:cmtchat_app/services/local/data/dataservice_contract.dart';
+import 'package:cmtchat_app/views/home/shared_blocs/receipt_bloc/receipt_bloc.dart';
+import 'package:isar/isar.dart';
 
 import '../collections/user_webuser_service_collection.dart';
 
@@ -7,29 +9,29 @@ import '../collections/user_webuser_service_collection.dart';
 class HomeViewModel {
   final IDataService _dataService;
   final IWebUserService _webUserService;
+  final ReceiptBloc _receiptBloc;
 
   late User _user;
 
-  HomeViewModel(this._dataService, this._webUserService);
+  HomeViewModel(this._dataService, this._webUserService, this._receiptBloc);
 
   void setUser(User user) => _user = user;
-
 
   // Called whenever a new message is received in the UI-page 'chats'
   Future<void> receivedMessage(WebMessage message) async {
     final chat = await getChatWith(message.from);
-    await addMessage(message, chat, ReceiptStatus.delivered);
+    await addMessage(message, chat!, ReceiptStatus.delivered);
   }
 
-  Future<Chat> getChatWith(String webUserId) async {
+  Future<Chat?> getChatWith(String webUserId) async {
     Chat chat = await _dataService.findChatWith(webUserId) ?? Chat();
     User chatMate = await _dataService.findWebUser(webUserId)
         ?? User(webUserId: webUserId);
     chat.owners.add(chatMate);
     chat.owners.add(_user);
-    await _dataService.saveChat(chat, _user.id);
+    int newChatId = await _dataService.saveChat(chat, _user.id);
 
-    return chat;
+    return await _dataService.findChat(newChatId);
   }
 
   Future<void> addMessage(WebMessage message, Chat chat, ReceiptStatus status) async {
@@ -50,10 +52,6 @@ class HomeViewModel {
     newMessage.to.value = to;
     newMessage.from.value = from;
 
-    // Updating chat
-    //chat.unread++;
-    //await _dataService.saveChat(chat);
-
     // Binding to chat
     newMessage.chat.value = chat;
 
@@ -67,7 +65,6 @@ class HomeViewModel {
     activeUserList.removeWhere((user) => user.webUserId == _user.webUserId);
     return activeUserList;
   }
-
 
 
   // Get all chats that involve _user, update local chat information

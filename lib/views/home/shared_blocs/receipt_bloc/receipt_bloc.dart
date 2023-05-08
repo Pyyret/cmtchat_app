@@ -34,6 +34,11 @@ class ReceiptBloc extends Bloc<ReceiptEvent, ReceiptState> {
       await _receiptService.send(event.receipt);
       yield ReceiptState.sent(event.receipt);
     }
+
+    if(event is ReceiptListSent) {
+      await _receiptService.sendList(event.receiptList);
+      yield ReceiptState.listSent(event.receiptList);
+    }
   }
 
   @override

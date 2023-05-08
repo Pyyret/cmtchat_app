@@ -7,7 +7,7 @@ class ProfileUpload extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return SizedBox(
       height: 126.0,
       width: 126.0,
       child: Material(

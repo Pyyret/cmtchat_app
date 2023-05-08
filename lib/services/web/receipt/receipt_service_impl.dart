@@ -27,6 +27,14 @@ class ReceiptService implements IReceiptService {
   }
 
   @override
+  Future<bool> sendList(List<Receipt> receiptList) async {
+    for (Receipt receipt in receiptList) {
+      await send(receipt);
+    }
+    return true;
+  }
+
+  @override
   Stream<Receipt> receiptStream({required WebUser activeUser}) {
     _startRecievingReceipts(activeUser);
     return _controller.stream;

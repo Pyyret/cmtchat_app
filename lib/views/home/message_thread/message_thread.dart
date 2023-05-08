@@ -1,3 +1,5 @@
+/*
+
 import 'dart:async';
 
 import 'package:cmtchat_app/collections/chat_message_collection.dart';
@@ -7,6 +9,8 @@ import 'package:cmtchat_app/collections/user_webuser_collection.dart';
 
 import 'package:cmtchat_app/colors.dart';
 import 'package:cmtchat_app/theme.dart';
+import 'package:cmtchat_app/views/home/shared_blocs/receipt_bloc/receipt_bloc.dart';
+import 'package:cmtchat_app/views/home/shared_blocs/web_message/web_message_bloc.dart';
 import 'package:cmtchat_app/views/shared_widgets/header_status_widget.dart';
 
 import 'package:flutter/material.dart';
@@ -14,13 +18,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:isar/isar.dart';
 
 class MessageThread extends StatefulWidget {
-  final User _user;
   final Chat _chat;
-  final WebMessageBloc _webMessageBloc;
-  final HomeCubit2 _homeCubit;
 
-  const MessageThread(this._user, this._chat, this._webMessageBloc, this._homeCubit,
-      {super.key});
+  const MessageThread(this._chat, {super.key});
 
   @override
   State<MessageThread> createState() => _MessageThreadState();
@@ -30,28 +30,25 @@ class _MessageThreadState extends State<MessageThread> {
   final ScrollController _scrollController = ScrollController();
   final TextEditingController _textEditingController = TextEditingController();
 
-  late final User _user;
   late final Chat _chat;
-  late final WebMessageBloc _webMessageBloc;
-  late final User _receiver;
-  late final StreamSubscription _subscription;
-  List<Message> messages = [];
 
   @override
   void initState() {
     super.initState();
-    _user = widget._user;
     _chat = widget._chat;
-    _webMessageBloc = widget._webMessageBloc;
-    _receiver = _chat.owners.filter().not().idEqualTo(_user.id).findFirstSync()!;
-    _updateOnMessageReceived();
+    //_updateOnMessageReceived();
     _updateOnReceiptReceived();
-    final webUser = WebUser.fromUser(_user);
+    //final webUser = WebUser.fromUser(_user);
     context.read<ReceiptBloc>().add(ReceiptEvent.onSubscribed(webUser));
   }
 
   @override
   Widget build(BuildContext context) {
+    Stream<Chat> chatStream = context.read<HomeCubit>()
+        .getChatSubscription(_chat.id);
+
+
+
     return Scaffold(
       appBar: AppBar(
         titleSpacing: 0,
@@ -60,10 +57,7 @@ class _MessageThreadState extends State<MessageThread> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             IconButton(
-              onPressed: () {
-                widget._homeCubit.update();
-                Navigator.of(context).pop(true);
-              },
+              onPressed: () => Navigator.of(context).pop(true),
               icon: const Icon(Icons.arrow_back_ios_rounded),
               color: isLightTheme(context) ? Colors.black : Colors.white,
             ),
@@ -183,7 +177,7 @@ class _MessageThreadState extends State<MessageThread> {
     );
   }
 
-  _buildListOfMessages() =>
+  _buildListOfMessages(List<Message> messages) =>
       ListView.builder(
         padding: const EdgeInsets.only(top: 16.0, left: 16.0, bottom: 20.0),
         itemBuilder: (_, indx) {
@@ -206,12 +200,9 @@ class _MessageThreadState extends State<MessageThread> {
         addAutomaticKeepAlives: true,
       );
 
-
+/*
   void _updateOnMessageReceived() {
-    final messageThreadCubit = context.read<MessageThreadCubit>();
-    messageThreadCubit.messages(_chat);
-    _subscription = _webMessageBloc.stream.listen((state) async {
-      /*
+
       if (state is WebMessageReceivedSuccess) {
         //await messageThreadCubit.viewModel.receivedMessage(state.message);
         final receipt = Receipt(
@@ -223,13 +214,15 @@ class _MessageThreadState extends State<MessageThread> {
         context.read<ReceiptBloc>().add(ReceiptEvent.onReceiptSent(receipt));
       }
 
-       */
+
       if (state is WebMessageSentSuccess) {
         await messageThreadCubit.viewModel.sentMessage(state.message);
       }
       await messageThreadCubit.messages(_chat);
     });
   }
+
+ */
 
   void _updateOnReceiptReceived() {
     final messageThreadCubit = context.read<MessageThreadCubit>();
@@ -287,3 +280,5 @@ class _MessageThreadState extends State<MessageThread> {
   }
 }
 
+
+ */

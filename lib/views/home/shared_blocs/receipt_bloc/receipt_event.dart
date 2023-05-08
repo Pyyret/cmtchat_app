@@ -4,6 +4,8 @@ abstract class ReceiptEvent extends Equatable {
   const ReceiptEvent();
   factory ReceiptEvent.onSubscribed(WebUser user) => Subscribe(user);
   factory ReceiptEvent.onReceiptSent(Receipt receipt) => ReceiptSent(receipt);
+  factory ReceiptEvent.onReceiptListSent(
+      List<Receipt> receiptList) => ReceiptListSent(receiptList);
 
   @override
   List<Object> get props => [];
@@ -23,6 +25,14 @@ class ReceiptSent extends ReceiptEvent {
 
   @override
   List<Object> get props => [receipt];
+}
+
+class ReceiptListSent extends ReceiptEvent {
+  final List<Receipt> receiptList;
+  const ReceiptListSent(this.receiptList);
+
+  @override
+  List<Object> get props => [receiptList];
 }
 
 class _ReceiptReceived extends ReceiptEvent {
