@@ -16,8 +16,8 @@ class AppBarKott extends StatelessWidget with PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
-    final String? userName = context.watch<AppCubit>().user.username;
-    final bool? status = context.watch<AppCubit>().user.active;
+    final String? userName = context.watch<AppCubit>().state.user!.username;
+    final bool? status = context.watch<AppCubit>().state.user!.active;
 
     return AppBar(
       flexibleSpace: SafeArea(

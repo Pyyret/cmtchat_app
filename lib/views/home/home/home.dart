@@ -28,13 +28,13 @@ class _HomeState extends State<Home> {
 
   @override
   Widget build(BuildContext context) {
-    final AppState appState = context.select((AppCubit cubit) => cubit.state);
-    final User user = context.select((AppCubit cubit) => cubit.user);
-
     // If user is not properly connected, redireck back in AppState
+    final AppState appState = context.select((AppCubit cubit) => cubit.state);
     if (appState is! UserConnectSuccess) {
       context.read<AppCubit>().emit(NoUserConnect());
     }
+
+    final User user = context.select((AppCubit cubit) => cubit.state.user!);
 
     return DefaultTabController(
       length: 2,

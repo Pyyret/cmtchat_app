@@ -32,15 +32,15 @@ class CompositionRoot {
   static late IReceiptService _receiptService;
 
   // Blocs/Cubits
+  static late AppCubit _appCubit;
+
   static late WebMessageBloc _webMessageBloc;
   static late ReceiptBloc _receiptBloc;
-  static late AppCubit _appCubit;
-  static late HomeCubit _homeCubit;
 
-  static late AppViewModel _userViewModel;
+
   static late HomeViewModel _homeViewModel;
-
   static late IHomeRouter _homeRouter;
+  static late HomeCubit _homeCubit;
 
 
 
@@ -59,12 +59,10 @@ class CompositionRoot {
     _webMessageBloc = WebMessageBloc(_webMessageService);
     _receiptBloc = ReceiptBloc(_receiptService);
 
-
-    _userViewModel = AppViewModel(_webUserService, _dataService, _localCacheService);
     _homeViewModel = HomeViewModel(_dataService, _webUserService,_receiptBloc);
     _homeRouter = HomeRouter(showMessageThread: composeMessageThreadUi);
 
-    _appCubit = AppCubit(_userViewModel);
+    _appCubit = AppCubit(_webUserService, _dataService, _localCacheService);
     _homeCubit = HomeCubit(_homeViewModel);
 
 
@@ -81,9 +79,7 @@ class CompositionRoot {
           builder: (context, state) {
             if(state is AppInitial) { context.read<AppCubit>().loginFromCache(); }
             if(state is UserConnectSuccess) { return composeHomeUi(); }
-            else {
-              return const Onboarding();
-            }
+            else { return const Onboarding(); }
           },
         )
     );

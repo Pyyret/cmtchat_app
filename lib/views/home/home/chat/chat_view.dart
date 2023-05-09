@@ -173,9 +173,7 @@ class _ChatViewState extends State<ChatView> {
   }
 
   _sendMessage() {
-    if (_textEditingController.text.trim().isEmpty) {
-      return;
-    }
+    if (_textEditingController.text.trim().isEmpty) { return; }
     final webMessage = WebMessage(
         to: _receiver.webUserId,
         from: _user.webUserId,
