@@ -43,7 +43,21 @@ const ChatSchema = CollectionSchema(
   deserialize: _chatDeserialize,
   deserializeProp: _chatDeserializeProp,
   idName: r'id',
-  indexes: {},
+  indexes: {
+    r'lastUpdate': IndexSchema(
+      id: -2443505817451631414,
+      name: r'lastUpdate',
+      unique: false,
+      replace: false,
+      properties: [
+        IndexPropertySchema(
+          name: r'lastUpdate',
+          type: IndexType.value,
+          caseSensitive: false,
+        )
+      ],
+    )
+  },
   links: {
     r'owners': LinkSchema(
       id: 8481593217365149869,
@@ -145,6 +159,14 @@ extension ChatQueryWhereSort on QueryBuilder<Chat, Chat, QWhere> {
       return query.addWhereClause(const IdWhereClause.any());
     });
   }
+
+  QueryBuilder<Chat, Chat, QAfterWhere> anyLastUpdate() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(
+        const IndexWhereClause.any(indexName: r'lastUpdate'),
+      );
+    });
+  }
 }
 
 extension ChatQueryWhere on QueryBuilder<Chat, Chat, QWhereClause> {
@@ -208,6 +230,96 @@ extension ChatQueryWhere on QueryBuilder<Chat, Chat, QWhereClause> {
         lower: lowerId,
         includeLower: includeLower,
         upper: upperId,
+        includeUpper: includeUpper,
+      ));
+    });
+  }
+
+  QueryBuilder<Chat, Chat, QAfterWhereClause> lastUpdateEqualTo(
+      DateTime lastUpdate) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.equalTo(
+        indexName: r'lastUpdate',
+        value: [lastUpdate],
+      ));
+    });
+  }
+
+  QueryBuilder<Chat, Chat, QAfterWhereClause> lastUpdateNotEqualTo(
+      DateTime lastUpdate) {
+    return QueryBuilder.apply(this, (query) {
+      if (query.whereSort == Sort.asc) {
+        return query
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'lastUpdate',
+              lower: [],
+              upper: [lastUpdate],
+              includeUpper: false,
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'lastUpdate',
+              lower: [lastUpdate],
+              includeLower: false,
+              upper: [],
+            ));
+      } else {
+        return query
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'lastUpdate',
+              lower: [lastUpdate],
+              includeLower: false,
+              upper: [],
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'lastUpdate',
+              lower: [],
+              upper: [lastUpdate],
+              includeUpper: false,
+            ));
+      }
+    });
+  }
+
+  QueryBuilder<Chat, Chat, QAfterWhereClause> lastUpdateGreaterThan(
+    DateTime lastUpdate, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.between(
+        indexName: r'lastUpdate',
+        lower: [lastUpdate],
+        includeLower: include,
+        upper: [],
+      ));
+    });
+  }
+
+  QueryBuilder<Chat, Chat, QAfterWhereClause> lastUpdateLessThan(
+    DateTime lastUpdate, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.between(
+        indexName: r'lastUpdate',
+        lower: [],
+        upper: [lastUpdate],
+        includeUpper: include,
+      ));
+    });
+  }
+
+  QueryBuilder<Chat, Chat, QAfterWhereClause> lastUpdateBetween(
+    DateTime lowerLastUpdate,
+    DateTime upperLastUpdate, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.between(
+        indexName: r'lastUpdate',
+        lower: [lowerLastUpdate],
+        includeLower: includeLower,
+        upper: [upperLastUpdate],
         includeUpper: includeUpper,
       ));
     });

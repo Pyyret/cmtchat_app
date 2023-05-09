@@ -19,8 +19,8 @@ class ChatView extends StatefulWidget {
 }
 
 class _ChatViewState extends State<ChatView> {
-  late final User _user = context.read<ChatCubit>().user;
-  late final User _receiver = context.read<ChatCubit>().receiver;
+  late final User _user; // = context.read<ChatCubit>();
+  late final User _receiver; // = context.read<ChatCubit>();
 
   final ScrollController _scrollController = ScrollController();
   final TextEditingController _textEditingController = TextEditingController();
@@ -175,8 +175,8 @@ class _ChatViewState extends State<ChatView> {
   _sendMessage() {
     if (_textEditingController.text.trim().isEmpty) { return; }
     final webMessage = WebMessage(
-        to: _receiver.webUserId,
-        from: _user.webUserId,
+        to: _receiver.webUserId!,
+        from: _user.webUserId!,
         timestamp: DateTime.now(),
         contents: _textEditingController.text);
 

@@ -8,14 +8,15 @@ part 'chat.g.dart';
 @Collection()
 @Name('Chats')
 class Chat {
-  Id id = Isar.autoIncrement;     // Automatically given by Isar
-  String chatName;
+  Id id = Isar.autoIncrement;    // Automatically given by Isar
 
-  int unread = 0;
-  DateTime lastUpdate = DateTime.now();
-  String lastMessageContents = 'nothing here';
+  String chatName = '';         // Set to the username that is not user by isar
+  int unread = 0;               // Number of messages with 'delivered' status
+  @Index()
+  DateTime lastUpdate = DateTime.now();     // Set to datetime of last message
+  String lastMessageContents = '';          // Set by isar
 
-  // Links to the owner of the chatroom
+  // Links to the owners of the chatroom
   @Backlink(to: 'chats')
   final owners = IsarLinks<User>();
 
@@ -25,29 +26,4 @@ class Chat {
 
   /// Constructor
   Chat({this.chatName = ''});
-
-  /*
-
-  /// Methods
-  Map<String, dynamic> toMap() => {
-    'isar_id': isarId,
-    'id': id,
-    'name': name,
-    'unread': unread,
-    'messages': messages.toList(),
-    'most_recent' : mostRecent
-  };
-
-  factory Chat.fromMap(Map<String, dynamic> json) {
-    Chat chat = Chat(json['name']);
-    chat.isarId ??= json['isar_id'];
-    chat.id ??= json['id'];
-    chat.unread = json['unread'];
-    chat.messages ??= json['messages'];
-    chat.mostRecent ??= json['most_recent'];
-
-    return chat;
-  }
-
-   */
 }

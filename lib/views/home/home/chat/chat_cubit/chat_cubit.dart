@@ -9,7 +9,7 @@ import 'package:isar/isar.dart';
 part 'chat_state.dart';
 
 class ChatCubit extends Cubit<ChatState> {
-  final IDataService _dataService;
+  final LocalDbApi _dataService;
   final ReceiptBloc _receiptBloc;
   final Chat _chat;
   final User _user;
@@ -17,9 +17,9 @@ class ChatCubit extends Cubit<ChatState> {
   
   ChatCubit(this._dataService, this._receiptBloc, this._user, this._chat) : super(const ChatState()) {
     _receiver = _chat.owners.where((user) => user.id != _user.id).single;
-    _listenForChange();
+    //_listenForChange();
   }
-
+/*
   get user => _user;
   get receiver => _receiver;
 
@@ -41,17 +41,19 @@ class ChatCubit extends Cubit<ChatState> {
     });
   }
 
+ */
+
   Future<void> _readAll(List<Message> messageList) async {
     for(Message msg in messageList) {
       if(msg.to.value!.id == _user.id) {
         final Receipt receipt = Receipt(
-            recipient: msg.from.value!.webUserId,
-            messageId: msg.webId,
+            recipient: msg.from.value!.webUserId!,
+            messageId: msg.webId!,
             status: ReceiptStatus.read,
             timestamp: DateTime.now()
         );
         _receiptBloc.add(ReceiptEvent.onReceiptSent(receipt));
-        await _dataService.updateMessageReceipt(msg.webId, receipt);
+        await _dataService.updateMessageReceipt(msg.webId!, receipt);
       }
     }
 
@@ -60,3 +62,4 @@ class ChatCubit extends Cubit<ChatState> {
   }
 
 }
+

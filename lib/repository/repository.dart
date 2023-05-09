@@ -1,19 +1,109 @@
-enum RepositoryStatus { unknown, authenticated, unauthenticated }
+import 'package:cmtchat_app/collections/app_collection.dart';
+import 'package:cmtchat_app/collections/chat_message_collection.dart';
+import 'package:cmtchat_app/collections/isar_db_collection.dart';
+import 'package:cmtchat_app/collections/user_webuser_service_collection.dart';
+import 'package:cmtchat_app/views/home/shared_blocs/web_message/web_message_bloc.dart';
 
-/*
+import 'package:flutter_bloc/flutter_bloc.dart';
+
+/// Repository Status Enum ///
+enum RepoStatus { noUser, ready, loading, failure }
+
 class Repository {
+  /// DataProvider APIs ///
+  // Local
+  final LocalDbApi _localDb;
+  // WebDependant
+  final WebUserServiceApi _webUserService;
+  final WebMessageServiceApi _webMessageService;
+  final IReceiptService _receiptService;
 
-  const Repository({
-    required TodosApi todosApi,
+  /// Constructor
+  Repository({
+    required LocalDbApi dataService,
+    required WebUserServiceApi webUserService,
+    required WebMessageServiceApi webMessageService,
+    required IReceiptService receiptService
+  })  : _localDb = dataService,
+        _webUserService = webUserService,
+        _webMessageService = webMessageService,
+        _receiptService = receiptService
 
-  }) : _todosApi = todosApi;
+  /// AppCubit listener
+  // This listens for changes in the AppCubit to take appropriate actions
+  // on user or app changes.
+  { BlocListener<AppCubit, AppState>(
+      listener: (context, appState) {
+        if(appState.userLoggedIn && _repoStatus == RepoStatus.noUser) {
+          _initializeRepo(appState.appUser);
+        }
 
-  final User;
 
-  final TodosApi _todosApi;
+    });
+  }
+
+
+  /// Repository variables ///
+   // RepoStatus is enum declared at top of this class with (one of) the
+  /// RepoStatus values: { noUser, ready, loading, failure }
+  RepoStatus _repoStatus = RepoStatus.noUser;
+  late User _appUser;
+
+
+
+  /// Getters ///
+  RepoStatus get repoStatus => _repoStatus;
+
+  LocalDbApi get localDb => _localDb;
+  WebUserServiceApi get webUserService => _webUserService;
+
+
+  /// Methods ///
+  // Called by AppCubit when a user has logged in
+  initializeRepo(User appUser) {
+    _appUser = appUser;
+    _repoStatus = RepoStatus.loading;
+  }
+
+
+
+  // Get a stream of all chats that involve _appUser, from localDb, with updated
+  // chat variables (lastUpdate, latest content & unread). Sorted by lastUpdate.
+  Future<Stream<List<Chat>>> get getAllChatsStreamUpdated =>
+          _localDb.getAllUserChatsStreamUpdated(_appUser.id);
+
+
+  get activeUsers => 6;
+  /*
+  Future<List<WebUser>> activeUsers() async {
+    final activeUserList = await _webUserService.online();
+    activeUserList.removeWhere((user) => user.webUserId == _user.webUserId);
+    return activeUserList;
+  }
+
+   */
+
+
+
+  _initializeRepo(context) {
+    _updateChatsOnMessageReceived(context);
+    WebUser webUser = WebUser.fromUser(_user);
+    context.read<WebMessageBloc>().add(WebMessageEvent.onSubscribed(webUser));
+  }
+
+
+  _updateChatsOnMessageReceived(context) {
+    context.read<WebMessageBloc>().stream.listen((state) async {
+      if(state is WebMessageReceivedSuccess) {
+        //await context.read<HomeCubit>().receivedMessage(state.message);
+      }
+    });
+  }
+
 }
 
 
+/*
 
 
 class WeatherRepository {

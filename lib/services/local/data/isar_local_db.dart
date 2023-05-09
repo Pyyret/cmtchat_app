@@ -1,44 +1,107 @@
 import 'dart:async';
-
-import 'package:cmtchat_app/models/local/chat.dart';
-import 'package:cmtchat_app/models/local/message.dart';
-import 'package:cmtchat_app/models/local/user.dart';
-import 'package:cmtchat_app/models/web/receipt.dart';
+import 'package:cmtchat_app/collections/localservice_collection.dart';
+import 'package:cmtchat_app/collections/local_models_collection.dart';
 import 'package:isar/isar.dart';
 import 'package:path_provider/path_provider.dart';
 
-import 'dataservice_contract.dart';
-
-
 
 /// Isar local database service ///
-// Implementation of all necessary operations for a dataservice
-// as specified in the dataservice contract, IDataService
+// Implementation of all necessary operations for a data service
+// as specified in the localDbApi abstract
 
-class IsarService implements IDataService {
+class IsarLocalDb implements LocalDbApi {
+
+  @override
+  Future<int> saveUser(User user) async {
+    final isar = await db;
+    return isar.writeTxn(() async => await isar.users.put(user));
+  }
+
+  @override
+  Future<User?> getUser(Id userId) async {
+    final isar = await db;
+    return await isar.users.get(userId);
+  }
+
+  /// Constructor
+  // Automatically activates the database services when instantiated
+  IsarLocalDb() { db = activate(); }
 
   // Database object used by this service
   late Future<Isar> db;
 
-  /// Constructor
-  // Automatically activates the database services when instantiated
-  IsarService() { db = activate(); }
-
-
-/// Override methods ///
-
-  /// User
   @override
-  Future<void> saveUser(User user) async {
+  Future<List<Chat>> getAllUserChatsUpdated(Id userId) async {
     final isar = await db;
-    await isar.writeTxn(() async => await isar.users.put(user));
+
+    await isar.writeTxn(() async {
+      await getAllUserChats(userId)
+          .then((list) async => {
+        for(Chat chat in list) {
+          await updateChatVariables(chat, userId),
+          await isar.chats.put(chat),
+        }
+      });
+    });
+    return await getAllUserChats(userId);
   }
 
+
   @override
-  Future<User?> findUser(Id userId) async {
+  Future<List<Chat>> getAllUserChats(Id userId) async {
     final isar = await db;
-    return await isar.users.get(userId);
+    return isar.chats
+        .filter()
+        .owners((user) => user.idEqualTo(userId))
+        .findAll();
   }
+
+
+  @override
+  Future<Stream<List<Chat>>> getAllUserChatsStreamUpdated(Id userId) async {
+    final isar = await db;
+    await getAllUserChatsUpdated(userId);
+    return isar.chats
+        .filter()
+        .owners((user) => user.idEqualTo(userId))
+        .sortByLastUpdateDesc()
+        .watch(fireImmediately: true);
+  }
+
+
+  @override
+  Future<Chat> updateChatVariables(Chat chat, Id userId) async {
+    chat.unread = chat.messages
+        .filter()
+        .statusEqualTo(ReceiptStatus.delivered)
+        .findAllSync()
+        .length;
+
+    await chat.messages
+        .filter()
+        .sortByTimestampDesc()
+        .findFirst().then((message) {
+      if(message != null) {
+        chat.lastUpdate = message.timestamp ?? DateTime.parse('0000-01-01');
+        chat.lastMessageContents = message.contents;
+      }
+    });
+
+    chat.chatName = chat.owners
+        .filter()
+        .not()
+        .idEqualTo(userId)
+        .findFirstSync()
+        ?.username
+        ?? 'unnamed';
+
+    return chat;
+  }
+
+
+
+  /// User methods ///
+
 
   @override
   Future<User?> findWebUser(String webUserId) async {
@@ -77,7 +140,7 @@ class IsarService implements IDataService {
   Future<int> saveChat(Chat chat, Id userId) async {
     final isar = await db;
     isar.writeTxnSync(() => isar.chats.putSync(chat));
-    await _updateChatVariables(chat, userId);
+    await updateChatVariables(chat, userId);
     return isar.writeTxnSync(() => isar.chats.putSync(chat));
   }
 
@@ -106,59 +169,9 @@ class IsarService implements IDataService {
     else { return list.single; }
   }
 
-  @override
-  Future<List<Chat>> findAllChats(Id userId) async {
-    final isar = await db;
 
-    final chats = isar.chats
-        .filter()
-        .owners((owner) => owner.idEqualTo(userId))
-        .findAllSync()
-        .toList();
 
-    for (Chat chat in chats) { await _updateChatVariables(chat, userId); }
 
-    await isar.writeTxn(() async {
-      for(Chat chat in chats) {
-        await isar.chats.put(chat);
-      }
-    });
-
-    return isar.chats
-        .filter()
-        .owners((owner) => owner.idEqualTo(userId))
-        .sortByLastUpdateDesc()
-        .findAllSync()
-        .toList();
-  }
-
-  Future<Chat> _updateChatVariables(Chat chat, Id userId) async {
-    chat.unread = chat.messages
-        .filter()
-        .statusEqualTo(ReceiptStatus.delivered)
-        .findAllSync()
-        .length;
-
-    await chat.messages
-        .filter()
-        .sortByTimestampDesc()
-        .findFirst().then((message) {
-      if(message != null) {
-        chat.lastUpdate = message.timestamp;
-        chat.lastMessageContents = message.contents;
-      }
-    });
-
-    chat.chatName = chat.owners
-        .filter()
-        .not()
-        .idEqualTo(userId)
-        .findFirstSync()
-        ?.username
-        ?? 'unnamed';
-
-    return chat;
-  }
 
   // Also removes all messages linked to the chat.
   @override

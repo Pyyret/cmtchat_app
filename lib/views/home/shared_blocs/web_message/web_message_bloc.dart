@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:cmtchat_app/services/web/message/web_message_service_contract.dart';
+import 'package:cmtchat_app/services/web/message/web_message_service_api.dart';
 import 'package:cmtchat_app/models/web/web_message.dart';
 import 'package:cmtchat_app/models/web/web_user.dart';
 
@@ -12,7 +12,7 @@ part 'web_message_state.dart';
 
 class WebMessageBloc extends Bloc<WebMessageEvent, WebMessageState> {
 
-  final IWebMessageService _messageService;
+  final WebMessageServiceApi _messageService;
   StreamSubscription? _subscription;
 
   WebMessageBloc(this._messageService) : super(WebMessageState.initial());

@@ -3,13 +3,13 @@ import 'package:cmtchat_app/models/local/message.dart';
 import 'package:cmtchat_app/models/local/user.dart';
 import 'package:cmtchat_app/models/web/receipt.dart';
 import 'package:cmtchat_app/models/web/web_message.dart';
-import 'package:cmtchat_app/services/local/data/dataservice_contract.dart';
+import 'package:cmtchat_app/services/local/data/local_db_api.dart';
 import 'package:flutter/foundation.dart';
 
 
 
 abstract class BaseViewModel {
-  final IDataService _dataService;
+  final LocalDbApi _dataService;
   final User _user;
 
   BaseViewModel(this._dataService, this._user);

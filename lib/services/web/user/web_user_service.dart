@@ -1,9 +1,9 @@
 import 'package:cmtchat_app/models/web/web_user.dart';
 import 'package:rethink_db_ns/rethink_db_ns.dart';
 
-import 'web_user_service_contract.dart';
+import 'web_user_service_api.dart';
 
-class WebUserService implements IWebUserService {
+class WebUserService implements WebUserServiceApi {
   final Connection _connection;
   final RethinkDb r;
 

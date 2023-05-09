@@ -8,16 +8,16 @@ import 'package:cmtchat_app/views/shared_widgets/logo.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-class AppBarKott extends StatelessWidget with PreferredSizeWidget {
-  const AppBarKott({super.key});
+class AppBarCott extends StatelessWidget with PreferredSizeWidget {
+  const AppBarCott({super.key});
 
   @override
   final Size preferredSize = const Size.fromHeight(170);
 
   @override
   Widget build(BuildContext context) {
-    final String? userName = context.watch<AppCubit>().state.user!.username;
-    final bool? status = context.watch<AppCubit>().state.user!.active;
+    final String? userName = context.watch<AppCubit>().state.appUser?.username;
+    final bool? status = context.watch<AppCubit>().state.appUser!.active;
 
     return AppBar(
       flexibleSpace: SafeArea(

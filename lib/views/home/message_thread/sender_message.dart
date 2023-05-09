@@ -47,7 +47,7 @@ class SenderMessage extends StatelessWidget {
                   child: Align(
                     alignment: Alignment.bottomRight,
                     child: Text(
-                      DateFormat('h:mm a').format(_message.timestamp),
+                      DateFormat('h:mm a').format(_message.timestamp!),
                       style: Theme.of(context).textTheme.labelSmall?.copyWith(
                         color: isLightTheme(context)
                             ? Colors.black54 : Colors.white70,

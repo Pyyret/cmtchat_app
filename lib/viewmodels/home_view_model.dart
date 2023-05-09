@@ -1,5 +1,5 @@
 import 'package:cmtchat_app/collections/chat_message_collection.dart';
-import 'package:cmtchat_app/services/local/data/dataservice_contract.dart';
+import 'package:cmtchat_app/services/local/data/local_db_api.dart';
 import 'package:cmtchat_app/views/home/shared_blocs/receipt_bloc/receipt_bloc.dart';
 import 'package:isar/isar.dart';
 
@@ -7,8 +7,8 @@ import '../collections/user_webuser_service_collection.dart';
 
 
 class HomeViewModel {
-  final IDataService _dataService;
-  final IWebUserService _webUserService;
+  final LocalDbApi _dataService;
+  final WebUserServiceApi _webUserService;
   final ReceiptBloc _receiptBloc;
 
   late User _user;
@@ -67,12 +67,8 @@ class HomeViewModel {
   }
 
 
-  // Get all chats that involve _user, update local chat information
-  // (lastUpdate & unread).
-  Future<List<Chat>> getChats() async {
-    await _syncWebUsers();
-    return await _dataService.findAllChats(_user.id);
-  }
+
+
 
 
   // Update relevant local users with information from the webserver.
@@ -94,7 +90,7 @@ class HomeViewModel {
     List<String> usersWebIdList = List<String>.empty(growable: true);
     final connectedUsers = await _dataService.findAllConnectedUsers(_user.id);
     for (User user in connectedUsers) {
-      usersWebIdList.add(user.webUserId);
+      usersWebIdList.add(user.webUserId!);
     }
     return usersWebIdList;
   }

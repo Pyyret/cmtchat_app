@@ -88,7 +88,7 @@ class _OnboardingState extends State<Onboarding> {
               ),
             ),
             const Spacer(),
-            BlocBuilder<AppCubit, AppState>(
+            BlocBuilder<AppState, AppState>(
               builder: (context, state) => state is Loading
                   ? const Center(child: CircularProgressIndicator())
                   : Container(),

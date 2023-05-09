@@ -10,31 +10,32 @@ part 'message.g.dart';
 @Name('Messages')
 class Message {
   Id id = Isar.autoIncrement;            // Automatically given and used by Isar
-  final String webId;                    // Webserver-specific id.
+  String? webId;                        // Webserver-specific id.
 
-  final DateTime timestamp;
+  @Index()
+  DateTime? timestamp;
   final String contents;
-
-  // Isar links to sender, receiver & containing chatroom
-  @Backlink(to: 'receivedMessages')
-  final to = IsarLink<User>();
-  @Backlink(to: 'sentMessages')
-  final from = IsarLink<User>();
-  @Backlink(to: 'messages')
-  final chat = IsarLink<Chat>();
-
 
   // Receipt data
   @Enumerated(EnumType.name)
   ReceiptStatus? status;
-
   DateTime? receiptTimestamp;
+
+  // Isar links to sender, receiver & containing chatroom
+  @Backlink(to: 'receivedMessages')
+  final to = IsarLink<User>();
+
+  @Backlink(to: 'sentMessages')
+  final from = IsarLink<User>();
+
+  @Backlink(to: 'messages')
+  final chat = IsarLink<Chat>();
 
 
   // Constructor
   Message({
-    required this.webId,
-    required this.timestamp,
+    this.webId,
+    this.timestamp,
     required this.contents,
     this.status,
     this.receiptTimestamp

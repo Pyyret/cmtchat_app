@@ -1,13 +1,13 @@
 import 'dart:async';
 import 'package:cmtchat_app/models/web/web_message.dart';
 import 'package:cmtchat_app/models/web/web_user.dart';
-import 'package:cmtchat_app/services/web/message/web_message_service_contract.dart';
+import 'package:cmtchat_app/services/web/message/web_message_service_api.dart';
 import 'package:rethink_db_ns/rethink_db_ns.dart';
 
 import '../encryption/encryption_contract.dart';
 
 
-class WebMessageService implements IWebMessageService {
+class WebMessageService implements WebMessageServiceApi {
   final Connection _connection;
   final RethinkDb r;
   final IEncryption? _encryption;

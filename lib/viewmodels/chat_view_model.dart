@@ -3,11 +3,11 @@ import 'package:cmtchat_app/models/local/message.dart';
 import 'package:cmtchat_app/models/local/user.dart';
 import 'package:cmtchat_app/models/web/receipt.dart';
 import 'package:cmtchat_app/models/web/web_message.dart';
-import 'package:cmtchat_app/services/local/data/dataservice_contract.dart';
+import 'package:cmtchat_app/services/local/data/local_db_api.dart';
 import 'package:cmtchat_app/viewmodels/base_view_model.dart';
 
 class ChatViewModel extends BaseViewModel {
-  final IDataService _dataService;
+  final LocalDbApi _dataService;
   Chat? thisChat;
   int otherMessages = 0;
 

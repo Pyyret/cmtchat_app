@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:cmtchat_app/models/web/typing_event.dart';
 import 'package:cmtchat_app/models/web/web_user.dart';
-import 'package:cmtchat_app/services/web/user/web_user_service_contract.dart';
+import 'package:cmtchat_app/services/web/user/web_user_service_api.dart';
 import 'package:rethink_db_ns/rethink_db_ns.dart';
 
 import 'typing_notification_service_contract.dart';
@@ -12,7 +12,7 @@ class TypingNotification implements ITypingNotification {
 
   final _controller = StreamController<TypingEvent>.broadcast();
   late StreamSubscription _changeFeed;
-  final IWebUserService _webUserService;
+  final WebUserServiceApi _webUserService;
 
   /// Constructor
   TypingNotification(this._r, this._connection, this._webUserService);

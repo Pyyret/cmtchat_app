@@ -9,12 +9,15 @@ part 'user.g.dart';
 @Collection()
 @Name('Users')
 class User {
-  Id id = Isar.autoIncrement;           // Automatically given by Isar
-  late final String webUserId ;         // Online-specific variables
+  Id id = Isar.autoIncrement;       // Automatically given by Isar
+
+  @Index()
+  String? webUserId;         // Online-specific variables
 
   String? username;
   String? photoUrl;
   bool? active;
+  @Index()
   DateTime? lastSeen;
 
   // Links to the users chats & messages
@@ -23,7 +26,7 @@ class User {
   final receivedMessages = IsarLinks<Message>();
 
   User({
-    required this.webUserId,
+    this.webUserId,
     this.username,
     this.photoUrl,
     this.active,
@@ -31,11 +34,13 @@ class User {
   });
 
   factory User.fromWebUser({required WebUser webUser}) {
-    final user = User(webUserId: webUser.webUserId!);
-    user.username = webUser.username;
-    user.photoUrl = webUser.photoUrl;
-    user.active = webUser.active;
-    user.lastSeen = webUser.lastSeen;
+    final user = User(
+        webUserId: webUser.webUserId,
+        username: webUser.username,
+        photoUrl: webUser.photoUrl,
+        active : webUser.active,
+        lastSeen: webUser.lastSeen
+    );
     return user;
   }
 

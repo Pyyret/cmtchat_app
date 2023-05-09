@@ -1,2 +1,2 @@
-export 'package:cmtchat_app/services/local/data/dataservice_contract.dart';
-export 'package:cmtchat_app/services/local/data/isar_dataservice.dart';
+export 'package:cmtchat_app/services/local/data/local_db_api.dart';
+export 'package:cmtchat_app/services/local/data/isar_local_db.dart';

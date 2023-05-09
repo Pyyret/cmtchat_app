@@ -6,14 +6,14 @@ import 'package:flutter/material.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await CompositionRoot.configure();
-  final firstPage = CompositionRoot.director();
-  runApp(MyApp(firstPage));
+  final director = CompositionRoot.director();
+  runApp(MyApp(director));
 }
 
 class MyApp extends StatelessWidget {
-  final Widget firstPage;
+  final Widget director;
 
-  const MyApp(this.firstPage, {super.key});
+  const MyApp(this.director, {super.key});
 
   // This widget is the root of your application.
   @override
@@ -23,7 +23,7 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: lightTheme(context),
       darkTheme: darkTheme(context),
-      home: firstPage,
+      home: director,
     );
   }
 }

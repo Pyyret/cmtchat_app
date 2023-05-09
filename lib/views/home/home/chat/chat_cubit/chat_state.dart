@@ -1,5 +1,7 @@
 part of 'chat_cubit.dart';
 
+
+
 class ChatState extends Equatable {
   final bool working;
   final List<Message> messages;
@@ -15,7 +17,6 @@ class ChatState extends Equatable {
   List<Object?> get props => [working, messages, chatName];
 
   ChatState copyWith({
-    bool? initialized,
     bool? working,
     List<Message>? messages,
     String? chatName,
@@ -27,3 +28,4 @@ class ChatState extends Equatable {
     );
   }
 }
+
