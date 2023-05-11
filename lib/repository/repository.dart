@@ -1,8 +1,9 @@
+import 'dart:async';
+
 import 'package:cmtchat_app/collections/app_collection.dart';
 import 'package:cmtchat_app/collections/chat_message_collection.dart';
 import 'package:cmtchat_app/collections/isar_db_collection.dart';
 import 'package:cmtchat_app/collections/user_webuser_service_collection.dart';
-import 'package:cmtchat_app/views/home/shared_blocs/web_message/web_message_bloc.dart';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -10,13 +11,19 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 enum RepoStatus { noUser, ready, loading, failure }
 
 class Repository {
+
+  bool _loggedIn = false;
+  final _loggedInStreamController = StreamController<bool>();
+
   /// DataProvider APIs ///
   // Local
   final LocalDbApi _localDb;
+
   // WebDependant
   final WebUserServiceApi _webUserService;
   final WebMessageServiceApi _webMessageService;
   final IReceiptService _receiptService;
+
 
   /// Constructor
   Repository({
@@ -24,106 +31,65 @@ class Repository {
     required WebUserServiceApi webUserService,
     required WebMessageServiceApi webMessageService,
     required IReceiptService receiptService
-  })  : _localDb = dataService,
+  })
+      : _localDb = dataService,
         _webUserService = webUserService,
         _webMessageService = webMessageService,
         _receiptService = receiptService
 
+
   /// AppCubit listener
   // This listens for changes in the AppCubit to take appropriate actions
   // on user or app changes.
-  { BlocListener<AppCubit, AppState>(
-      listener: (context, appState) {
-        if(appState.userLoggedIn && _repoStatus == RepoStatus.noUser) {
-          _initializeRepo(appState.appUser);
-        }
-
-
-    });
+  {
+    BlocListener<AppCubit, AppState>(
+        listener: (context, appState) {
+          if (appState.userLoggedIn && _repoStatus == RepoStatus.noUser) {
+            initializeRepo(appState.appUser!);
+          }
+        });
   }
 
 
   /// Repository variables ///
-   // RepoStatus is enum declared at top of this class with (one of) the
+  // RepoStatus is enum declared at top of this class with (one of) the
   /// RepoStatus values: { noUser, ready, loading, failure }
   RepoStatus _repoStatus = RepoStatus.noUser;
   late User _appUser;
 
 
-
   /// Getters ///
-  RepoStatus get repoStatus => _repoStatus;
 
   LocalDbApi get localDb => _localDb;
+
   WebUserServiceApi get webUserService => _webUserService;
+
+
+  Stream<bool> get loggedIn async* {
+    //await Future<void>.delayed(const Duration(seconds: 1));
+    //yield RepoStatus.unauthenticated;
+    yield* _loggedInStreamController.stream;
+  }
 
 
   /// Methods ///
   // Called by AppCubit when a user has logged in
   initializeRepo(User appUser) {
     _appUser = appUser;
-    _repoStatus = RepoStatus.loading;
+    _loggedIn = true;
+    _loggedInStreamController.add(_loggedIn);
   }
-
 
 
   // Get a stream of all chats that involve _appUser, from localDb, with updated
   // chat variables (lastUpdate, latest content & unread). Sorted by lastUpdate.
   Future<Stream<List<Chat>>> get getAllChatsStreamUpdated =>
-          _localDb.getAllUserChatsStreamUpdated(_appUser.id);
+      _localDb.getAllUserChatsStreamUpdated(_appUser.id);
 
-
-  get activeUsers => 6;
-  /*
   Future<List<WebUser>> activeUsers() async {
     final activeUserList = await _webUserService.online();
-    activeUserList.removeWhere((user) => user.webUserId == _user.webUserId);
+    activeUserList.removeWhere((user) => user.webUserId == _appUser.webUserId);
     return activeUserList;
   }
 
-   */
-
-
-
-  _initializeRepo(context) {
-    _updateChatsOnMessageReceived(context);
-    WebUser webUser = WebUser.fromUser(_user);
-    context.read<WebMessageBloc>().add(WebMessageEvent.onSubscribed(webUser));
-  }
-
-
-  _updateChatsOnMessageReceived(context) {
-    context.read<WebMessageBloc>().stream.listen((state) async {
-      if(state is WebMessageReceivedSuccess) {
-        //await context.read<HomeCubit>().receivedMessage(state.message);
-      }
-    });
-  }
-
 }
-
-
-/*
-
-
-class WeatherRepository {
-  WeatherRepository({OpenMeteoApiClient? weatherApiClient})
-      : _weatherApiClient = weatherApiClient ?? OpenMeteoApiClient();
-
-  final OpenMeteoApiClient _weatherApiClient;
-
-  Future<Weather> getWeather(String city) async {
-    final location = await _weatherApiClient.locationSearch(city);
-    final weather = await _weatherApiClient.getWeather(
-      latitude: location.latitude,
-      longitude: location.longitude,
-    );
-    return Weather(
-      temperature: weather.temperature,
-      location: location.name,
-      condition: weather.weatherCode.toInt().toCondition,
-    );
-  }
-}
-
- */

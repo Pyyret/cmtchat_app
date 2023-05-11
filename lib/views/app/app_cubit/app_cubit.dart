@@ -1,3 +1,5 @@
+
+
 import 'package:cmtchat_app/collections/home_collection.dart';
 import 'package:cmtchat_app/collections/localservice_collection.dart';
 import 'package:cmtchat_app/collections/user_webuser_service_collection.dart';
@@ -52,7 +54,9 @@ class AppState extends Equatable {
       userLoggedIn: true,
       appStatus: AppStatus.online,
       appView: AppView.home,
-      appUser: user);
+      appUser: user,
+
+  );
 
   chatRouted({required int singleChatId}) => copyWith(
     appStatus: AppStatus.online,
@@ -90,6 +94,8 @@ class AppCubit extends Cubit<AppState> {
 
 
   /// Methods ///
+
+
   Future<void> routeChat(context, chat) async {
     emit(state.loading());
     await _router.onShowMessageThread(context, state.appUser!, chat);
@@ -115,6 +121,7 @@ class AppCubit extends Cubit<AppState> {
       User connectedUser = await _connect(cachedUser);
       final User savedUser = await _cacheAndSave(connectedUser);
       emit(state.logInSuccess(user: savedUser));
+      _repository.initializeRepo(savedUser);
     }
     else { emit(state.init()); }
   }
@@ -126,6 +133,7 @@ class AppCubit extends Cubit<AppState> {
     emit(state.loading());
     User connectedUser = await _connectNewUser(username);
     final User savedUser = await _cacheAndSave(connectedUser);
+    _repository.initializeRepo(savedUser);
     emit(state.logInSuccess(user: savedUser));
   }
 

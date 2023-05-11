@@ -8,6 +8,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 
+import '../../../cubits_bloc/home_cubit.dart';
+
 class Chats extends StatefulWidget {
   const Chats({super.key});
 
@@ -16,19 +18,23 @@ class Chats extends StatefulWidget {
 }
 
 class _ChatsState extends State<Chats> {
-  late final List<Chat> chatsList;
+  late List<Chat> chatsList;
 
   @override
   Widget build(BuildContext context) {
-    context.read<HomeBloc>().add(SubscribeToChatListRequest());
+    //context.read<HomeBloc>().add(SubscribeToChatListRequest());
 
     return BlocBuilder<HomeBloc, HomeState>(
         builder: (context, state) {
-          if (state.status == HomeStatus.ready) {
+          if (state is Initial) {
             chatsList = state.chatsList;
             return _buildList(context);
           }
-          else { return const Center(child: CircularProgressIndicator()); }
+          if (state is Initial) {
+            const Center(child: CircularProgressIndicator());
+          }
+          print(state);
+          return const Placeholder();
         });
   }
 
@@ -38,8 +44,8 @@ class _ChatsState extends State<Chats> {
           itemBuilder: (_, indx) =>
               GestureDetector(
                 child: _chatItem(chatsList[indx]),
-                onTap: () => context.read<HomeBloc>()
-                    .add(ChatClicked(context: context, chat: chatsList[indx])),
+                onTap: () => print('NO!'),
+                    //context.read<HomeBloc>().add(ChatClicked(context: context, chat: chatsList[indx])),
               ),
           separatorBuilder: (_, __) => const Divider(),
           itemCount: chatsList.length);

@@ -1,16 +1,16 @@
 /*
-import 'package:cmtchat_app/collections/home_cubit_collection.dart';
 import 'package:cmtchat_app/collections/user_webuser_collection.dart';
-
 import 'package:cmtchat_app/views/home/home/router.dart';
+
 import 'package:cmtchat_app/views/shared_widgets/profile_placeholder.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+
 class ActiveUsers extends StatefulWidget {
   final User _user;
-  final IHomeRouter _homeRouter;
+  final IRouter _homeRouter;
   const ActiveUsers(this._user, this._homeRouter, {super.key});
 
   @override
@@ -18,7 +18,7 @@ class ActiveUsers extends StatefulWidget {
 }
 
 class _ActiveUsersState extends State<ActiveUsers> {
-  late final IHomeRouter router;
+  late final IRouter router;
   late final User user;
 
   @override
@@ -31,7 +31,7 @@ class _ActiveUsersState extends State<ActiveUsers> {
   @override
   Widget build(BuildContext context) {
     final List<WebUser> activeUserList = context.select(
-            (HomeCubit cubit) => cubit.state.activeUserList);
+            (HomeBloc cubit) => cubit.state.activeUserList);
     return _buildList(activeUserList);
   }
 
@@ -51,17 +51,12 @@ class _ActiveUsersState extends State<ActiveUsers> {
       itemBuilder: (_, indx) => GestureDetector(
         child: _listItem(users[indx]),
         onTap: () async {
-          final chat = await context.read<HomeCubit>()
-              .getChatWith(users[indx].webUserId!);
-          print(chat.owners.toList());
-          await router.onShowMessageThread(context, user, chat);
+          print('tap');
           },
       ),
       separatorBuilder: (_, __) => const Divider(),
       itemCount: users.length,
   );
-
-
 }
 
 

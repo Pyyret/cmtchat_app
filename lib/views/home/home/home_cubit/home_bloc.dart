@@ -1,3 +1,6 @@
+/*
+import 'dart:async';
+
 import 'package:bloc/bloc.dart';
 import 'package:cmtchat_app/collections/chat_message_collection.dart';
 import 'package:cmtchat_app/collections/user_webuser_collection.dart';
@@ -56,14 +59,22 @@ class ChatClicked extends HomeEvent {
 
 /// HomeBloc ///
 class HomeBloc extends Bloc<HomeEvent, HomeState> {
-  //final HomeViewModel _homeViewModel;
   final Repository _repository;
+  late StreamSubscription <bool> _appStateStream;
 
   HomeBloc({required Repository repository})
       : _repository = repository, super(const HomeState()) {
+
     on<SubscribeToChatListRequest>(_onSubscribeToChatListRequest);
-    on<ChatClicked>(_onChatClicked);
+    _appStateStream = _repository.loggedIn.listen(
+            (loggedIn) {
+              if(loggedIn) {
+                _onSubscribeToChatListRequest;
+              }
+            });
   }
+
+
 
   _onSubscribeToChatListRequest(
       SubscribeToChatListRequest event, Emitter<HomeState> emit) async {
@@ -82,27 +93,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
           ),
     );
   }
+
 }
 
-  /*
-
-  Future<Chat> getChatWith(String webUserId) async {
-    final chat = await _homeViewModel.getChatWith(webUserId);
-    update();
-    return chat!;
-  }
-
-
-  Future<void> receivedMessage(WebMessage webMessage) async {
-    await _homeViewModel.receivedMessage(webMessage);
-    await update();
-  }
-
-  Future<void> update() async {
-    emit(const HomeLoading());
-    List<Chat> chatList = await _homeViewModel.getChats();
-    List<WebUser> activeUserList = await _homeViewModel.activeUsers();
-    emit(HomeSynced(chatList, activeUserList));
-  }
-
-   */
+ */

@@ -1,6 +1,5 @@
 import 'package:cmtchat_app/collections/home_collection.dart';
 
-import 'package:cmtchat_app/repository/repository.dart';
 import 'package:cmtchat_app/views/home/home/home_cubit/home_bloc.dart';
 import 'package:cmtchat_app/views/shared_widgets/app_bar_kott.dart';
 
@@ -44,8 +43,6 @@ class _HomeState extends State<Home> {
                           alignment: Alignment.center,
                           child: Builder(
                             builder: ( context) {
-                              final HomeStatus status = context.select(
-                                      (HomeBloc b) => b.state.status);
                               //final int activeUsers = context.select(
                                 //      (HomeBloc b) => b.state.activeUsers);
                               return //status == Status.ready
@@ -62,6 +59,7 @@ class _HomeState extends State<Home> {
                       child: TabBarView(
                           children: [
                             Chats(),
+                            Placeholder(),
                             //ActiveUsers(),
                           ],
                       ),

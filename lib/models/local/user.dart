@@ -3,16 +3,15 @@ import 'package:cmtchat_app/models/web/web_user.dart';
 import 'message.dart';
 import 'package:isar/isar.dart';
 
-
 part 'user.g.dart';
 
 @Collection()
 @Name('Users')
 class User {
-  Id id = Isar.autoIncrement;       // Automatically given by Isar
+  Id id = Isar.autoIncrement; // Automatically given by Isar
 
   @Index()
-  String? webUserId;         // Online-specific variables
+  String? webUserId; // Online-specific variables
 
   String? username;
   String? photoUrl;
@@ -30,26 +29,22 @@ class User {
     this.username,
     this.photoUrl,
     this.active,
-    this.lastSeen
-  });
-
-  factory User.fromWebUser({required WebUser webUser}) {
-    final user = User(
-        webUserId: webUser.webUserId,
-        username: webUser.username,
-        photoUrl: webUser.photoUrl,
-        active : webUser.active,
-        lastSeen: webUser.lastSeen
-    );
-    return user;
-  }
+    this.lastSeen});
 
   void update(WebUser webUser) {
-    if(webUserId != webUser.webUserId) { return; }
+    if (webUserId != webUser.webUserId) { return; }
     username = webUser.username;
     photoUrl = webUser.photoUrl;
     active = webUser.active;
     lastSeen = webUser.lastSeen;
   }
 
+  factory User.empty() => User();
+  factory User.fromWebUser({required WebUser webUser}) =>
+      User(
+          webUserId: webUser.webUserId,
+          username: webUser.username,
+          photoUrl: webUser.photoUrl,
+          active: webUser.active,
+          lastSeen: webUser.lastSeen);
 }

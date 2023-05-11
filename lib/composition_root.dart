@@ -4,10 +4,10 @@ import 'package:cmtchat_app/collections/home_collection.dart';
 import 'package:cmtchat_app/collections/localservice_collection.dart';
 import 'package:cmtchat_app/collections/user_webuser_service_collection.dart';
 import 'package:cmtchat_app/collections/viewmodels_collection.dart';
+
 import 'package:cmtchat_app/repository/repository.dart';
 import 'package:cmtchat_app/views/home/home/chat/chat_cubit/chat_cubit.dart';
 import 'package:cmtchat_app/views/home/home/chat/chat_view.dart';
-import 'package:cmtchat_app/views/home/home/home_cubit/home_bloc.dart';
 
 import 'package:cmtchat_app/views/home/shared_blocs/receipt_bloc/receipt_bloc.dart';
 import 'package:cmtchat_app/views/home/shared_blocs/web_message/web_message_bloc.dart';
@@ -16,6 +16,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:rethink_db_ns/rethink_db_ns.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+import 'cubits_bloc/home_cubit.dart';
 
 class CompositionRoot {
   // Rethink webDb
@@ -82,6 +84,7 @@ class CompositionRoot {
         repository: _repository,
         router: _router,
         localCacheService: _localCacheService);
+
     _homeBloc = HomeBloc(repository: _repository);
 
     _webMessageBloc = WebMessageBloc(_webMessageService);
