@@ -33,6 +33,7 @@ class AppRoot {
 
   static late AppRepository _repo;
   static late UserCubit _userCubit;
+  static late HomeCubit _homeCubit;
 
   static configure() async {
 
@@ -55,6 +56,7 @@ class AppRoot {
         webUserService: _webUserService);
 
     _userCubit = UserCubit(repository: _repo);
+    _homeCubit = HomeCubit(repository: _repo);
   }
 
   static Widget director() {
@@ -78,7 +80,8 @@ class AppRoot {
     return MultiBlocProvider(
       providers: [
         BlocProvider(
-            create: (BuildContext context) => HomeCubit(repository: _repo)),
+            create: (BuildContext context) => _homeCubit,
+        )
       ],
       child: const HomeView(),
     );

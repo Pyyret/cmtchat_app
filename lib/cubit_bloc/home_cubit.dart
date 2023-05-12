@@ -7,17 +7,17 @@ import 'package:equatable/equatable.dart';
 
 /// Home States ///
 abstract class HomeState extends Equatable {
-  const HomeState({this.activeUsersList});
-  final List<WebUser>? activeUsersList;
+  const HomeState({required this.activeUsersList});
+  final List<WebUser> activeUsersList;
 
   @override
-  List<Object?> get props => [activeUsersList]; }
+  List<Object> get props => [activeUsersList]; }
 
 class HomeInitial extends HomeState {
-  const HomeInitial(); }
+  const HomeInitial({required super.activeUsersList}); }
 
 class HomeLoading extends HomeState {
-  const HomeLoading(List<WebUser>? list) : super(activeUsersList: list); }
+  const HomeLoading(List<WebUser> list) : super(activeUsersList: list); }
 
 class HomeUpdate extends HomeState {
   const HomeUpdate({required super.activeUsersList});}
@@ -29,32 +29,15 @@ class HomeCubit extends Cubit<HomeState> {
   StreamSubscription<List<WebUser>>? _activeUsersSub;
 
   HomeCubit({required AppRepository repository})
-      : _repo = repository, super(const HomeInitial())
+      : _repo = repository, super(const HomeInitial(activeUsersList: []))
   {
-    _initializeStreams();
+    emit(const HomeUpdate(activeUsersList: []));
   }
 
-  _initializeStreams() {
-    emit(HomeLoading(state.activeUsersList));
-    _activeUsersStreamStart();
-  }
-
-
-  updatedList(list) {
-    print(list);
-    emit(HomeUpdate(activeUsersList: list));
-  }
-
-  _activeUsersStreamStart() async {
-    _activeUsersSub = _repo
-        .webUserService
-        .activeUsersStream()
-        .listen((list) async => updatedList(list));
-  }
 
 
 
   dispose() async {
-    _activeUsersSub?.cancel();
+    await _activeUsersSub?.cancel();
   }
 }

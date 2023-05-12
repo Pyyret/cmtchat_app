@@ -71,7 +71,7 @@ class WebUserService implements WebUserServiceApi {
   }
 
 
-  _startRecievingWebUsers() async {
+  _startRecievingWebUsers() {
     _changeFeed = r
         .table('users')
         .filter({'active' : true})
