@@ -40,6 +40,7 @@ class User {
   }
 
   factory User.empty() => User();
+  factory User.noUser() => User(active: false, username: "No User!");
   factory User.fromWebUser({required WebUser webUser}) =>
       User(
           webUserId: webUser.webUserId,

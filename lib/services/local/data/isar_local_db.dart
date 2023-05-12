@@ -23,6 +23,7 @@ class IsarLocalDb implements LocalDbApi {
     return await isar.users.get(userId);
   }
 
+
   /// Constructor
   // Automatically activates the database services when instantiated
   IsarLocalDb() { db = activate(); }
@@ -58,7 +59,7 @@ class IsarLocalDb implements LocalDbApi {
 
 
   @override
-  Future<Stream<List<Chat>>> getAllUserChatsStreamUpdated(Id userId) async {
+  Future<Stream<List<Chat>>> allChatsUpdatedStream(Id userId) async {
     final isar = await db;
     await getAllUserChatsUpdated(userId);
     return isar.chats

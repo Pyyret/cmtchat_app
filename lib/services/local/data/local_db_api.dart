@@ -18,7 +18,7 @@ abstract class LocalDbApi {
   Future<Chat?> findChat(int chatId);
   Future<List<Chat>> getAllUserChatsUpdated(int userId);
   Future<List<Chat>> getAllUserChats(int userId);
-  Future<Stream<List<Chat>>> getAllUserChatsStreamUpdated(int userId);
+  Future<Stream<List<Chat>>> allChatsUpdatedStream(int userId);
   Future<Chat> updateChatVariables(Chat chat, int userId);
   Future<Chat?> findChatWith(String webUserId);
   Future<void> removeChat(int chatId);

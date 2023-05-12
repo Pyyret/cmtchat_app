@@ -1,11 +1,13 @@
 import 'dart:async';
 
+import 'package:cmtchat_app/models/local/chat.dart';
 import 'package:cmtchat_app/models/local/user.dart';
 import 'package:cmtchat_app/models/web/web_user.dart';
 import 'package:cmtchat_app/services/local/data/local_db_api.dart';
 import 'package:cmtchat_app/services/local/local_cache_service.dart';
 import 'package:cmtchat_app/services/web/user/web_user_service_api.dart';
 
+/// App repository ///
 class AppRepository{
 
   /// Constructor
@@ -23,22 +25,32 @@ class AppRepository{
   final ILocalCacheService _localCache;
   final LocalDbApi _localDb;
 
-
   // WebDependant
   final WebUserServiceApi _webUserService;
 
 
   /// Private variables ///
-  User? _user;
+  User _user = User.noUser();
 
-  get user => _user;
+
+
+
+  test() { _webUserService.disconnect(WebUser.fromUser(_user)); }
 
 
   /// Getters ///
-  test() { _webUserService.disconnect(WebUser.fromUser(_user!)); }
+  User get user => _user;
+  String? get userWebId => _user.webUserId;
 
-  String? get userWebId => _user?.webUserId;
   WebUserServiceApi get webUserService => _webUserService;
+
+
+
+
+  /// Methods ///
+
+  Future<Stream<List<Chat>>> allChatsUpdatedStream() async =>
+      await _localDb.allChatsUpdatedStream(_user.id);
 
   // Creates a new User, connects and saves it, from username entered
   // in the OnboardingUi.
@@ -49,10 +61,8 @@ class AppRepository{
         active: true);
 
     WebUser connectedWebUser = await _webUserService.connect(webUser);
-    User connectedUser = User.fromWebUser(webUser: connectedWebUser);
-
-    await _cacheAndSave(connectedUser);
-    print(_user);
+    _user = User.fromWebUser(webUser: connectedWebUser);
+    await _cacheAndSave(_user);
     return _user;
   }
 
@@ -90,19 +100,18 @@ class AppRepository{
   // Saves connected user to localDb & cache
   Future<User?> _cacheAndSave(User connectedUser) async {
     int userId = await _localDb.saveUser(connectedUser);
-    _user = await _localDb.getUser(userId);
-    await _localCache.save('USER_ID', {'user_id': _user?.id.toString()});
+    _user = await _localDb.getUser(userId) ?? User.noUser();
+    await _localCache.save('USER_ID', {'user_id': _user.id.toString()});
     return _user;
   }
 
   Future<void> logOut() async {
-    print(_user?.webUserId);
+    print(_user.webUserId);
     if(_user != null)  {
-      await _webUserService.disconnect(WebUser.fromUser(_user!));
+      await _webUserService.disconnect(WebUser.fromUser(_user));
     }
     await _localCache.clear();
     await _localDb.cleanDb();
-    return _user = null;
+    _user = User.noUser();
   }
-
 }

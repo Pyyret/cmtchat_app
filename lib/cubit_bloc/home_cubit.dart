@@ -1,85 +1,107 @@
 import 'dart:async';
 
+import 'package:cmtchat_app/collections/chat_message_collection.dart';
 import 'package:cmtchat_app/models/web/web_user.dart';
 import 'package:cmtchat_app/repository/app_repository.dart';
 import 'package:cmtchat_app/services/web/message/web_message_service_api.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../models/local/user.dart';
 import '../services/web/user/web_user_service_api.dart';
 
 /// Home States ///
-abstract class HomeState extends Equatable {}
+abstract class HomeState extends Equatable {
+  HomeState();
+  final List<User> chatsList =  <User>[];
+  final List<WebUser> onlineUsers = <WebUser>[];
 
-class HomeInitial extends HomeState {
   @override
-  List<Object> get props => [];
+  List<Object> get props => [chatsList, onlineUsers];
 }
 
-class HomeLoading extends HomeState {
-  @override
-  List<Object> get props => [];
-}
-
+class HomeInitial extends HomeState { HomeInitial(); }
+class HomeLoading extends HomeState { }
 class HomeUpdate extends HomeState {
-  final List<WebUser> onlineUsers;
-  HomeUpdate({required this.onlineUsers});
-
-  @override
-  List<Object> get props => [onlineUsers];
-}
+  HomeUpdate.copyWith({List<User>? chatsList, List<WebUser>? onlineUsers})
+      : chatsList = chatsList ?? this.chatsList }
 
 
 /// Home Cubit ///
 class HomeCubit extends Cubit<HomeState> {
-  final AppRepository _repo;
 
-  final WebUserServiceApi _webUserService;
-
+  /// Constructor
   HomeCubit({
-    required WebMessageServiceApi messageService,
     required AppRepository repository,
+    required WebMessageServiceApi messageService,
     required WebUserServiceApi webUserService,
   })
-      : _messageService = messageService,
-        _repo = repository,
+      : _repo = repository,
         _webUserService = webUserService,
+        _messageService = messageService,
         super(HomeInitial())
   {
-    _sub();
-    _activeUsersStreamStart();
+    // Initializing
+    _webMessageSubscribe();
+    _onlineUsersSubscribe();
+    emit(HomeUpdate());
   }
 
+  /// Data providers
+  final AppRepository _repo;
+  final WebUserServiceApi _webUserService;
   final WebMessageServiceApi _messageService;
-  StreamSubscription? _subscription;
 
 
-  _sub() async {
-    await _subscription?.cancel();
+
+  /// Streams  ///
+
+
+  _onSubscribeToChatListRequest(
+      SubscribeToChatListRequest event, Emitter<HomeState> emit) async {
+    emit(state.copyWith(status: () => HomeStatus.loading));
+
+    await emit.forEach<List<Chat>>(
+      await _repository.getAllChatsStreamUpdated,
+      onData: (chatsList) =>
+          state.copyWith(
+            status: () => HomeStatus.ready,
+            chatsList: () => chatsList,
+          ),
+      onError: (_, __) =>
+          state.copyWith(
+            status: () => HomeStatus.failure,
+          ),
+    );
+  }
+
+  StreamSubscription<WebMessage> _webMessageSub;
+  StreamSubscription<List<WebUser>> _activeUsersSub;
+  StreamSubscription<List<Chat>> _userChatsSub;
+
+  _localChatsSubscribe() async {
+    final _userChatStream = await _repo.allChatsUpdatedStream();
+    _userChatsSub = _userChatStream
+        .listen((chatList) => this.state.chatsList = chatList
+        emit(HomeUpdate(chat))
+    )
+  }
+
+  _webMessageSubscribe() async {
+    await _webMessageSub.cancel();
     await _messageService.cancelChangeFeed();
-    _subscription = _messageService
+    _webMessageSub = _messageService
         .messageStream(activeUser: WebUser.fromUser(_repo.user))
         .listen((message) {
-          print(message.contents);
-    });
+          print(message.contents); });
   }
 
-
-
-
-
-  StreamSubscription<List<WebUser>>? _activeUsersSub;
-
-  _activeUsersStreamStart() async {
-    await _activeUsersSub?.cancel();
+  _onlineUsersSubscribe() async {
+    await _activeUsersSub.cancel();
     await _webUserService.cancelChangeFeed();
     print('init');
     _activeUsersSub = _webUserService
-        .activeUsersStream()
-        .listen((list) => print('sssss'));
-
-
-
+        .activeUsersStream().listen((list) => print('sssss'));
   }
 
   dispose() async {

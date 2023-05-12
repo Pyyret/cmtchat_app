@@ -1,31 +1,34 @@
 
 
+import 'package:cmtchat_app/colors.dart';
 import 'package:cmtchat_app/models/local/chat.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:cmtchat_app/views/shared_widgets/profile_placeholder.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:intl/intl.dart';
 
-class Inbox extends StatefulWidget {
-  const Inbox({super.key});
+import '../cubit_bloc/home_cubit.dart';
+import '../theme.dart';
+
+class InboxView extends StatefulWidget {
+  const InboxView({super.key});
 
   @override
-  State<Inbox> createState() => _InboxState();
+  State<InboxView> createState() => _InboxViewState();
 }
 
-class _InboxState extends State<Inbox> {
+class _InboxViewState extends State<InboxView> {
   late List<Chat> chatsList;
 
   @override
   Widget build(BuildContext context) {
-    //context.read<HomeBloc>().add(SubscribeToChatListRequest());
 
-    return BlocBuilder<HomeBloc, HomeState>(
+    return BlocBuilder<HomeCubit, HomeState>(
         builder: (context, state) {
-          if (state is Initial) {
+          if (state is HomeUpdate) {
             chatsList = state.chatsList;
             return _buildList(context);
-          }
-          if (state is Initial) {
-            const Center(child: CircularProgressIndicator());
-          }
+          } else if(state is HomeLoading) { const Center(child: CircularProgressIndicator()); }
           print(state);
           return const Placeholder();
         });
