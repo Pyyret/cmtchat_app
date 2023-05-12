@@ -44,18 +44,6 @@ class WebUserService implements WebUserServiceApi {
   }
 
   @override
-  Stream<List<WebUser>> subscribe() {
-    _startRecievingWebUsers();
-    return _controller.stream;
-  }
-
-  @override
-  dispose() async {
-    _changeFeed?.cancel();
-    _controller.close();
-  }
-
-  @override
   Future<List<WebUser>> online() async {
     Cursor users = await r
         .table('users')
@@ -76,8 +64,14 @@ class WebUserService implements WebUserServiceApi {
     return userList.map((e) => WebUser.fromJson(e)).toList();
   }
 
+  @override
+  Stream<List<WebUser>> activeUsersStream() {
+    _startRecievingWebUsers();
+    return _controller.stream;
+  }
 
-  _startRecievingWebUsers() {
+
+  _startRecievingWebUsers() async {
     _changeFeed = r
         .table('users')
         .filter({'active' : true})
@@ -85,7 +79,7 @@ class WebUserService implements WebUserServiceApi {
         .run(_connection)
         .asStream()
         .cast<Feed>()
-        .listen((listData) => _controller.sink.add(_listFromData(listData)));
+        .listen((listData) async => _controller.sink.add(_listFromData(listData)));
     }
 
 
@@ -98,5 +92,11 @@ class WebUserService implements WebUserServiceApi {
     });
         //.onError((err, stackTrace) => print(err));
     return webUserList;
+  }
+
+  @override
+  dispose() async {
+    _changeFeed?.cancel();
+    _controller.close();
   }
 }

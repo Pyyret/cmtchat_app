@@ -1,3 +1,5 @@
+/*
+
 import 'package:bloc/bloc.dart';
 import 'package:cmtchat_app/models/local/user.dart';
 import 'package:equatable/equatable.dart';
@@ -33,7 +35,7 @@ class NavState extends Equatable {
   /// State factories ///
   noUser() => copyWith(user: User.empty(), status: NavStatus.noUser);
   loading() => copyWith(status: NavStatus.loading);
-  logIn({required User user}) => copyWith(user: user, status: NavStatus.loggedIn);
+  logIn({required User user}) => copyWith(status: NavStatus.loggedIn, user: user);
   userUpdate({required User user}) => copyWith(status: NavStatus.loggedIn, user: user);
 }
 
@@ -53,14 +55,29 @@ class NavCubit extends Cubit<NavState> {
     emit(state.userUpdate(user: _repo.user));
     print('update');
   }
+  _userLogIn() {
+    emit(state.loading());
+    emit(state.logIn(user: _repo.user));
+    print('logIn');
+  }
+
+  _userLogOut() {
+    emit(state.loading());
+    emit(state.noUser());
+    print('logOut');
+  }
+
 
   _listenForUserChanges() {
     _repo.loggedIn.listen((bool loggedIn) {
       if(loggedIn && state.status == NavStatus.loggedIn) { _userUpdate(); }
-      else if(loggedIn) { emit(state.logIn(user: _repo.user)); }
-      else { emit(state.noUser()); }
+      else if(loggedIn) { _userLogIn; }
+      else { _userLogOut(); }
     });
 
   }
 
 }
+
+
+ */

@@ -1,4 +1,5 @@
-import 'package:cmtchat_app/cubits/web_user_cubit.dart';
+import 'package:cmtchat_app/cubit_bloc/home_cubit.dart';
+import 'package:cmtchat_app/ui/active_view.dart';
 import 'package:cmtchat_app/ui/widgets/app_bar_cot.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -20,7 +21,7 @@ class HomeView extends StatelessWidget {
                 child: TabBarView(
                   children: [
                     Placeholder(),
-                    Placeholder(),
+                    ActiveView(),
                     //ActiveUsers(),
                   ],
                 ),
@@ -32,33 +33,37 @@ class HomeView extends StatelessWidget {
     );
   }
 
-  _tabBar() =>
-      TabBar(
-        indicatorPadding: const EdgeInsets.symmetric(
-          vertical: 8.0,
-          horizontal: 20,
-        ),
-        tabs: [
-          const Tab(
-            child: Align(
-              alignment: Alignment.center,
-              child: Text('Chats'),
-            ),
-          ),
-          Tab(
-            child: Align(
-                alignment: Alignment.center,
-                child: Builder(
-                  builder: (context) {
-                    final WebUserState state = context.watch<WebUserCubit>().state;
-                    return state.status == WebUserStatus.updated
-                      ? Text('Online (${state.activeUsersList.length})')
-                      : const Center(child: CircularProgressIndicator());
-                  },
-                )
-            ),
-          ),
+  _tabBar() {
 
-        ],
-      );
+    return TabBar(
+      indicatorPadding: const EdgeInsets.symmetric(
+        vertical: 8.0,
+        horizontal: 20,
+      ),
+      tabs: [
+        const Tab(
+          child: Align(
+            alignment: Alignment.center,
+            child: Text('Chats'),
+          ),
+        ),
+        Tab(
+          child: Align(
+              alignment: Alignment.center,
+              child: BlocBuilder<HomeCubit, HomeState>(
+                builder: (context, state) {
+                  if(state is HomeUpdate) {
+                    return Text('Online (${state.activeUsersList?.length})');
+                  } else {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+                },
+              )
+          ),
+        ),
+
+      ],
+    );
+  }
+
 }

@@ -1,4 +1,5 @@
 import 'package:cmtchat_app/colors.dart';
+import 'package:cmtchat_app/cubit_bloc/user_cubit.dart';
 import 'package:cmtchat_app/repository/app_repository.dart';
 import 'package:cmtchat_app/ui/widgets/costum_text_field.dart';
 import 'package:cmtchat_app/ui/widgets/logo.dart';
@@ -47,7 +48,7 @@ class LogInView extends StatelessWidget {
                       );
                       ScaffoldMessenger.of(context).showSnackBar(snackBar);
                     }
-                    else { context.read<AppRepository>().newUserLogin(_username); }
+                    else { context.read<UserCubit>().newUserLogin(_username); }
 
                   },
                 style: ElevatedButton.styleFrom(

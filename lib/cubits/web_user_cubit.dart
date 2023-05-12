@@ -1,4 +1,4 @@
-import 'dart:async';
+/*
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -46,24 +46,31 @@ class WebUserState extends Equatable {
 /// NavCubit ///
 class WebUserCubit extends Cubit<WebUserState> {
   final AppRepository _repo;
-  StreamSubscription? _subscription;
 
   WebUserCubit({required AppRepository repository})
       : _repo = repository, super(const WebUserState())
   {
     _repo.loggedIn.listen((loggedIn) {
-      if(loggedIn) {
-        _initializeStream();
-      }
-      else {
+      if(loggedIn) { _initializeStream();
+      } else {
         emit(state.loading());
         emit(state.init());
+        print('NoInitialize');
       }
     });
   }
 
-  _newListReceived(activeUsersList) {
 
+  _initializeStream() async {
+    emit(state.loading());
+    print('initialize');
+    return _repo.webUserService
+        .subscribe()
+        .listen((activeUsersList) => _newListReceived(activeUsersList),
+    );
+  }
+
+  _newListReceived(activeUsersList) {
     emit(state.loading());
     activeUsersList.removeWhere(
             (WebUser webUser) => webUser.webUserId == _repo.user.webUserId,
@@ -71,22 +78,7 @@ class WebUserCubit extends Cubit<WebUserState> {
     emit(state.updated(webUserList: activeUsersList));
   }
 
-  _initializeStream() async {
-    print('test');
-    await _subscription?.cancel();
-    _subscription = _repo.webUserService
-        .subscribe()
-        .listen((activeUsersList) => _newListReceived(activeUsersList),
-    );
-  }
-
-  @override
-  Future<void> close() {
-    emit(state.loading());
-    _subscription?.cancel();
-    _repo.webUserService.dispose();
-    emit(state.init());
-    return super.close();
-  }
-
 }
+
+
+ */

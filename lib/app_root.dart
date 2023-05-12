@@ -1,3 +1,4 @@
+import 'package:cmtchat_app/cubit_bloc/home_cubit.dart';
 import 'package:cmtchat_app/cubits/navigation_cubit.dart';
 import 'package:cmtchat_app/cubits/web_user_cubit.dart';
 import 'package:cmtchat_app/repository/app_repository.dart';
@@ -14,7 +15,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:rethink_db_ns/rethink_db_ns.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'cubit_bloc/user_cubit.dart';
+
 class AppRoot {
+
   // Rethink webDb
   static late RethinkDb _r;
   static late Connection _connection;
@@ -26,10 +30,9 @@ class AppRoot {
   // Web services
   static late WebUserServiceApi _webUserService;
 
-  static late AppRepository _repo;
-  static late NavCubit _navCubit;
 
-  static late WebUserCubit _webUserCubit;
+  static late AppRepository _repo;
+  static late UserCubit _userCubit;
 
   static configure() async {
 
@@ -51,38 +54,36 @@ class AppRoot {
         dataService: _dataService,
         webUserService: _webUserService);
 
-    _navCubit = NavCubit(repository: _repo);
-    _webUserCubit = WebUserCubit(repository: _repo);
-
-
-
+    _userCubit = UserCubit(repository: _repo);
   }
 
   static Widget director() {
     return RepositoryProvider(
-      create: (BuildContext context) => _repo,
-      child: MultiBlocProvider(
-        providers: [
-          BlocProvider(create: (context) => _navCubit),
-        ],
-        child: BlocBuilder<NavCubit, NavState>(
-          builder: (context, state) {
-            if(state.status == NavStatus.noUser) { return LogInView(); }
-            else { return composeHomeView(); }
-            }
+        create: (BuildContext context) => _repo,
+        child: MultiBlocProvider(
+            providers: [
+              BlocProvider(create: (context) => _userCubit),
+            ],
+            child: BlocBuilder<UserCubit, UserState>(
+              builder: (context, state) {
+                return state is UserLoggedIn ? composeHomeView() : LogInView();
+              } ,
+            )
         ),
-      ),
     );
   }
 
 
-  static Widget composeHomeView() =>
-      MultiBlocProvider(
-        providers: [
-          BlocProvider(create: (BuildContext context) => _webUserCubit),
-        ],
-        child: const HomeView(),
-      );
+  static Widget composeHomeView() {
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(
+            create: (BuildContext context) => HomeCubit(repository: _repo)),
+      ],
+      child: const HomeView(),
+    );
+  }
+
 
 
 }

@@ -1,4 +1,5 @@
 import 'package:cmtchat_app/colors.dart';
+import 'package:cmtchat_app/cubit_bloc/user_cubit.dart';
 import 'package:cmtchat_app/cubits/navigation_cubit.dart';
 import 'package:cmtchat_app/repository/app_repository.dart';
 import 'package:cmtchat_app/theme.dart';
@@ -15,8 +16,9 @@ class AppBarCot extends StatelessWidget with PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
-    final String? username = context.select((NavCubit cubit) => cubit.state.user?.username);
-    late bool? status = context.select((NavCubit cubit) => cubit.state.user?.active);
+    String? username = context.select(
+            (UserCubit cubit) => cubit.state.user?.username);
+    bool? status = context.select((UserCubit cubit) => cubit.state.user?.active);
 
     return AppBar(
       flexibleSpace: SafeArea(
@@ -60,9 +62,7 @@ class AppBarCot extends StatelessWidget with PreferredSizeWidget {
         const SizedBox(width: 15.0),
         GestureDetector(
           child: const Logo(),
-          onTap: () {
-            context.read<AppRepository>().logOut();
-          },
+          onTap: () { context.read<UserCubit>().logOut(); },
         ),
         const SizedBox(width: 15.0),
         Text('Cot', style: Theme.of(context).appBarTheme.titleTextStyle),

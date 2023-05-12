@@ -6,9 +6,8 @@ import 'package:cmtchat_app/services/local/data/local_db_api.dart';
 import 'package:cmtchat_app/services/local/local_cache_service.dart';
 import 'package:cmtchat_app/services/web/user/web_user_service_api.dart';
 
-
-
 class AppRepository{
+
   /// Constructor
   AppRepository({
     required ILocalCacheService localCache,
@@ -17,54 +16,31 @@ class AppRepository{
   })
       : _localCache = localCache,
         _localDb = dataService,
-        _webUserService = webUserService
-  {
-    _tryLoginFromCache();
-  }
+        _webUserService = webUserService;
 
   /// DataProvider APIs ///
   // Local
   final ILocalCacheService _localCache;
   final LocalDbApi _localDb;
 
+
   // WebDependant
   final WebUserServiceApi _webUserService;
 
 
-
   /// Private variables ///
-  final _loggedInStreamController = StreamController<bool>.broadcast();
-
-  bool _loggedIn = false;
-  User _user = User();
-
+  User? _user;
 
 
   /// Getters ///
-  User get user => _user;
-  Stream<bool> get loggedIn async* {
-    yield _loggedIn;
-    yield* _loggedInStreamController.stream;
-  }
+  test() { _webUserService.disconnect(WebUser.fromUser(_user!)); }
 
+  String? get userWebId => _user?.webUserId;
   WebUserServiceApi get webUserService => _webUserService;
-
-
-
-  Future<void> logOut() async {
-    await _webUserService.disconnect(WebUser.fromUser(_user));
-    await _localCache.clear();
-    await _localDb.cleanDb();
-    _user = User();
-    _loggedIn = false;
-
-    _loggedInStreamController.add(_loggedIn);
-  }
 
   // Creates a new User, connects and saves it, from username entered
   // in the OnboardingUi.
-  Future<void> newUserLogin(String username) async {
-
+  Future<User?> newUserLogin(String username) async {
     WebUser webUser = WebUser(
         username: username,
         lastSeen: DateTime.now(),
@@ -73,20 +49,20 @@ class AppRepository{
     WebUser connectedWebUser = await _webUserService.connect(webUser);
     User connectedUser = User.fromWebUser(webUser: connectedWebUser);
 
-    User savedUser = await _cacheAndSave(connectedUser);
-    _initializeRepo(savedUser);
+    await _cacheAndSave(connectedUser);
+    print(_user);
+    return _user;
   }
 
-
-  Future<void> _tryLoginFromCache() async {
-
-    // Check local cache for a previously logged in user
+  // Check local cache for a previously logged in user
+  Future<User?> tryLoginFromCache() async {
     final cachedUserId = _localCache.fetch('USER_ID');
 
     // If cachedUserId is not empty,
     // check localDb for user with the cashed user id.
     User? cachedUser;
     if(cachedUserId.isNotEmpty) {
+
       cachedUser = await _localDb.getUser(int.parse(cachedUserId['user_id']));
     }
 
@@ -100,25 +76,31 @@ class AppRepository{
       // Connect to webserver, then update the local cache
       WebUser connectedWebUser = await _webUserService.connect(webUser);
       cachedUser.update(connectedWebUser);
-      await _cacheAndSave(cachedUser);
-
-      _initializeRepo(cachedUser);
+      final savedUser = await _cacheAndSave(cachedUser);
+      print('savedUser');
+      print(savedUser);
+      return savedUser;
     }
+    return null;
   }
 
 
   // Saves connected user to localDb & cache
-  Future<User> _cacheAndSave(User connectedUser) async {
-    await _localDb.saveUser(connectedUser);
-    await _localCache.save('USER_ID', {'user_id': connectedUser.id.toString()});
-    return connectedUser;
+  Future<User?> _cacheAndSave(User connectedUser) async {
+    int userId = await _localDb.saveUser(connectedUser);
+    _user = await _localDb.getUser(userId);
+    await _localCache.save('USER_ID', {'user_id': _user?.id.toString()});
+    return _user;
   }
 
-
-  Future<void> _initializeRepo(User connectedUser) async {
-    _user = connectedUser;
-    _loggedIn = true;
-    _loggedInStreamController.add(_loggedIn);
+  Future<void> logOut() async {
+    print(_user?.webUserId);
+    if(_user != null)  {
+      await _webUserService.disconnect(WebUser.fromUser(_user!));
+    }
+    await _localCache.clear();
+    await _localDb.cleanDb();
+    return _user = null;
   }
 
 }

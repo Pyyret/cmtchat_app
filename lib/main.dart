@@ -1,7 +1,5 @@
-import 'package:cmtchat_app/composition_root.dart';
 import 'package:cmtchat_app/theme.dart';
 import 'package:flutter/material.dart';
-
 import 'app_root.dart';
 
 
