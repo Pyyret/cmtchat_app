@@ -11,9 +11,13 @@ class ActiveView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final List<WebUser>? activeUserList = context.select(
-            (HomeCubit cubit) => cubit.state.activeUsersList);
-    return _buildList(context, activeUserList!);
+    return BlocBuilder<HomeCubit, HomeState>(
+      builder: (context, state) {
+        if(state is HomeUpdate) {
+          return _buildList(context, state.onlineUsers); }
+        else { return const Center(child: CircularProgressIndicator()); }
+         }
+    );
   }
 
   _buildList(context, List<WebUser> users) => ListView.separated(

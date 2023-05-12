@@ -1,6 +1,5 @@
+import 'package:cmtchat_app/collections/webservice_collection.dart';
 import 'package:cmtchat_app/cubit_bloc/home_cubit.dart';
-import 'package:cmtchat_app/cubits/navigation_cubit.dart';
-import 'package:cmtchat_app/cubits/web_user_cubit.dart';
 import 'package:cmtchat_app/repository/app_repository.dart';
 import 'package:cmtchat_app/services/local/data/isar_local_db.dart';
 import 'package:cmtchat_app/services/local/data/local_db_api.dart';
@@ -29,6 +28,7 @@ class AppRoot {
 
   // Web services
   static late WebUserServiceApi _webUserService;
+  static late WebMessageService _webMsgServ;
 
 
   static late AppRepository _repo;
@@ -40,7 +40,7 @@ class AppRoot {
     // Initializing
     final sp = await SharedPreferences.getInstance();
     _r = RethinkDb();
-    _connection = await _r.connect(host: '172.21.0.1', port: 28015);
+    _connection = await _r.connect(host: '172.17.112.1', port: 28015);
 
     // Local dataService APIs
     _localCacheService = LocalCacheService(sp);
@@ -49,6 +49,7 @@ class AppRoot {
     // WebDependant dataProvider APIs
     _webUserService = WebUserService(_r, _connection);
 
+    _webMsgServ = WebMessageService(_r, _connection);
 
     _repo = AppRepository(
         localCache: _localCacheService,
@@ -56,7 +57,7 @@ class AppRoot {
         webUserService: _webUserService);
 
     _userCubit = UserCubit(repository: _repo);
-    _homeCubit = HomeCubit(repository: _repo);
+
   }
 
   static Widget director() {
@@ -80,7 +81,11 @@ class AppRoot {
     return MultiBlocProvider(
       providers: [
         BlocProvider(
-            create: (BuildContext context) => _homeCubit,
+            create: (BuildContext context) =>
+                HomeCubit(repository: _repo,
+                    webUserService: _webUserService, messageService: _webMsgServ,
+
+                ),
         )
       ],
       child: const HomeView(),

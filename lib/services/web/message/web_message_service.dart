@@ -38,18 +38,7 @@ class WebMessageService implements WebMessageServiceApi {
     return _controller.stream;
   }
 
-  @override
-  Future<void> dispose() async {
-    await _changeFeed?.cancel();
-    await _controller.close();
-  }
 
-  @override
-  Future<void> cancelChangeFeed() async {
-    if(_changeFeed != null){
-      await _changeFeed?.cancel();
-    }
-  }
 
 
   _startRecievingMessages(WebUser user) {
@@ -85,5 +74,19 @@ class WebMessageService implements WebMessageServiceApi {
         .get(message.webId)
         .delete({'return_changes': false})
         .run(_connection);
+  }
+
+
+  @override
+  Future<void> dispose() async {
+    await _changeFeed?.cancel();
+    await _controller.close();
+  }
+
+  @override
+  Future<void> cancelChangeFeed() async {
+    if(_changeFeed != null){
+      await _changeFeed?.cancel();
+    }
   }
 }

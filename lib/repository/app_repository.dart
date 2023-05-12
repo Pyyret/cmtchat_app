@@ -16,10 +16,7 @@ class AppRepository{
   })
       : _localCache = localCache,
         _localDb = dataService,
-        _webUserService = webUserService
-  {
-    _activeUsersStreamStart();
-  }
+        _webUserService = webUserService;
 
   /// DataProvider APIs ///
   // Local
@@ -34,20 +31,7 @@ class AppRepository{
   /// Private variables ///
   User? _user;
 
-
-  StreamSubscription<List<WebUser>>? _activeUsersSub;
-
-  _activeUsersStreamStart()  {
-    _activeUsersSub = _webUserService
-        .activeUsersStream()
-        .listen((list) async {
-          print(list);
-          print('faaaan');
-    });
-  }
-  updatedList(list) {
-
-  }
+  get user => _user;
 
 
   /// Getters ///

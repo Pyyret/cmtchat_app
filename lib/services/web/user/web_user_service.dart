@@ -79,7 +79,10 @@ class WebUserService implements WebUserServiceApi {
         .run(_connection)
         .asStream()
         .cast<Feed>()
-        .listen((listData) async => _controller.sink.add(_listFromData(listData)));
+        .listen((listData) {
+          _controller.sink.add(_listFromData(listData));
+          print('balla');
+        });
     }
 
 
@@ -90,8 +93,15 @@ class WebUserService implements WebUserServiceApi {
       final WebUser webUser = WebUser.fromJson(webUserData['new_val']);
       webUserList.add(webUser);
     });
-        //.onError((err, stackTrace) => print(err));
+
     return webUserList;
+  }
+
+  @override
+  Future<void> cancelChangeFeed() async {
+    if(_changeFeed != null){
+      await _changeFeed?.cancel();
+    }
   }
 
   @override

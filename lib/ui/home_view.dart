@@ -16,7 +16,7 @@ class HomeView extends StatelessWidget {
         body: SafeArea(
           child: Column(
             children: [
-              _tabBar(),
+              _tabBar(context),
               const Expanded(
                 child: TabBarView(
                   children: [
@@ -33,8 +33,7 @@ class HomeView extends StatelessWidget {
     );
   }
 
-  _tabBar() {
-
+  _tabBar(context) {
     return TabBar(
       indicatorPadding: const EdgeInsets.symmetric(
         vertical: 8.0,
@@ -53,7 +52,7 @@ class HomeView extends StatelessWidget {
               child: BlocBuilder<HomeCubit, HomeState>(
                 builder: (context, state) {
                   if(state is HomeUpdate) {
-                    return Text('Online (${state.activeUsersList?.length})');
+                    return Text('Online (${state.onlineUsers.length})');
                   } else {
                     return const Center(child: CircularProgressIndicator());
                   }
