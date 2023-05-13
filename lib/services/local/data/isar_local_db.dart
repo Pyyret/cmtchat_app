@@ -72,11 +72,11 @@ class IsarLocalDb implements LocalDbApi {
 
   @override
   Future<Chat> updateChatVariables(Chat chat, Id userId) async {
-    chat.unread = chat.messages
+    chat.unread = await chat.messages
         .filter()
         .statusEqualTo(ReceiptStatus.delivered)
-        .findAllSync()
-        .length;
+        .findAll()
+        .then((list) => list.length);
 
     await chat.messages
         .filter()
@@ -88,13 +88,12 @@ class IsarLocalDb implements LocalDbApi {
       }
     });
 
-    chat.chatName = chat.owners
+    chat.chatName = await chat.owners
         .filter()
         .not()
         .idEqualTo(userId)
-        .findFirstSync()
-        ?.username
-        ?? 'unnamed';
+        .findFirst()
+        .then((user) => user?.username) ?? 'unnamed';
 
     return chat;
   }

@@ -1,5 +1,3 @@
-
-
 import 'package:cmtchat_app/colors.dart';
 import 'package:cmtchat_app/models/local/chat.dart';
 import 'package:cmtchat_app/views/shared_widgets/profile_placeholder.dart';
@@ -10,43 +8,29 @@ import 'package:intl/intl.dart';
 import '../cubit_bloc/home_cubit.dart';
 import '../theme.dart';
 
-class InboxView extends StatefulWidget {
+class InboxView extends StatelessWidget {
   const InboxView({super.key});
 
   @override
-  State<InboxView> createState() => _InboxViewState();
-}
-
-class _InboxViewState extends State<InboxView> {
-  late List<Chat> chatsList;
-
-  @override
   Widget build(BuildContext context) {
-
-    return BlocBuilder<HomeCubit, HomeState>(
-        builder: (context, state) {
-          if (state is HomeUpdate) {
-            chatsList = state.chatsList;
-            return _buildList(context);
-          } else if(state is HomeLoading) { const Center(child: CircularProgressIndicator()); }
-          print(state);
-          return const Placeholder();
-        });
+    final List<Chat> chatsList = context.select(
+            (HomeCubit c) => c.state.chatsList);
+    return _buildList(context, chatsList);
   }
 
-  _buildList(context) =>
+  _buildList(context, chatsList) =>
       ListView.separated(
           padding: const EdgeInsets.only(top: 30.0, right: 16.0),
           itemBuilder: (_, indx) =>
               GestureDetector(
-                child: _chatItem(chatsList[indx]),
+                child: _chatItem(context, chatsList[indx]),
                 onTap: () => print('NO!'),
                     //context.read<HomeBloc>().add(ChatClicked(context: context, chat: chatsList[indx])),
               ),
           separatorBuilder: (_, __) => const Divider(),
           itemCount: chatsList.length);
 
-  _chatItem(Chat chat) =>
+  _chatItem(context, Chat chat) =>
       ListTile(
         contentPadding: const EdgeInsets.only(left: 16.0),
         leading: const ProfilePlaceholder(50),

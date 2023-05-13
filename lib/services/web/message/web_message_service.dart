@@ -50,6 +50,7 @@ class WebMessageService implements WebMessageServiceApi {
         .asStream()
         .cast<Feed>()
         .listen((event) {
+          print('message');
           event.forEach((feedData) {
             if(feedData['new_val'] == null) return;
             final message = _messageFromFeed(feedData);

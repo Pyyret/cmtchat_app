@@ -35,6 +35,12 @@ class AppRepository{
 
 
 
+  testChat() {
+    Chat test = Chat()..owners.add(_user);
+    _localDb.saveChat(test, _user.id);
+  }
+
+
   test() { _webUserService.disconnect(WebUser.fromUser(_user)); }
 
 
@@ -43,8 +49,6 @@ class AppRepository{
   String? get userWebId => _user.webUserId;
 
   WebUserServiceApi get webUserService => _webUserService;
-
-
 
 
   /// Methods ///

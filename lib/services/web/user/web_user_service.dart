@@ -44,16 +44,6 @@ class WebUserService implements WebUserServiceApi {
   }
 
   @override
-  Future<List<WebUser>> online() async {
-    Cursor users = await r
-        .table('users')
-        .filter({'active': true})
-        .run(_connection);
-    final userList = await users.toList();
-    return userList.map((item) => WebUser.fromJson(item)).toList();
-  }
-
-  @override
   Future<List<WebUser>> fetch(List<String> ids) async {
     Cursor users = await r.table('users')
         .getAll(r.args(ids))
@@ -65,13 +55,23 @@ class WebUserService implements WebUserServiceApi {
   }
 
   @override
+  Future<List<WebUser>> online() async {
+    Cursor users = await r
+        .table('users')
+        .filter({'active': true})
+        .run(_connection);
+    final userList = await users.toList();
+    return userList.map((item) => WebUser.fromJson(item)).toList();
+  }
+
+  @override
   Stream<List<WebUser>> activeUsersStream() {
-    _startRecievingWebUsers();
+    _startReceivingWebUsers();
     return _controller.stream;
   }
 
 
-  _startRecievingWebUsers() {
+  _startReceivingWebUsers() {
     _changeFeed = r
         .table('users')
         .filter({'active' : true})
@@ -79,23 +79,20 @@ class WebUserService implements WebUserServiceApi {
         .run(_connection)
         .asStream()
         .cast<Feed>()
-        .listen((listData) {
-          _controller.sink.add(_listFromData(listData));
-          print('balla');
+        .listen((event) {
+          List<WebUser> webUserList = List<WebUser>.empty(growable: true);
+          event.forEach((userData) {
+            if(userData['new_val'] != null) {
+              webUserList.add(WebUser.fromJson(userData['new_val'])); }
+            else {
+              final unactiveUser = WebUser.fromJson(userData['old_val']);
+              webUserList.removeWhere(
+                      (user) => user.webUserId == unactiveUser.webUserId);
+            }
+            _controller.sink.add(webUserList.toList());
+          });
         });
     }
-
-
-  List<WebUser> _listFromData(listData) {
-    final List<WebUser> webUserList = <WebUser>[];
-    listData.forEach((webUserData) {
-      if (webUserData['new_val'] == null) return;
-      final WebUser webUser = WebUser.fromJson(webUserData['new_val']);
-      webUserList.add(webUser);
-    });
-
-    return webUserList;
-  }
 
   @override
   Future<void> cancelChangeFeed() async {

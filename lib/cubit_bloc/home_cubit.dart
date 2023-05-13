@@ -3,29 +3,29 @@ import 'dart:async';
 import 'package:cmtchat_app/collections/chat_message_collection.dart';
 import 'package:cmtchat_app/models/web/web_user.dart';
 import 'package:cmtchat_app/repository/app_repository.dart';
-import 'package:cmtchat_app/services/web/message/web_message_service_api.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../models/local/user.dart';
 import '../services/web/user/web_user_service_api.dart';
 
 /// Home States ///
-abstract class HomeState extends Equatable {
-  HomeState();
-  final List<User> chatsList =  <User>[];
-  final List<WebUser> onlineUsers = <WebUser>[];
+class HomeState extends Equatable {
+  const HomeState({required this.chatsList, required this.onlineUsers});
+
+  final List<Chat> chatsList;
+  final List<WebUser> onlineUsers;
+
+  HomeState copyWith({List<Chat>? chatsList, List<WebUser>? onlineUsers}) {
+    return HomeState(
+        chatsList: chatsList ?? this.chatsList,
+        onlineUsers: onlineUsers ?? this.onlineUsers);
+  }
+
+  factory HomeState.initial() => const HomeState(chatsList: [], onlineUsers: []);
 
   @override
   List<Object> get props => [chatsList, onlineUsers];
 }
-
-class HomeInitial extends HomeState { HomeInitial(); }
-class HomeLoading extends HomeState { }
-class HomeUpdate extends HomeState {
-  HomeUpdate.copyWith({List<User>? chatsList, List<WebUser>? onlineUsers})
-      : chatsList = chatsList ?? this.chatsList }
-
 
 /// Home Cubit ///
 class HomeCubit extends Cubit<HomeState> {
@@ -39,12 +39,12 @@ class HomeCubit extends Cubit<HomeState> {
       : _repo = repository,
         _webUserService = webUserService,
         _messageService = messageService,
-        super(HomeInitial())
+        super(HomeState.initial())
   {
     // Initializing
-    _webMessageSubscribe();
-    _onlineUsersSubscribe();
-    emit(HomeUpdate());
+    _subscribeToLocalChats();
+    //_subscribeToWebMessages();
+    _subscribeToOnlineUsers();
   }
 
   /// Data providers
@@ -53,58 +53,47 @@ class HomeCubit extends Cubit<HomeState> {
   final WebMessageServiceApi _messageService;
 
 
+  /// Stream subscriptions ///
+  StreamSubscription<WebMessage>? _webMessageSub;
+  StreamSubscription<List<WebUser>>? _activeUsersSub;
+  StreamSubscription<List<Chat>>? _userChatsSub;
 
-  /// Streams  ///
 
+  /// Methods ///
 
-  _onSubscribeToChatListRequest(
-      SubscribeToChatListRequest event, Emitter<HomeState> emit) async {
-    emit(state.copyWith(status: () => HomeStatus.loading));
-
-    await emit.forEach<List<Chat>>(
-      await _repository.getAllChatsStreamUpdated,
-      onData: (chatsList) =>
-          state.copyWith(
-            status: () => HomeStatus.ready,
-            chatsList: () => chatsList,
-          ),
-      onError: (_, __) =>
-          state.copyWith(
-            status: () => HomeStatus.failure,
-          ),
-    );
+  /// Local Methods ///
+  _subscribeToLocalChats() async {
+    await _userChatsSub?.cancel();
+    final userChatStream = await _repo.allChatsUpdatedStream();
+    _userChatsSub = userChatStream
+        .listen((chatList) {
+          emit(state.copyWith(chatsList: chatList));
+          print('chatlist update');
+    });
   }
 
-  StreamSubscription<WebMessage> _webMessageSub;
-  StreamSubscription<List<WebUser>> _activeUsersSub;
-  StreamSubscription<List<Chat>> _userChatsSub;
-
-  _localChatsSubscribe() async {
-    final _userChatStream = await _repo.allChatsUpdatedStream();
-    _userChatsSub = _userChatStream
-        .listen((chatList) => this.state.chatsList = chatList
-        emit(HomeUpdate(chat))
-    )
+  _subscribeToOnlineUsers() async {
+    await _activeUsersSub?.cancel();
+    await _webUserService.cancelChangeFeed();
+    _activeUsersSub = _webUserService
+        .activeUsersStream()
+        .listen((list) {
+          emit(state.copyWith(onlineUsers: list));
+          print('onlineUsersUpdate');
+          print(list.length);
+        });
   }
 
-  _webMessageSubscribe() async {
-    await _webMessageSub.cancel();
+  _subscribeToWebMessages() async {
+    await _webMessageSub?.cancel();
     await _messageService.cancelChangeFeed();
     _webMessageSub = _messageService
         .messageStream(activeUser: WebUser.fromUser(_repo.user))
         .listen((message) {
-          print(message.contents); });
+      print(message.contents); });
   }
 
-  _onlineUsersSubscribe() async {
-    await _activeUsersSub.cancel();
-    await _webUserService.cancelChangeFeed();
-    print('init');
-    _activeUsersSub = _webUserService
-        .activeUsersStream().listen((list) => print('sssss'));
-  }
-
-  dispose() async {
+  _dispose() async {
     print('dispose');
     await _activeUsersSub?.cancel();
     await _webUserService.dispose();

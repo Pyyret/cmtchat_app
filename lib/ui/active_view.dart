@@ -11,16 +11,11 @@ class ActiveView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<HomeCubit, HomeState>(
-      builder: (context, state) {
-        if(state is HomeUpdate) {
-          return _buildList(context, state.onlineUsers); }
-        else { return const Center(child: CircularProgressIndicator()); }
-         }
-    );
+    final List<WebUser> onlineUsers = context.select((HomeCubit c) => c.state.onlineUsers);
+    return _buildList(context, onlineUsers);
   }
 
-  _buildList(context, List<WebUser> users) => ListView.separated(
+  _buildList(context, users) => ListView.separated(
     padding: const EdgeInsets.only(top: 30.0, right: 16.0),
     itemBuilder: (_, indx) => GestureDetector(
       child: _listItem(context, users[indx]),

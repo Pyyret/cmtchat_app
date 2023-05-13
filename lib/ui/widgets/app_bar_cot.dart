@@ -57,8 +57,12 @@ class AppBarCot extends StatelessWidget with PreferredSizeWidget {
       crossAxisAlignment: CrossAxisAlignment.center,
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Text('Chat',
-            style: Theme.of(context).appBarTheme.titleTextStyle),
+        GestureDetector(
+          child: Text('Chat',
+              style: Theme.of(context).appBarTheme.titleTextStyle),
+          onTap: () => context.read<AppRepository>().testChat(),
+        ),
+
         const SizedBox(width: 15.0),
         GestureDetector(
           child: const Logo(),

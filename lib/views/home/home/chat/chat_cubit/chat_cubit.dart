@@ -4,8 +4,6 @@ import 'package:cmtchat_app/collections/isar_db_collection.dart';
 import 'package:cmtchat_app/models/local/user.dart';
 import 'package:cmtchat_app/views/home/shared_blocs/receipt_bloc/receipt_bloc.dart';
 import 'package:equatable/equatable.dart';
-import 'package:isar/isar.dart';
-
 part 'chat_state.dart';
 
 class ChatCubit extends Cubit<ChatState> {
