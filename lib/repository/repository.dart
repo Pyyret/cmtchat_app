@@ -83,8 +83,7 @@ class Repository {
 
   // Get a stream of all chats that involve _appUser, from localDb, with updated
   // chat variables (lastUpdate, latest content & unread). Sorted by lastUpdate.
-  Future<Stream<List<Chat>>> get getAllChatsStreamUpdated =>
-      _localDb.allChatsUpdatedStream(_appUser.id);
+  Future<Stream<List<Chat>>> get getAllChatsStream => _localDb.allChatsStream();
 
   Future<List<WebUser>> activeUsers() async {
     final activeUserList = await _webUserService.online();

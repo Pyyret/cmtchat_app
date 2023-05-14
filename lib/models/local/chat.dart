@@ -16,10 +16,12 @@ class Chat {
   DateTime lastUpdate = DateTime.now();     // Set to datetime of last message
   String lastMessageContents = '';          // Set by isar
 
-  // Links to the owners of the chatroom
+  // Link to the owner of the chatroom
   @Backlink(to: 'chats')
-  final owners = IsarLinks<User>();
-
+  final owner = IsarLink<User>();
+  // Link to the receiver of the chatroom
+  @Backlink(to: 'chats')
+  final receiver = IsarLink<User>();
   // Links to messages in chatroom
   final messages = IsarLinks<Message>();
 

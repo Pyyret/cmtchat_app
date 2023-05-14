@@ -80,7 +80,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     emit(state.copyWith(status: () => HomeStatus.loading));
 
     await emit.forEach<List<Chat>>(
-      await _repository.getAllChatsStreamUpdated,
+      await _repository.getAllChatsStream,
       onData: (chatsList) =>
           state.copyWith(
             status: () => HomeStatus.ready,

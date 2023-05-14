@@ -59,11 +59,18 @@ const ChatSchema = CollectionSchema(
     )
   },
   links: {
-    r'owners': LinkSchema(
+    r'owner': LinkSchema(
       id: 8481593217365149869,
-      name: r'owners',
+      name: r'owner',
       target: r'Users',
-      single: false,
+      single: true,
+      linkName: r'chats',
+    ),
+    r'receiver': LinkSchema(
+      id: 8481593217365149869,
+      name: r'receiver',
+      target: r'Users',
+      single: true,
       linkName: r'chats',
     ),
     r'messages': LinkSchema(
@@ -144,12 +151,13 @@ Id _chatGetId(Chat object) {
 }
 
 List<IsarLinkBase<dynamic>> _chatGetLinks(Chat object) {
-  return [object.owners, object.messages];
+  return [object.owner, object.receiver, object.messages];
 }
 
 void _chatAttach(IsarCollection<dynamic> col, Id id, Chat object) {
   object.id = id;
-  object.owners.attach(col, col.isar.collection<User>(), r'owners', id);
+  object.owner.attach(col, col.isar.collection<User>(), r'owner', id);
+  object.receiver.attach(col, col.isar.collection<User>(), r'receiver', id);
   object.messages.attach(col, col.isar.collection<Message>(), r'messages', id);
 }
 
@@ -749,58 +757,28 @@ extension ChatQueryFilter on QueryBuilder<Chat, Chat, QFilterCondition> {
 extension ChatQueryObject on QueryBuilder<Chat, Chat, QFilterCondition> {}
 
 extension ChatQueryLinks on QueryBuilder<Chat, Chat, QFilterCondition> {
-  QueryBuilder<Chat, Chat, QAfterFilterCondition> owners(FilterQuery<User> q) {
+  QueryBuilder<Chat, Chat, QAfterFilterCondition> owner(FilterQuery<User> q) {
     return QueryBuilder.apply(this, (query) {
-      return query.link(q, r'owners');
+      return query.link(q, r'owner');
     });
   }
 
-  QueryBuilder<Chat, Chat, QAfterFilterCondition> ownersLengthEqualTo(
-      int length) {
+  QueryBuilder<Chat, Chat, QAfterFilterCondition> ownerIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.linkLength(r'owners', length, true, length, true);
+      return query.linkLength(r'owner', 0, true, 0, true);
     });
   }
 
-  QueryBuilder<Chat, Chat, QAfterFilterCondition> ownersIsEmpty() {
+  QueryBuilder<Chat, Chat, QAfterFilterCondition> receiver(
+      FilterQuery<User> q) {
     return QueryBuilder.apply(this, (query) {
-      return query.linkLength(r'owners', 0, true, 0, true);
+      return query.link(q, r'receiver');
     });
   }
 
-  QueryBuilder<Chat, Chat, QAfterFilterCondition> ownersIsNotEmpty() {
+  QueryBuilder<Chat, Chat, QAfterFilterCondition> receiverIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.linkLength(r'owners', 0, false, 999999, true);
-    });
-  }
-
-  QueryBuilder<Chat, Chat, QAfterFilterCondition> ownersLengthLessThan(
-    int length, {
-    bool include = false,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.linkLength(r'owners', 0, true, length, include);
-    });
-  }
-
-  QueryBuilder<Chat, Chat, QAfterFilterCondition> ownersLengthGreaterThan(
-    int length, {
-    bool include = false,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.linkLength(r'owners', length, include, 999999, true);
-    });
-  }
-
-  QueryBuilder<Chat, Chat, QAfterFilterCondition> ownersLengthBetween(
-    int lower,
-    int upper, {
-    bool includeLower = true,
-    bool includeUpper = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.linkLength(
-          r'owners', lower, includeLower, upper, includeUpper);
+      return query.linkLength(r'receiver', 0, true, 0, true);
     });
   }
 

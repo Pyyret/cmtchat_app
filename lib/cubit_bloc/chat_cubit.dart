@@ -39,7 +39,7 @@ class ChatCubit extends Cubit<ChatState> {
     _subscribeToChatMessages();
   }
 
-  User get receiver => _chat.owners.singleWhere((user) => user.id != _repo.user.id);
+  User get receiver => _chat.receiver.value!;
   int get userId => _repo.user.id;
 
   _subscribeToChatMessages() async {

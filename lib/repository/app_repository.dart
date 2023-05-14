@@ -1,7 +1,5 @@
 import 'dart:async';
-
 import 'package:cmtchat_app/collections/chat_message_collection.dart';
-import 'package:cmtchat_app/models/local/chat.dart';
 import 'package:cmtchat_app/models/local/user.dart';
 import 'package:cmtchat_app/models/web/web_user.dart';
 import 'package:cmtchat_app/services/local/data/local_db_api.dart';
@@ -45,22 +43,22 @@ class AppRepository{
         .messageStream(activeUser: WebUser.fromUser(_user))
         .listen((message) async {
           print('message received: $message');
-          Chat? chat = await _localDb.findChatWith(message.from);
-          if(chat == null) {
-            final User sender = await _webUserService
+          final newMessage = Message.fromWebMessage(message: message);
+          Chat? chat = await _localDb
+              .findChatWithWebUser(webUserId: message.from);
+          if(chat != null) {
+            _localDb.saveReceivedMessage(chat: chat, message: newMessage); }
+          else {
+            final receiver = await _webUserService
                 .fetch([message.from])
                 .then((list) => list.single)
                 .then((webUser) => User.fromWebUser(webUser: webUser));
-            final newChat = Chat()..owners.addAll([_user, sender]);
-            chat = await _localDb.saveChat(newChat, _user.id);
+            _localDb.saveNewChat(
+                chat: Chat(),
+                owner: _user,
+                receiver: receiver,
+                message: newMessage);
           }
-          final User sender = chat.owners
-              .singleWhere((user) => user.webUserId != _user.webUserId);
-          final newMessage = Message.fromWebMessage(message: message)
-            ..chat.value = chat
-            ..to.value = _user
-            ..from.value = sender;
-          _localDb.saveMessage(newMessage);
         });
   }
 
@@ -84,19 +82,20 @@ class AppRepository{
   /// Methods ///
 
   Future<Chat> getChat(WebUser webUser) async {
-    Chat? chat = await _localDb.findChatWith(webUser.webUserId!);
-    if(chat == null) {
-      final User newUser = User.fromWebUser(webUser: webUser);
-      final newChat = Chat()
-        ..owners.add(_user)
-        ..owners.add(newUser);
-      chat = await _localDb.saveChat(newChat, _user.id);
-    }
+    Chat? chat = await _localDb.findChatWithWebUser(webUserId: webUser.webUserId!);
+    chat ??= await _localDb.saveNewChat(
+        chat: Chat(),
+        owner: _user,
+        receiver: User.fromWebUser(webUser: webUser));
     return chat;
-  }
+    }
+
+
 
   Future<Stream<List<Chat>>> allChatsUpdatedStream() async =>
-      await _localDb.allChatsUpdatedStream(_user.id);
+      await _localDb.allChatsStream();
+
+
 
   Future<Stream<List<Message>>> chatMessageStream({required int chatId}) async =>
       await _localDb.chatMessageStream(chatId);
@@ -124,8 +123,8 @@ class AppRepository{
     // check localDb for user with the cashed user id.
     User? cachedUser;
     if(cachedUserId.isNotEmpty) {
-
-      cachedUser = await _localDb.getUser(int.parse(cachedUserId['user_id']));
+      cachedUser = await _localDb
+          .getUser(userId: int.parse(cachedUserId['user_id']));
     }
 
     // If found in localDb => connect & save user, then emit UserConnectSuccess
@@ -147,19 +146,16 @@ class AppRepository{
 
 
   // Saves connected user to localDb & cache
-  Future<User?> _cacheAndSave(User connectedUser) async {
-    int userId = await _localDb.saveUser(connectedUser);
-    final savedUser = await _localDb.getUser(userId) ?? User.noUser();
+  Future<User> _cacheAndSave(User connectedUser) async {
+    final savedUser = await _localDb.putUser(user: connectedUser);
     await _localCache.save('USER_ID', {'user_id': savedUser.id.toString()});
     _initializeRepository(savedAndConnectedUser: savedUser);
     return savedUser;
   }
 
   Future<void> logOut() async {
-    print(_user.webUserId);
-    if(_user != null)  {
-      await _webUserService.disconnect(WebUser.fromUser(_user));
-    }
+    print('User logged out: ${_user.webUserId}');
+    await _webUserService.disconnect(WebUser.fromUser(_user));
     await _localCache.clear();
     await _localDb.cleanDb();
     _user = User.noUser();

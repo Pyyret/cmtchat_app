@@ -1,5 +1,4 @@
 import 'package:cmtchat_app/cubit_bloc/chat_cubit.dart';
-import 'package:cmtchat_app/cubit_bloc/user_cubit.dart';
 import 'package:cmtchat_app/models/local/message.dart';
 import 'package:cmtchat_app/models/local/user.dart';
 import 'package:cmtchat_app/theme.dart';
@@ -92,7 +91,7 @@ class ChatView extends StatelessWidget {
     return ListView.builder(
       padding: const EdgeInsets.only(top: 16.0, left: 16.0, bottom: 20.0),
       itemBuilder: (context, indx) {
-        if (messages[indx].to.value!.id == userId) {
+        if (messages[indx].to.value!.id != userId) {
           return Padding(
             padding: const EdgeInsets.only(bottom: 8.0),
             child: ReceiverMessage(messages[indx]),

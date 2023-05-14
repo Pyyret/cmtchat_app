@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:cmtchat_app/collections/localservice_collection.dart';
 import 'package:cmtchat_app/collections/local_models_collection.dart';
+import 'package:cmtchat_app/collections/user_webuser_collection.dart';
 import 'package:isar/isar.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -11,19 +12,6 @@ import 'package:path_provider/path_provider.dart';
 
 class IsarLocalDb implements LocalDbApi {
 
-  @override
-  Future<int> saveUser(User user) async {
-    final isar = await db;
-    return isar.writeTxn(() async => await isar.users.put(user));
-  }
-
-  @override
-  Future<User?> getUser(Id userId) async {
-    final isar = await db;
-    return await isar.users.get(userId);
-  }
-
-
   /// Constructor
   // Automatically activates the database services when instantiated
   IsarLocalDb() { db = activate(); }
@@ -31,45 +19,176 @@ class IsarLocalDb implements LocalDbApi {
   // Database object used by this service
   late Future<Isar> db;
 
+  /// Activate and open the local isar database for use ///
+  // This is called everytime a new instance of this service class is made
+  Future<Isar> activate() async {
+    if (Isar.instanceNames.isEmpty) {
+      var dir = await getApplicationDocumentsDirectory();
+      return await Isar.open([
+        UserSchema,
+        ChatSchema,
+        MessageSchema
+      ], directory: dir.path);
+    }
+    return Future.value(Isar.getInstance());
+  }
+
+  /// Clear the entire database -- BE CAREFUL ///
+  @override
+  Future<void> cleanDb() async {
+    final isar = await db;
+    isar.writeTxnSync(() async => isar.clearSync());
+  }
 
 
+
+  @override
+  Future<Stream<List<Chat>>> allChatsStream() async {
+    final isar = await db;
+    await _updateAllChatsVariables();
+    return isar.chats
+        .where()
+        .sortByLastUpdateDesc()
+        .watch(fireImmediately: true);
+  }
+
+
+  Future<void> _updateAllChatsVariables() async {
+    final isar = await db;
+    await isar.writeTxn(() async {
+      await isar.chats
+          .where()
+          .findAll()
+          .then((list) async {
+            for(Chat chat in list) {
+              await _updateChatVariables(chat: chat);
+              await isar.chats.put(chat);
+            }
+          });
+    });
+  }
+
+
+
+
+  /// Streams ///
   @override
   Future<Stream<List<Message>>> chatMessageStream(Id chatId) async {
     final isar = await db;
     return isar.messages
         .filter()
         .chat((chat) => chat.idEqualTo(chatId))
-        .watch(fireImmediately: true
-    );
-  }
-
-  @override
-  Future<Stream<List<Chat>>> allChatsUpdatedStream(Id userId) async {
-    final isar = await db;
-    await getAllUserChatsUpdated(userId);
-    return isar.chats
-        .filter()
-        .owners((user) => user.idEqualTo(userId))
-        .sortByLastUpdateDesc()
         .watch(fireImmediately: true);
   }
 
-  @override
-  Future<List<Chat>> getAllUserChatsUpdated(Id userId) async {
-    final isar = await db;
+  /// Message ///
 
+  @override
+  Future<void> saveReceivedMessage({required Chat chat, required Message message})
+  async {
+    final isar = await db;
+    message.chat.value = chat;
+    message.to.value = chat.owner.value;
+    message.from.value = chat.receiver.value;
     await isar.writeTxn(() async {
-      await getAllUserChats(userId)
-          .then((list) async => {
-        for(Chat chat in list) {
-          await updateChatVariables(chat, userId),
-          await isar.chats.put(chat),
-        }
-      });
+      await isar.messages.put(message);
+      await message.chat.save();
+      await message.to.save();
+      await message.from.save();
+      final updatedChat = await _updateChatVariables(chat: chat);
+      await isar.chats.put(updatedChat);
     });
-    return await getAllUserChats(userId);
   }
 
+
+  /// Chat ///
+  @override
+  Future<Chat> saveNewChat({
+    required Chat chat,
+    required User owner,
+    required User receiver,
+    Message? message}) async
+  {
+    chat.owner.value = owner;
+    chat.receiver.value = receiver;
+    chat.chatName = receiver.username!;
+    if(message != null) {
+      message.chat.value = chat;
+      message.to.value = owner;
+      message.from.value = receiver;
+    }
+
+    final isar = await db;
+
+    final savedChatId = await isar.writeTxn(() async {
+      await isar.users.put(owner);
+      await isar.users.put(receiver);
+      await isar.chats.put(chat);
+      if(message != null) {
+        await isar.messages.put(message);
+        await message.chat.save();
+        await message.to.save();
+        await message.from.save();
+      }
+      await chat.owner.save();
+      await chat.receiver.save();
+      final savedChat = await _updateChatVariables(chat: chat);
+      return await isar.chats.put(savedChat);
+    });
+    return isar.chats.get(savedChatId).then((chat) => chat!);
+  }
+
+
+  Future<Chat> _updateChatVariables({required Chat chat})
+  async {
+    chat.unread = await chat.messages
+        .filter()
+        .statusEqualTo(ReceiptStatus.delivered)
+        .count();
+    await chat.messages
+        .filter()
+        .sortByTimestampDesc()
+        .findFirst().then((message) {
+          if(message != null) {
+            chat.lastUpdate = message.timestamp;
+            chat.lastMessageContents = message.contents;
+          }
+        });
+    return chat;
+  }
+
+  @override
+  Future<Chat?> findChatWithWebUser({required String webUserId}) async {
+    final isar = await db;
+    return isar.chats
+        .filter()
+        .receiver((receiver) => receiver.webUserIdEqualTo(webUserId))
+        .findAll()
+        .then((list) {
+          if(list.isEmpty) { return null; }
+          else { return list.single; }
+        });
+  }
+
+
+  /// User ///
+  @override
+  Future<User> putUser({required User user}) async {
+    final isar = await db;
+    user.id = await isar.writeTxn(() async => await isar.users.put(user));
+    return user;
+  }
+
+  @override
+  Future<User?> getUser({required Id userId}) async {
+    final isar = await db;
+    return await isar.users.get(userId);
+  }
+
+
+  /// ///////////////////////////////////////////////////////
+
+  /*
 
   @override
   Future<List<Chat>> getAllUserChats(Id userId) async {
@@ -170,20 +289,6 @@ class IsarLocalDb implements LocalDbApi {
   }
 
 
-  @override
-  Future<Chat?> findChatWith(String webUserId) async {
-    final isar = await db;
-    final list = isar.chats
-        .filter()
-        .owners((user) => user.webUserIdEqualTo(webUserId))
-        .findAllSync();
-    if(list.isEmpty) { return null; }
-    else { return list.single; }
-  }
-
-
-
-
 
   // Also removes all messages linked to the chat.
   @override
@@ -199,22 +304,7 @@ class IsarLocalDb implements LocalDbApi {
   }
 
 
-  /// Message
 
-  @override
-  Future<void> saveMessage({
-    required int ownerId,
-    required Chat chat,
-    required Message message
-  }) async {
-    final isar = await db;
-    await isar.writeTxn(() {
-      message.chat.value = chat;
-      message.to
-      isar.messages.put(message);
-
-    });
-  }
 
   @override
   Future<Message?> findMessage(int messageId) async {
@@ -245,26 +335,8 @@ class IsarLocalDb implements LocalDbApi {
   }
 
 
-  /// Activate and open the local isar database for use ///
-  // This is called everytime a new instance of this service class is made
-  Future<Isar> activate() async {
-    if (Isar.instanceNames.isEmpty) {
-      var dir = await getApplicationDocumentsDirectory();
-      return await Isar.open([
-        UserSchema,
-        ChatSchema,
-        MessageSchema
-      ], directory: dir.path);
-    }
-    return Future.value(Isar.getInstance());
-  }
 
-  /// Clear the entire database -- BE CAREFUL ///
-  @override
-  Future<void> cleanDb() async {
-    final isar = await db;
-    isar.writeTxnSync(() async => isar.clearSync());
-  }
+   */
 
 
 }
