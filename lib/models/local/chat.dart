@@ -10,7 +10,7 @@ part 'chat.g.dart';
 class Chat {
   Id id = Isar.autoIncrement;    // Automatically given by Isar
 
-  String chatName = '';         // Set to the username that is not user by isar
+  String chatName;         // Set to the username that is not user by isar
   int unread = 0;               // Number of messages with 'delivered' status
   @Index()
   DateTime lastUpdate = DateTime.now();     // Set to datetime of last message

@@ -40,16 +40,14 @@ class ChatCubit extends Cubit<ChatState> {
   }
 
   User get receiver => _chat.owners.singleWhere((user) => user.id != _repo.user.id);
+  int get userId => _repo.user.id;
 
   _subscribeToChatMessages() async {
     await _messageSub?.cancel();
     final messageStream = await _repo.chatMessageStream(chatId: _chat.id);
     _messageSub = messageStream
-        .listen((messageList) {
-          emit(ChatState(messages: messageList));
-    });
+        .listen((messageList) => emit(ChatState(messages: messageList)));
   }
-
 
 }
 

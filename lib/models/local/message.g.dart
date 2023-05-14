@@ -101,12 +101,7 @@ int _messageEstimateSize(
 ) {
   var bytesCount = offsets.last;
   bytesCount += 3 + object.contents.length * 3;
-  {
-    final value = object.status;
-    if (value != null) {
-      bytesCount += 3 + value.name.length * 3;
-    }
-  }
+  bytesCount += 3 + object.status.name.length * 3;
   {
     final value = object.webId;
     if (value != null) {
@@ -124,7 +119,7 @@ void _messageSerialize(
 ) {
   writer.writeString(offsets[0], object.contents);
   writer.writeDateTime(offsets[1], object.receiptTimestamp);
-  writer.writeString(offsets[2], object.status?.name);
+  writer.writeString(offsets[2], object.status.name);
   writer.writeDateTime(offsets[3], object.timestamp);
   writer.writeString(offsets[4], object.webId);
 }
@@ -137,9 +132,10 @@ Message _messageDeserialize(
 ) {
   final object = Message(
     contents: reader.readString(offsets[0]),
-    receiptTimestamp: reader.readDateTimeOrNull(offsets[1]),
-    status: _MessagestatusValueEnumMap[reader.readStringOrNull(offsets[2])],
-    timestamp: reader.readDateTimeOrNull(offsets[3]),
+    receiptTimestamp: reader.readDateTime(offsets[1]),
+    status: _MessagestatusValueEnumMap[reader.readStringOrNull(offsets[2])] ??
+        ReceiptStatus.sent,
+    timestamp: reader.readDateTime(offsets[3]),
     webId: reader.readStringOrNull(offsets[4]),
   );
   object.id = id;
@@ -156,11 +152,12 @@ P _messageDeserializeProp<P>(
     case 0:
       return (reader.readString(offset)) as P;
     case 1:
-      return (reader.readDateTimeOrNull(offset)) as P;
+      return (reader.readDateTime(offset)) as P;
     case 2:
-      return (_MessagestatusValueEnumMap[reader.readStringOrNull(offset)]) as P;
+      return (_MessagestatusValueEnumMap[reader.readStringOrNull(offset)] ??
+          ReceiptStatus.sent) as P;
     case 3:
-      return (reader.readDateTimeOrNull(offset)) as P;
+      return (reader.readDateTime(offset)) as P;
     case 4:
       return (reader.readStringOrNull(offset)) as P;
     default:
@@ -276,28 +273,8 @@ extension MessageQueryWhere on QueryBuilder<Message, Message, QWhereClause> {
     });
   }
 
-  QueryBuilder<Message, Message, QAfterWhereClause> timestampIsNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.equalTo(
-        indexName: r'timestamp',
-        value: [null],
-      ));
-    });
-  }
-
-  QueryBuilder<Message, Message, QAfterWhereClause> timestampIsNotNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.between(
-        indexName: r'timestamp',
-        lower: [null],
-        includeLower: false,
-        upper: [],
-      ));
-    });
-  }
-
   QueryBuilder<Message, Message, QAfterWhereClause> timestampEqualTo(
-      DateTime? timestamp) {
+      DateTime timestamp) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(IndexWhereClause.equalTo(
         indexName: r'timestamp',
@@ -307,7 +284,7 @@ extension MessageQueryWhere on QueryBuilder<Message, Message, QWhereClause> {
   }
 
   QueryBuilder<Message, Message, QAfterWhereClause> timestampNotEqualTo(
-      DateTime? timestamp) {
+      DateTime timestamp) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
@@ -342,7 +319,7 @@ extension MessageQueryWhere on QueryBuilder<Message, Message, QWhereClause> {
   }
 
   QueryBuilder<Message, Message, QAfterWhereClause> timestampGreaterThan(
-    DateTime? timestamp, {
+    DateTime timestamp, {
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
@@ -356,7 +333,7 @@ extension MessageQueryWhere on QueryBuilder<Message, Message, QWhereClause> {
   }
 
   QueryBuilder<Message, Message, QAfterWhereClause> timestampLessThan(
-    DateTime? timestamp, {
+    DateTime timestamp, {
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
@@ -370,8 +347,8 @@ extension MessageQueryWhere on QueryBuilder<Message, Message, QWhereClause> {
   }
 
   QueryBuilder<Message, Message, QAfterWhereClause> timestampBetween(
-    DateTime? lowerTimestamp,
-    DateTime? upperTimestamp, {
+    DateTime lowerTimestamp,
+    DateTime upperTimestamp, {
     bool includeLower = true,
     bool includeUpper = true,
   }) {
@@ -571,26 +548,8 @@ extension MessageQueryFilter
     });
   }
 
-  QueryBuilder<Message, Message, QAfterFilterCondition>
-      receiptTimestampIsNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'receiptTimestamp',
-      ));
-    });
-  }
-
-  QueryBuilder<Message, Message, QAfterFilterCondition>
-      receiptTimestampIsNotNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'receiptTimestamp',
-      ));
-    });
-  }
-
   QueryBuilder<Message, Message, QAfterFilterCondition> receiptTimestampEqualTo(
-      DateTime? value) {
+      DateTime value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
         property: r'receiptTimestamp',
@@ -601,7 +560,7 @@ extension MessageQueryFilter
 
   QueryBuilder<Message, Message, QAfterFilterCondition>
       receiptTimestampGreaterThan(
-    DateTime? value, {
+    DateTime value, {
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
@@ -615,7 +574,7 @@ extension MessageQueryFilter
 
   QueryBuilder<Message, Message, QAfterFilterCondition>
       receiptTimestampLessThan(
-    DateTime? value, {
+    DateTime value, {
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
@@ -628,8 +587,8 @@ extension MessageQueryFilter
   }
 
   QueryBuilder<Message, Message, QAfterFilterCondition> receiptTimestampBetween(
-    DateTime? lower,
-    DateTime? upper, {
+    DateTime lower,
+    DateTime upper, {
     bool includeLower = true,
     bool includeUpper = true,
   }) {
@@ -644,24 +603,8 @@ extension MessageQueryFilter
     });
   }
 
-  QueryBuilder<Message, Message, QAfterFilterCondition> statusIsNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'status',
-      ));
-    });
-  }
-
-  QueryBuilder<Message, Message, QAfterFilterCondition> statusIsNotNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'status',
-      ));
-    });
-  }
-
   QueryBuilder<Message, Message, QAfterFilterCondition> statusEqualTo(
-    ReceiptStatus? value, {
+    ReceiptStatus value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
@@ -674,7 +617,7 @@ extension MessageQueryFilter
   }
 
   QueryBuilder<Message, Message, QAfterFilterCondition> statusGreaterThan(
-    ReceiptStatus? value, {
+    ReceiptStatus value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
@@ -689,7 +632,7 @@ extension MessageQueryFilter
   }
 
   QueryBuilder<Message, Message, QAfterFilterCondition> statusLessThan(
-    ReceiptStatus? value, {
+    ReceiptStatus value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
@@ -704,8 +647,8 @@ extension MessageQueryFilter
   }
 
   QueryBuilder<Message, Message, QAfterFilterCondition> statusBetween(
-    ReceiptStatus? lower,
-    ReceiptStatus? upper, {
+    ReceiptStatus lower,
+    ReceiptStatus upper, {
     bool includeLower = true,
     bool includeUpper = true,
     bool caseSensitive = true,
@@ -790,24 +733,8 @@ extension MessageQueryFilter
     });
   }
 
-  QueryBuilder<Message, Message, QAfterFilterCondition> timestampIsNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'timestamp',
-      ));
-    });
-  }
-
-  QueryBuilder<Message, Message, QAfterFilterCondition> timestampIsNotNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'timestamp',
-      ));
-    });
-  }
-
   QueryBuilder<Message, Message, QAfterFilterCondition> timestampEqualTo(
-      DateTime? value) {
+      DateTime value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
         property: r'timestamp',
@@ -817,7 +744,7 @@ extension MessageQueryFilter
   }
 
   QueryBuilder<Message, Message, QAfterFilterCondition> timestampGreaterThan(
-    DateTime? value, {
+    DateTime value, {
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
@@ -830,7 +757,7 @@ extension MessageQueryFilter
   }
 
   QueryBuilder<Message, Message, QAfterFilterCondition> timestampLessThan(
-    DateTime? value, {
+    DateTime value, {
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
@@ -843,8 +770,8 @@ extension MessageQueryFilter
   }
 
   QueryBuilder<Message, Message, QAfterFilterCondition> timestampBetween(
-    DateTime? lower,
-    DateTime? upper, {
+    DateTime lower,
+    DateTime upper, {
     bool includeLower = true,
     bool includeUpper = true,
   }) {
@@ -1238,20 +1165,19 @@ extension MessageQueryProperty
     });
   }
 
-  QueryBuilder<Message, DateTime?, QQueryOperations>
-      receiptTimestampProperty() {
+  QueryBuilder<Message, DateTime, QQueryOperations> receiptTimestampProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'receiptTimestamp');
     });
   }
 
-  QueryBuilder<Message, ReceiptStatus?, QQueryOperations> statusProperty() {
+  QueryBuilder<Message, ReceiptStatus, QQueryOperations> statusProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'status');
     });
   }
 
-  QueryBuilder<Message, DateTime?, QQueryOperations> timestampProperty() {
+  QueryBuilder<Message, DateTime, QQueryOperations> timestampProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'timestamp');
     });

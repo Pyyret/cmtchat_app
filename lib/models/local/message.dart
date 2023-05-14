@@ -1,3 +1,4 @@
+import 'package:cmtchat_app/collections/chat_message_collection.dart';
 import 'package:cmtchat_app/models/local/chat.dart';
 import 'package:cmtchat_app/models/local/user.dart';
 import 'package:cmtchat_app/models/web/receipt.dart';
@@ -13,13 +14,13 @@ class Message {
   String? webId;                        // Webserver-specific id.
 
   @Index()
-  DateTime? timestamp;
+  DateTime timestamp;
   final String contents;
 
   // Receipt data
   @Enumerated(EnumType.name)
-  ReceiptStatus? status;
-  DateTime? receiptTimestamp;
+  ReceiptStatus status;
+  DateTime receiptTimestamp;
 
   // Isar links to sender, receiver & containing chatroom
   @Backlink(to: 'receivedMessages')
@@ -32,13 +33,26 @@ class Message {
   final chat = IsarLink<Chat>();
 
 
-  // Constructor
+  /// Constructors
   Message({
     this.webId,
-    this.timestamp,
+    required this.timestamp,
     required this.contents,
-    this.status,
-    this.receiptTimestamp
+    required this.status,
+    required this.receiptTimestamp,
   });
+
+  factory Message.fromWebMessage({
+    required WebMessage message,
+  })
+  {
+    return Message(
+      webId: message.webId,
+      timestamp: message.timestamp,
+      contents: message.contents,
+      status: ReceiptStatus.delivered,
+      receiptTimestamp: DateTime.now()
+    );
+  }
 
 }

@@ -11,35 +11,64 @@ import 'package:cmtchat_app/services/web/user/web_user_service_api.dart';
 /// App repository ///
 class AppRepository{
 
+  /// DataProviders
+  // Local
+  final ILocalCacheService _localCache;
+  final LocalDbApi _localDb;
+  // WebDependant
+  final WebUserServiceApi _webUserService;
+  final WebMessageServiceApi _webMessageService;
+
   /// Constructor
   AppRepository({
     required ILocalCacheService localCache,
     required LocalDbApi dataService,
     required WebUserServiceApi webUserService,
+    required WebMessageServiceApi webMessageService,
   })
       : _localCache = localCache,
         _localDb = dataService,
-        _webUserService = webUserService;
-
-  /// DataProvider APIs ///
-  // Local
-  final ILocalCacheService _localCache;
-  final LocalDbApi _localDb;
-
-  // WebDependant
-  final WebUserServiceApi _webUserService;
+        _webUserService = webUserService,
+        _webMessageService = webMessageService;
 
 
-  /// Private variables ///
+  StreamSubscription<WebMessage>? _webMessageSub;
+  _initializeRepository({required User savedAndConnectedUser}) {
+    _user = savedAndConnectedUser;
+    _subscribeToWebMessages();
+  }
+
+  _subscribeToWebMessages() async {
+    await _webMessageSub?.cancel();
+    await _webMessageService.cancelChangeFeed();
+    _webMessageSub = _webMessageService
+        .messageStream(activeUser: WebUser.fromUser(_user))
+        .listen((message) async {
+          print('message received: $message');
+          Chat? chat = await _localDb.findChatWith(message.from);
+          if(chat == null) {
+            final User sender = await _webUserService
+                .fetch([message.from])
+                .then((list) => list.single)
+                .then((webUser) => User.fromWebUser(webUser: webUser));
+            final newChat = Chat()..owners.addAll([_user, sender]);
+            chat = await _localDb.saveChat(newChat, _user.id);
+          }
+          final User sender = chat.owners
+              .singleWhere((user) => user.webUserId != _user.webUserId);
+          final newMessage = Message.fromWebMessage(message: message)
+            ..chat.value = chat
+            ..to.value = _user
+            ..from.value = sender;
+          _localDb.saveMessage(newMessage);
+        });
+  }
+
+
+  /// Private variables
   User _user = User.noUser();
 
 
-
-
-  testChat() {
-    Chat test = Chat()..owners.add(_user);
-    _localDb.saveChat(test, _user.id);
-  }
 
 
   test() { _webUserService.disconnect(WebUser.fromUser(_user)); }
@@ -83,6 +112,7 @@ class AppRepository{
     WebUser connectedWebUser = await _webUserService.connect(webUser);
     _user = User.fromWebUser(webUser: connectedWebUser);
     await _cacheAndSave(_user);
+    print('New user logged in $_user');
     return _user;
   }
 
@@ -109,8 +139,7 @@ class AppRepository{
       WebUser connectedWebUser = await _webUserService.connect(webUser);
       cachedUser.update(connectedWebUser);
       final savedUser = await _cacheAndSave(cachedUser);
-      print('savedUser');
-      print(savedUser);
+      print('User from cache: $savedUser');
       return savedUser;
     }
     return null;
@@ -120,9 +149,10 @@ class AppRepository{
   // Saves connected user to localDb & cache
   Future<User?> _cacheAndSave(User connectedUser) async {
     int userId = await _localDb.saveUser(connectedUser);
-    _user = await _localDb.getUser(userId) ?? User.noUser();
-    await _localCache.save('USER_ID', {'user_id': _user.id.toString()});
-    return _user;
+    final savedUser = await _localDb.getUser(userId) ?? User.noUser();
+    await _localCache.save('USER_ID', {'user_id': savedUser.id.toString()});
+    _initializeRepository(savedAndConnectedUser: savedUser);
+    return savedUser;
   }
 
   Future<void> logOut() async {

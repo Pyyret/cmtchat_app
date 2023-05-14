@@ -1,7 +1,6 @@
 import 'package:cmtchat_app/collections/webservice_collection.dart';
 import 'package:cmtchat_app/cubit_bloc/chat_cubit.dart';
 import 'package:cmtchat_app/cubit_bloc/home_cubit.dart';
-import 'package:cmtchat_app/models/local/user.dart';
 import 'package:cmtchat_app/repository/app_repository.dart';
 import 'package:cmtchat_app/services/local/data/isar_local_db.dart';
 import 'package:cmtchat_app/services/local/data/local_db_api.dart';
@@ -58,9 +57,8 @@ class AppRoot {
     _repo = AppRepository(
         localCache: _localCacheService,
         dataService: _dataService,
-        webUserService: _webUserService);
-
-
+        webUserService: _webUserService,
+        webMessageService: _webMsgServ);
 
     _userCubit = UserCubit(repository: _repo);
 
@@ -86,7 +84,6 @@ class AppRoot {
 
 
   static Widget composeHomeView() {
-
     return BlocProvider(
       create: (BuildContext context) {
         final IRouter router = RouterCot(
@@ -95,19 +92,17 @@ class AppRoot {
         return HomeCubit(
             repository: _repo,
             router: router,
-            messageService: _webMsgServ,
             webUserService: _webUserService);
       },
       child: const HomeView(),
     );
   }
 
-  static Widget composeChatView(User receiver, Chat chat) {
+  static Widget composeChatView(Chat chat) {
     return MultiBlocProvider(
         providers: [
         BlocProvider(create:(BuildContext context) => ChatCubit(
             repository: _repo,
-            user: receiver,
             chat: chat)),
         ],
         child: ChatView(),

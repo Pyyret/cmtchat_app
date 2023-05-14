@@ -15,20 +15,20 @@ class InboxTab extends StatelessWidget {
   Widget build(BuildContext context) {
     final List<Chat> chatsList = context.select(
             (HomeCubit c) => c.state.chatsList);
-    return _buildList(context, chatsList);
+    return ListView.separated(
+        padding: const EdgeInsets.only(top: 30.0, right: 16.0),
+        itemBuilder: (_, indx) =>
+            GestureDetector(
+              child: _chatItem(context, chatsList[indx]),
+              onTap: () => context.read<HomeCubit>().routeChat(chatsList[indx]),
+            ),
+        separatorBuilder: (_, __) => const Divider(),
+        itemCount: chatsList.length
+    );
   }
 
-  _buildList(context, chatsList) =>
-      ListView.separated(
-          padding: const EdgeInsets.only(top: 30.0, right: 16.0),
-          itemBuilder: (_, indx) =>
-              GestureDetector(
-                child: _chatItem(context, chatsList[indx]),
-                onTap: () => print('NO!'),
-                    //context.read<HomeBloc>().add(ChatClicked(context: context, chat: chatsList[indx])),
-              ),
-          separatorBuilder: (_, __) => const Divider(),
-          itemCount: chatsList.length);
+
+
 
   _chatItem(context, Chat chat) =>
       ListTile(
@@ -36,11 +36,7 @@ class InboxTab extends StatelessWidget {
         leading: const ProfilePlaceholder(50),
         title: Text(
           chat.chatName,
-          style: Theme
-              .of(context)
-              .textTheme
-              .titleSmall
-              ?.copyWith(
+          style: Theme.of(context).textTheme.titleSmall?.copyWith(
             fontWeight: FontWeight.bold,
             color: isLightTheme(context) ? Colors.black : Colors.white,
           ),
@@ -50,11 +46,7 @@ class InboxTab extends StatelessWidget {
           maxLines: 2,
           overflow: TextOverflow.ellipsis,
           softWrap: true,
-          style: Theme
-              .of(context)
-              .textTheme
-              .labelSmall
-              ?.copyWith(
+          style: Theme.of(context).textTheme.labelSmall?.copyWith(
             color: isLightTheme(context) ? Colors.black54 : Colors.white70,
             fontWeight:
             chat.unread > 0 ? FontWeight.bold : FontWeight.normal,
@@ -65,13 +57,8 @@ class InboxTab extends StatelessWidget {
           children: [
             Text(
               DateFormat('h:mm a').format(chat.lastUpdate),
-              style: Theme
-                  .of(context)
-                  .textTheme
-                  .labelSmall
-                  ?.copyWith(
-                color:
-                isLightTheme(context) ? Colors.black54 : Colors.white70,
+              style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                color: isLightTheme(context) ? Colors.black54 : Colors.white70,
               ),
             ),
             Padding(
@@ -85,11 +72,7 @@ class InboxTab extends StatelessWidget {
                   alignment: Alignment.center,
                   child: Text(
                     chat.unread.toString(),
-                    style: Theme
-                        .of(context)
-                        .textTheme
-                        .labelSmall
-                        ?.copyWith(
+                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
                       color: Colors.white,
                     ),
                   ),

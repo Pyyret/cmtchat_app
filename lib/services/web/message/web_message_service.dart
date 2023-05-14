@@ -50,8 +50,8 @@ class WebMessageService implements WebMessageServiceApi {
         .asStream()
         .cast<Feed>()
         .listen((event) {
-          print('message');
           event.forEach((feedData) {
+            print('message: $feedData');
             if(feedData['new_val'] == null) return;
             final message = _messageFromFeed(feedData);
             _controller.sink.add(message);

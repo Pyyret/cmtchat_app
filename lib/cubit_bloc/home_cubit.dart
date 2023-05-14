@@ -37,12 +37,11 @@ class HomeCubit extends Cubit<HomeState> {
   /// Data providers
   final AppRepository _repo;
   final WebUserServiceApi _webUserService;
-  final WebMessageServiceApi _messageService;
 
   final IRouter _router;
 
   /// Stream subscriptions
-  StreamSubscription<WebMessage>? _webMessageSub;
+
   StreamSubscription<List<WebUser>>? _activeUsersSub;
   StreamSubscription<List<Chat>>? _userChatsSub;
 
@@ -50,13 +49,11 @@ class HomeCubit extends Cubit<HomeState> {
   HomeCubit({
     required AppRepository repository,
     required IRouter router,
-    required WebMessageServiceApi messageService,
     required WebUserServiceApi webUserService,
   })
       : _repo = repository,
         _router = router,
         _webUserService = webUserService,
-        _messageService = messageService,
         super(HomeState.initial())
   {
     // Initializing
@@ -66,10 +63,10 @@ class HomeCubit extends Cubit<HomeState> {
 
 
   /// Methods ///
-  Future<void> routeChat(WebUser webUser) async {
-    final Chat chat = await _repo.getChat(webUser);
-    _router.showChat(_repo.user, chat);
-  }
+  void routeChatFromWebUser(WebUser webUser) =>
+      _repo.getChat(webUser).then((chat) => routeChat(chat));
+
+  void routeChat(Chat chat) => _router.showChat(chat);
 
 
   /// Local Methods ///
@@ -95,14 +92,7 @@ class HomeCubit extends Cubit<HomeState> {
         });
   }
 
-  _subscribeToWebMessages() async {
-    await _webMessageSub?.cancel();
-    await _messageService.cancelChangeFeed();
-    _webMessageSub = _messageService
-        .messageStream(activeUser: WebUser.fromUser(_repo.user))
-        .listen((message) {
-      print(message.contents); });
-  }
+
 
   _dispose() async {
     print('dispose');

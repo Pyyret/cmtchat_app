@@ -34,9 +34,8 @@ class ChatView extends StatelessWidget {
                   } else {
                     WidgetsBinding.instance
                         .addPostFrameCallback((_) => _scrollToEnd());
-                    final int userId =
-                        context.select((UserCubit c) => c.state.user!.id);
                     final List<Message> messages = state.messages;
+                    final userId = context.select((ChatCubit c) => c.userId);
                     return _buildListOfMessages(userId, messages);
                   }
                 }),
