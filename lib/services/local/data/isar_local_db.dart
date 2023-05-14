@@ -31,6 +31,30 @@ class IsarLocalDb implements LocalDbApi {
   // Database object used by this service
   late Future<Isar> db;
 
+
+
+  @override
+  Future<Stream<List<Message>>> chatMessageStream(Id chatId) async {
+    final isar = await db;
+    return isar.messages
+        .filter()
+        .chat((chat) => chat.idEqualTo(chatId))
+        .watch(fireImmediately: true
+    );
+  }
+
+  @override
+  Future<Stream<List<Chat>>> allChatsUpdatedStream(Id userId) async {
+    final isar = await db;
+    await getAllUserChatsUpdated(userId);
+    return isar.chats
+        .filter()
+        .owners((user) => user.idEqualTo(userId))
+        .sortByLastUpdateDesc()
+        .watch(fireImmediately: true
+    );
+  }
+
   @override
   Future<List<Chat>> getAllUserChatsUpdated(Id userId) async {
     final isar = await db;
@@ -55,18 +79,6 @@ class IsarLocalDb implements LocalDbApi {
         .filter()
         .owners((user) => user.idEqualTo(userId))
         .findAll();
-  }
-
-
-  @override
-  Future<Stream<List<Chat>>> allChatsUpdatedStream(Id userId) async {
-    final isar = await db;
-    await getAllUserChatsUpdated(userId);
-    return isar.chats
-        .filter()
-        .owners((user) => user.idEqualTo(userId))
-        .sortByLastUpdateDesc()
-        .watch(fireImmediately: true);
   }
 
 
@@ -137,11 +149,12 @@ class IsarLocalDb implements LocalDbApi {
 
   // Returns the id of the new or updated chat
   @override
-  Future<int> saveChat(Chat chat, Id userId) async {
+  Future<Chat> saveChat(Chat chat, Id userId) async {
     final isar = await db;
     isar.writeTxnSync(() => isar.chats.putSync(chat));
     await updateChatVariables(chat, userId);
-    return isar.writeTxnSync(() => isar.chats.putSync(chat));
+    final newChatId = isar.writeTxnSync(() => isar.chats.putSync(chat));
+    return isar.chats.getSync(newChatId)!;
   }
 
   @override

@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:cmtchat_app/collections/chat_message_collection.dart';
 import 'package:cmtchat_app/models/local/chat.dart';
 import 'package:cmtchat_app/models/local/user.dart';
 import 'package:cmtchat_app/models/web/web_user.dart';
@@ -53,8 +54,23 @@ class AppRepository{
 
   /// Methods ///
 
+  Future<Chat> getChat(WebUser webUser) async {
+    Chat? chat = await _localDb.findChatWith(webUser.webUserId!);
+    if(chat == null) {
+      final User newUser = User.fromWebUser(webUser: webUser);
+      final newChat = Chat()
+        ..owners.add(_user)
+        ..owners.add(newUser);
+      chat = await _localDb.saveChat(newChat, _user.id);
+    }
+    return chat;
+  }
+
   Future<Stream<List<Chat>>> allChatsUpdatedStream() async =>
       await _localDb.allChatsUpdatedStream(_user.id);
+
+  Future<Stream<List<Message>>> chatMessageStream({required int chatId}) async =>
+      await _localDb.chatMessageStream(chatId);
 
   // Creates a new User, connects and saves it, from username entered
   // in the OnboardingUi.

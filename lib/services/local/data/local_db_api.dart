@@ -14,7 +14,7 @@ abstract class LocalDbApi {
   Future<void> removeUser(int userId);
 
   /// Chat
-  Future<int> saveChat(Chat chat, int userId);
+  Future<Chat> saveChat(Chat chat, int userId);
   Future<Chat?> findChat(int chatId);
   Future<List<Chat>> getAllUserChatsUpdated(int userId);
   Future<List<Chat>> getAllUserChats(int userId);
@@ -31,4 +31,6 @@ abstract class LocalDbApi {
   Future<void> updateMessageReceipt(String messageId, Receipt receipt);
 
   Future<void> cleanDb();
+
+  Future<Stream<List<Message>>> chatMessageStream(int chatId);
 }

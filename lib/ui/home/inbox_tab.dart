@@ -5,11 +5,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 
-import '../cubit_bloc/home_cubit.dart';
-import '../theme.dart';
+import '../../cubit_bloc/home_cubit.dart';
+import '../../theme.dart';
 
-class InboxView extends StatelessWidget {
-  const InboxView({super.key});
+class InboxTab extends StatelessWidget {
+  const InboxTab({super.key});
 
   @override
   Widget build(BuildContext context) {

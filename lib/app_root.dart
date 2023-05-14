@@ -1,13 +1,15 @@
 import 'package:cmtchat_app/collections/webservice_collection.dart';
+import 'package:cmtchat_app/cubit_bloc/chat_cubit.dart';
 import 'package:cmtchat_app/cubit_bloc/home_cubit.dart';
+import 'package:cmtchat_app/models/local/user.dart';
 import 'package:cmtchat_app/repository/app_repository.dart';
 import 'package:cmtchat_app/services/local/data/isar_local_db.dart';
 import 'package:cmtchat_app/services/local/data/local_db_api.dart';
 import 'package:cmtchat_app/services/local/local_cache_service.dart';
-import 'package:cmtchat_app/services/web/user/web_user_service.dart';
-import 'package:cmtchat_app/services/web/user/web_user_service_api.dart';
-import 'package:cmtchat_app/ui/home_view.dart';
+import 'package:cmtchat_app/ui/chat_view.dart';
+import 'package:cmtchat_app/ui/home/home_view.dart';
 import 'package:cmtchat_app/ui/login_view.dart';
+import 'package:cmtchat_app/views/home/home/router.dart';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -15,6 +17,7 @@ import 'package:rethink_db_ns/rethink_db_ns.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'cubit_bloc/user_cubit.dart';
+import 'models/local/chat.dart';
 
 class AppRoot {
 
@@ -32,8 +35,9 @@ class AppRoot {
 
 
   static late AppRepository _repo;
+
+
   static late UserCubit _userCubit;
-  static late HomeCubit _homeCubit;
 
   static configure() async {
 
@@ -56,6 +60,8 @@ class AppRoot {
         dataService: _dataService,
         webUserService: _webUserService);
 
+
+
     _userCubit = UserCubit(repository: _repo);
 
   }
@@ -69,7 +75,9 @@ class AppRoot {
             ],
             child: BlocBuilder<UserCubit, UserState>(
               builder: (context, state) {
-                return state is UserLoggedIn ? composeHomeView() : LogInView();
+                return state is UserLoggedIn
+                    ? composeHomeView()
+                    : const LogInView();
               } ,
             )
         ),
@@ -78,18 +86,34 @@ class AppRoot {
 
 
   static Widget composeHomeView() {
-    return MultiBlocProvider(
-      providers: [
-        BlocProvider(
-            create: (BuildContext context) =>
-                HomeCubit(repository: _repo,
-                    webUserService: _webUserService, messageService: _webMsgServ,
 
-                ),
-        )
-      ],
+    return BlocProvider(
+      create: (BuildContext context) {
+        final IRouter router = RouterCot(
+            context: context,
+            onShowChat: composeChatView);
+        return HomeCubit(
+            repository: _repo,
+            router: router,
+            messageService: _webMsgServ,
+            webUserService: _webUserService);
+      },
       child: const HomeView(),
     );
+  }
+
+  static Widget composeChatView(User receiver, Chat chat) {
+    return MultiBlocProvider(
+        providers: [
+        BlocProvider(create:(BuildContext context) => ChatCubit(
+            repository: _repo,
+            user: receiver,
+            chat: chat)),
+        ],
+        child: ChatView(),
+    );
+
+
   }
 
 

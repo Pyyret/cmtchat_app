@@ -1,6 +1,5 @@
 import 'package:cmtchat_app/colors.dart';
 import 'package:cmtchat_app/cubit_bloc/user_cubit.dart';
-import 'package:cmtchat_app/repository/app_repository.dart';
 import 'package:cmtchat_app/ui/widgets/costum_text_field.dart';
 import 'package:cmtchat_app/ui/widgets/logo.dart';
 import 'package:flutter/material.dart';
@@ -8,12 +7,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 
 class LogInView extends StatelessWidget {
-  LogInView({super.key});
-
-  String _username = '';
+  const LogInView({super.key});
 
   @override
   Widget build(BuildContext context) {
+    String username = '';
     return Scaffold(
       resizeToAvoidBottomInset: true,
       body: SafeArea(
@@ -28,7 +26,7 @@ class LogInView extends StatelessWidget {
                 child: CustomTextField(
                   hint: 'Your name?',
                   height: 45.0,
-                  onchanged: (val) { _username =  val; },
+                  onchanged: (val) { username =  val; },
                   inputAction: TextInputAction.done,
                 ),
             ),
@@ -37,19 +35,19 @@ class LogInView extends StatelessWidget {
               padding: const EdgeInsets.only(left: 25.0,  right: 25.0, bottom: 40.0),
               child: ElevatedButton(
                   onPressed: () {
-                    final error = _checkInputs();
-                    if(error.isNotEmpty) {
-                      final snackBar = SnackBar(
-                          content: Text(
-                            error,
-                            style: const TextStyle(fontSize: 14.0, fontWeight: FontWeight.bold
-                            ),
+                    if(username.isNotEmpty) {
+                      context.read<UserCubit>().newUserLogin(username);}
+                    else {
+                      const snackBar = SnackBar(
+                        content: Text(
+                          'You have to enter a username',
+                          style: TextStyle(
+                              fontSize: 14.0, fontWeight: FontWeight.bold
                           ),
+                        ),
                       );
                       ScaffoldMessenger.of(context).showSnackBar(snackBar);
                     }
-                    else { context.read<UserCubit>().newUserLogin(_username); }
-
                   },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: kPrimary,
@@ -100,11 +98,5 @@ class LogInView extends StatelessWidget {
         )),
       ],
     );
-  }
-
-  String _checkInputs() {
-    var error = '';
-    if(_username.isEmpty) { error = 'Enter name'; }
-    return error;
   }
 }

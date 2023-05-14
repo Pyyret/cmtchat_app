@@ -1,23 +1,59 @@
-import 'package:bloc/bloc.dart';
-import 'package:cmtchat_app/collections/chat_message_collection.dart';
-import 'package:cmtchat_app/collections/isar_db_collection.dart';
-import 'package:cmtchat_app/models/local/user.dart';
-import 'package:cmtchat_app/views/home/shared_blocs/receipt_bloc/receipt_bloc.dart';
-import 'package:equatable/equatable.dart';
-part 'chat_state.dart';
 
+import 'dart:async';
+
+import 'package:bloc/bloc.dart';
+import 'package:cmtchat_app/models/local/chat.dart';
+import 'package:cmtchat_app/models/local/message.dart';
+import 'package:cmtchat_app/models/local/user.dart';
+import 'package:cmtchat_app/repository/app_repository.dart';
+import 'package:equatable/equatable.dart';
+
+/// Chat State ///
+class ChatState extends Equatable {
+  /// State variables
+  final List<Message> messages;
+
+  /// Constructor
+  const ChatState({required this.messages});
+
+
+  @override
+  List<Object> get props => [messages];
+}
+
+/// Chat Cubit
 class ChatCubit extends Cubit<ChatState> {
-  final LocalDbApi _dataService;
-  final ReceiptBloc _receiptBloc;
+  final AppRepository _repo;
   final Chat _chat;
-  final User _user;
-  late final User _receiver;
-  
-  ChatCubit(this._dataService, this._receiptBloc, this._user, this._chat) : super(const ChatState()) {
-    _receiver = _chat.owners.where((user) => user.id != _user.id).single;
-    //_listenForChange();
+
+  StreamSubscription<List<Message>>? _messageSub;
+
+  ChatCubit({
+    required AppRepository repository, required Chat chat})
+      :
+        _repo = repository,
+        _chat = chat,
+        super(const ChatState(messages: []))
+  {
+    // Initializing
+    _subscribeToChatMessages();
   }
-/*
+
+  User get receiver => _chat.owners.singleWhere((user) => user.id != _repo.user.id);
+
+  _subscribeToChatMessages() async {
+    await _messageSub?.cancel();
+    final messageStream = await _repo.chatMessageStream(chatId: _chat.id);
+    _messageSub = messageStream
+        .listen((messageList) {
+          emit(ChatState(messages: messageList));
+    });
+  }
+
+
+}
+
+  /*
   get user => _user;
   get receiver => _receiver;
 
@@ -39,7 +75,7 @@ class ChatCubit extends Cubit<ChatState> {
     });
   }
 
- */
+
 
   Future<void> _readAll(List<Message> messageList) async {
     for(Message msg in messageList) {
@@ -61,3 +97,6 @@ class ChatCubit extends Cubit<ChatState> {
 
 }
 
+
+
+   */

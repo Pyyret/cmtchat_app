@@ -6,7 +6,7 @@ import 'package:cmtchat_app/collections/user_webuser_service_collection.dart';
 import 'package:cmtchat_app/collections/viewmodels_collection.dart';
 
 import 'package:cmtchat_app/repository/repository.dart';
-import 'package:cmtchat_app/views/home/home/chat/chat_cubit/chat_cubit.dart';
+import 'package:cmtchat_app/cubit_bloc/chat_cubit.dart';
 import 'package:cmtchat_app/views/home/home/chat/chat_view.dart';
 
 import 'package:cmtchat_app/views/home/shared_blocs/receipt_bloc/receipt_bloc.dart';

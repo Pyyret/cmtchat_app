@@ -1,4 +1,3 @@
-/*
 import 'dart:async';
 
 import 'package:bloc/bloc.dart';
@@ -95,5 +94,3 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
   }
 
 }
-
- */

@@ -4,8 +4,6 @@ import 'package:cmtchat_app/models/local/user.dart';
 import 'package:cmtchat_app/repository/app_repository.dart';
 import 'package:equatable/equatable.dart';
 
-import 'home_cubit.dart';
-
 
 /// User States ///
 abstract class UserState extends Equatable {

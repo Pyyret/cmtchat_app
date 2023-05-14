@@ -1,5 +1,3 @@
-/*
-
 import 'dart:async';
 
 import 'package:cmtchat_app/collections/chat_message_collection.dart';
@@ -279,6 +277,3 @@ class _MessageThreadState extends State<MessageThread> {
     super.dispose();
   }
 }
-
-
- */

@@ -1,6 +1,6 @@
 import 'package:cmtchat_app/cubit_bloc/home_cubit.dart';
-import 'package:cmtchat_app/ui/active_view.dart';
-import 'package:cmtchat_app/ui/inbox_view.dart';
+import 'package:cmtchat_app/ui/home/online_tab.dart';
+import 'package:cmtchat_app/ui/home/inbox_tab.dart';
 import 'package:cmtchat_app/ui/widgets/app_bar_cot.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -21,8 +21,8 @@ class HomeView extends StatelessWidget {
               const Expanded(
                 child: TabBarView(
                   children: [
-                    InboxView(),
-                    ActiveView(),
+                    InboxTab(),
+                    OnlineTab(),
                     //ActiveUsers(),
                   ],
                 ),

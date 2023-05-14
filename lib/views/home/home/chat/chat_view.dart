@@ -9,7 +9,7 @@ import 'package:cmtchat_app/views/shared_widgets/header_status_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import 'chat_cubit/chat_cubit.dart';
+import '../../../../cubit_bloc/chat_cubit.dart';
 
 class ChatView extends StatefulWidget {
   const ChatView({super.key});

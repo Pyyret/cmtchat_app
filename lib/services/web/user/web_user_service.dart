@@ -83,7 +83,11 @@ class WebUserService implements WebUserServiceApi {
           List<WebUser> webUserList = List<WebUser>.empty(growable: true);
           event.forEach((userData) {
             if(userData['new_val'] != null) {
-              webUserList.add(WebUser.fromJson(userData['new_val'])); }
+              final newUser = WebUser.fromJson(userData['new_val']);
+              webUserList.removeWhere(
+                      (user) => user.webUserId == newUser.webUserId);
+              webUserList.add(newUser);
+            }
             else {
               final unactiveUser = WebUser.fromJson(userData['old_val']);
               webUserList.removeWhere(
