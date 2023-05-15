@@ -67,11 +67,10 @@ const ChatSchema = CollectionSchema(
       linkName: r'chats',
     ),
     r'receiver': LinkSchema(
-      id: 8481593217365149869,
+      id: -294229990661034411,
       name: r'receiver',
       target: r'Users',
       single: true,
-      linkName: r'chats',
     ),
     r'messages': LinkSchema(
       id: 3221285292385264691,

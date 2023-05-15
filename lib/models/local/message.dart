@@ -42,9 +42,7 @@ class Message {
     required this.receiptTimestamp,
   });
 
-  factory Message.fromWebMessage({
-    required WebMessage message,
-  })
+  factory Message.fromWebMessage({required WebMessage message})
   {
     return Message(
       webId: message.webId,

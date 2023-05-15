@@ -20,7 +20,6 @@ class Chat {
   @Backlink(to: 'chats')
   final owner = IsarLink<User>();
   // Link to the receiver of the chatroom
-  @Backlink(to: 'chats')
   final receiver = IsarLink<User>();
   // Links to messages in chatroom
   final messages = IsarLinks<Message>();
