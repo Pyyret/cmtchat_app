@@ -1,5 +1,4 @@
 import 'dart:async';
-
 import 'package:cmtchat_app/collections/chat_message_collection.dart';
 import 'package:cmtchat_app/collections/local_models_collection.dart';
 import 'package:cmtchat_app/models/web/web_user.dart';
@@ -7,7 +6,6 @@ import 'package:cmtchat_app/repository/app_repository.dart';
 import 'package:cmtchat_app/views/home/home/router.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-
 import '../services/web/user/web_user_service_api.dart';
 
 /// HomeState ///
@@ -64,7 +62,6 @@ class HomeCubit extends Cubit<HomeState> {
   /// Methods ///
   void routeChatFromWebUser(WebUser webUser) =>
       _repo.getChat(webUser).then((chat) => routeChat(chat));
-
   void routeChat(Chat chat) => _router.showChat(chat);
 
 
@@ -93,8 +90,8 @@ class HomeCubit extends Cubit<HomeState> {
 
 
 
-  _dispose() async {
-    print('dispose');
+
+  _close() async {
     await _activeUsersSub?.cancel();
     await _webUserService.dispose();
     return super.close();

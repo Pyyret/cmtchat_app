@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:cmtchat_app/services/web/receipt/receipt_service_contract.dart';
+import 'package:cmtchat_app/services/web/receipt/receipt_service_api.dart';
 import 'package:cmtchat_app/models/web/receipt.dart';
 import 'package:cmtchat_app/models/web/web_user.dart';
 

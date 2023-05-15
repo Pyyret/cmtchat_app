@@ -16,10 +16,13 @@ class AppRepository{
   // WebDependant
   final WebUserServiceApi _webUserService;
   final WebMessageServiceApi _webMessageService;
+  final ReceiptServiceApi _receiptService;
 
   /// Private variables
   User _user = User.noUser();
   StreamSubscription<WebMessage>? _webMessageSub;
+  StreamSubscription<Receipt>? _receiptSub;
+  final List<Receipt> _unhandledReceipts = List<Receipt>.empty(growable: true);
 
   /// Constructor
   AppRepository({
@@ -27,11 +30,13 @@ class AppRepository{
     required LocalDbApi dataService,
     required WebUserServiceApi webUserService,
     required WebMessageServiceApi webMessageService,
+    required ReceiptServiceApi receiptService,
   })
       : _localCache = localCache,
         _localDb = dataService,
         _webUserService = webUserService,
-        _webMessageService = webMessageService;
+        _webMessageService = webMessageService,
+        _receiptService = receiptService;
 
 
 
@@ -50,20 +55,30 @@ class AppRepository{
     for(Message msg in msgList) {
       msg.status = ReceiptStatus.read;
       msg.receiptTimestamp = DateTime.now();
+      final receipt = Receipt(
+          recipient: msg.from.value!.webUserId!,
+          messageId: msg.webId!,
+          status: ReceiptStatus.read,
+          timestamp: DateTime.now());
+      _receiptService.send(receipt);
     }
     await _localDb.updateMessages(msgList: msgList);
   }
 
-  Future<void> sendMessage({required Chat chat, required String contents}) async {
-    final webMessage = WebMessage(
-        to: chat.receiver.value!.webUserId!,
-        from: _user.webUserId!,
-        timestamp: DateTime.now(),
-        contents: contents
-    );
-    final sentWebMessage = await _webMessageService.send(message: webMessage);
-    final sentMessage = Message.fromWebMessage(message: sentWebMessage);
-    _localDb.saveSentMessage(chat: chat, message: sentMessage);
+  Future<void> sendMessage({required Chat chat, required WebMessage message})
+  async {
+    final sentWebMessage = await _webMessageService.send(message: message);
+    final sentMessage = Message.fromWebMessage(message: sentWebMessage)
+      ..status = ReceiptStatus.sent;
+    await _localDb.saveSentMessage(chat: chat, message: sentMessage);
+    final receipts = _unhandledReceipts
+        .where((receipt) => receipt.messageId == sentMessage.webId)
+        .toList();
+    if(receipts.isNotEmpty) {
+      _unhandledReceipts
+          .removeWhere((receipt) => receipt.messageId == sentMessage.webId);
+      _updateMessageReceipt(receipt: receipts.last, message: sentMessage);
+    }
   }
 
   Future<Chat> getChat(WebUser webUser) async {
@@ -73,13 +88,13 @@ class AppRepository{
         owner: _user,
         receiver: User.fromWebUser(webUser: webUser));
     return chat;
-    }
+  }
 
-  Future<Stream<List<Chat>>> allChatsUpdatedStream() async =>
-      await _localDb.allChatsStream();
+  Future<Stream<List<Chat>>> allChatsUpdatedStream() =>
+      _localDb.allChatsStream();
 
-  Future<Stream<List<Message>>> chatMessageStream({required int chatId}) async =>
-      await _localDb.chatMessageStream(chatId);
+  Future<Stream<List<Message>>> chatMessageStream({required int chatId}) =>
+      _localDb.chatMessageStream(chatId);
 
 
   Future<User?> newUserLogin(String username) async {
@@ -88,8 +103,7 @@ class AppRepository{
     WebUser webUser = WebUser(
         username: username,
         lastSeen: DateTime.now(),
-        active: true);
-
+        active: true );
     WebUser connectedWebUser = await _webUserService.connect(webUser);
     _user = User.fromWebUser(webUser: connectedWebUser);
     await _cacheAndSave(_user);
@@ -134,6 +148,12 @@ class AppRepository{
 
   /// Private Methods ///
 
+  _initializeRepository({required User savedAndConnectedUser}) {
+    _user = savedAndConnectedUser;
+    _subscribeToWebMessages();
+    _subscribeToReceipts();
+  }
+
   // Saves connected user to localDb & cache
   Future<User> _cacheAndSave(User connectedUser) async {
     final savedUser = await _localDb.putUser(user: connectedUser);
@@ -142,36 +162,53 @@ class AppRepository{
     return savedUser;
   }
 
-  _initializeRepository({required User savedAndConnectedUser}) {
-    _user = savedAndConnectedUser;
-    _subscribeToWebMessages();
-  }
-
   _subscribeToWebMessages() async {
     await _webMessageSub?.cancel();
     await _webMessageService.cancelChangeFeed();
     _webMessageSub = _webMessageService
         .messageStream(activeUser: WebUser.fromUser(_user))
         .listen((message) async {
-      print('message received: $message');
-      final newMessage = Message.fromWebMessage(message: message);
-      Chat? chat = await _localDb.findChatWithWebUser(webUserId: message.from);
-      if(chat != null) {
-        _localDb.saveReceivedMessage(chat: chat, message: newMessage);
-      }
-      else {
-        final receiver = await _webUserService
-            .fetch([message.from])
-            .then((list) => list.single)
-            .then((webUser) => User.fromWebUser(webUser: webUser)
-        );
-        _localDb.saveNewChat(
-            chat: Chat(),
-            owner: _user,
-            receiver: receiver,
-            message: newMessage
-        );
-      }
-    });
+          final newMessage = Message.fromWebMessage(message: message);
+          Chat? chat = await _localDb.findChatWithWebUser(webUserId: message.from);
+          if(chat != null) {
+            _localDb.saveReceivedMessage(chat: chat, message: newMessage); }
+          else {
+            final receiver = await _webUserService
+                .fetch([message.from])
+                .then((list) => list.single)
+                .then((webUser) => User.fromWebUser(webUser: webUser) );
+            _localDb.saveNewChat(
+                chat: Chat(),
+                owner: _user,
+                receiver: receiver,
+                message: newMessage );
+          }
+          final receipt = Receipt(
+              recipient: message.from,
+              messageId: message.webId,
+              status: ReceiptStatus.delivered,
+              timestamp: DateTime.now() );
+          _receiptService.send(receipt);
+        });
+  }
+
+  _subscribeToReceipts() async {
+    await _receiptSub?.cancel();
+    await _receiptService.cancelChangeFeed();
+    _receiptSub = _receiptService
+        .receiptStream(activeUser: WebUser.fromUser(_user))
+        .listen((receipt) async {
+          final message = await _localDb.findMessageWith(webId: receipt.messageId);
+          if (message != null) {
+            _updateMessageReceipt(receipt: receipt, message: message); }
+          else { _unhandledReceipts.add(receipt); }
+        });
+  }
+
+  _updateMessageReceipt({required Receipt receipt, required Message message})
+  async{
+    message.status = receipt.status;
+    message.receiptTimestamp = receipt.timestamp;
+    await _localDb.updateMessages(msgList: [message]);
   }
 }

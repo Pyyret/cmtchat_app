@@ -94,7 +94,6 @@ class ChatView extends StatelessWidget {
   }
 
   _buildListOfMessages(userId, messages) {
-    print('_buildListOfMessages');
     return ListView.builder(
       padding: const EdgeInsets.only(top: 16.0, left: 16.0, bottom: 20.0),
       itemBuilder: (context, indx) {
@@ -161,7 +160,10 @@ class ChatView extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           IconButton(
-            onPressed: () => Navigator.of(context).pop(true),
+            onPressed: () {
+              //context.read<ChatCubit>().close();
+              Navigator.of(context).pop();
+            },
             icon: const Icon(Icons.arrow_back_ios_rounded),
             color: isLightTheme(context) ? Colors.black : Colors.white,
           ),

@@ -52,5 +52,4 @@ class Message {
       receiptTimestamp: DateTime.now()
     );
   }
-
 }

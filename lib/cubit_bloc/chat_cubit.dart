@@ -1,22 +1,18 @@
-
 import 'dart:async';
 
 import 'package:bloc/bloc.dart';
 import 'package:cmtchat_app/collections/chat_message_collection.dart';
-import 'package:cmtchat_app/models/local/chat.dart';
-import 'package:cmtchat_app/models/local/message.dart';
 import 'package:cmtchat_app/models/local/user.dart';
 import 'package:cmtchat_app/repository/app_repository.dart';
 import 'package:equatable/equatable.dart';
 
 /// Chat State ///
 class ChatState extends Equatable {
-  /// State variables
-  final List<Message> messages;
-
   /// Constructor
   const ChatState({required this.messages});
 
+  /// State variables
+  final List<Message> messages;
 
   @override
   List<Object> get props => [messages];
@@ -24,14 +20,9 @@ class ChatState extends Equatable {
 
 /// Chat Cubit
 class ChatCubit extends Cubit<ChatState> {
-  final AppRepository _repo;
-  final Chat _chat;
-
-  StreamSubscription<List<Message>>? _messageSub;
-
+  /// Constructor
   ChatCubit({required AppRepository repository, required Chat chat})
-      :
-        _repo = repository,
+      : _repo = repository,
         _chat = chat,
         super(const ChatState(messages: []))
   {
@@ -39,28 +30,51 @@ class ChatCubit extends Cubit<ChatState> {
     _subscribeToChatMessages();
   }
 
+  /// Private variables
+  final AppRepository _repo;
+  final Chat _chat;
+  StreamSubscription<List<Message>>? _messageSub;
+
+
+  /// Getters
   User get receiver => _chat.receiver.value!;
   int get userId => _repo.user.id;
 
+  /// Methods
   void sendMessage({required String contents}) {
-    _repo.sendMessage(chat: _chat,contents: contents);
+    final message = WebMessage(
+        to: receiver.webUserId!,
+        from: _repo.userWebId!,
+        timestamp: DateTime.now(),
+        contents: contents );
+    _repo.sendMessage(chat: _chat,message: message);
   }
 
+  /// Private methods
   _subscribeToChatMessages() async {
     await _messageSub?.cancel();
     final messageStream = await _repo.chatMessageStream(chatId: _chat.id);
-    _messageSub = messageStream
-        .listen((messageList) async {
-          final unreadMessagesList = messageList
-              .where((message) => message.status == ReceiptStatus.delivered)
-              .toList();
-          if(unreadMessagesList.isNotEmpty) {
-            await _repo.updateReadMessages(msgList: unreadMessagesList);
-          }
-          else { emit(ChatState(messages: messageList)); }
+    _messageSub = messageStream.listen((messageList) async {
+      final unreadMessagesList = messageList.where((message) {
+        return message.status == ReceiptStatus.delivered
+            && message.to.value!.id == userId; })
+          .toList();
+      if(unreadMessagesList.isNotEmpty) {
+        await _repo.updateReadMessages(msgList: unreadMessagesList);
+      }
+      else { emit(ChatState(messages: messageList)); }
     });
   }
+
+  @override
+  close() async {
+    await _messageSub?.cancel();
+    super.close();
+  }
+
 }
+
+
 
   /*
 

@@ -2,10 +2,10 @@ import 'dart:async';
 
 import 'package:cmtchat_app/models/web/receipt.dart';
 import 'package:cmtchat_app/models/web/web_user.dart';
+import 'package:cmtchat_app/services/web/receipt/receipt_service_api.dart';
 import 'package:rethink_db_ns/rethink_db_ns.dart';
-import 'receipt_service_contract.dart';
 
-class ReceiptService implements IReceiptService {
+class ReceiptService implements ReceiptServiceApi {
   final Connection _connection;
   final RethinkDb r;
   final StreamController<Receipt> _controller = StreamController<Receipt>.broadcast();
@@ -75,5 +75,12 @@ class ReceiptService implements IReceiptService {
         .get(receipt.id)
         .delete({'return_changes': false})
         .run(_connection);
+  }
+
+  @override
+  Future<void> cancelChangeFeed() async {
+    if(_changeFeed != null){
+      await _changeFeed?.cancel();
+    }
   }
 }

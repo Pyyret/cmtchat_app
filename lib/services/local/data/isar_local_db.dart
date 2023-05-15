@@ -209,6 +209,15 @@ class IsarLocalDb implements LocalDbApi {
     return chat;
   }
 
+  @override
+  Future<Message?> findMessageWith({required String webId}) async {
+    final isar = await db;
+    return isar.messages
+        .filter()
+        .webIdEqualTo(webId)
+        .findFirstSync();
+  }
+
 
   /// ///////////////////////////////////////////////////////
 

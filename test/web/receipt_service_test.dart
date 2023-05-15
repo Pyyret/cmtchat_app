@@ -1,6 +1,6 @@
 import 'package:cmtchat_app/models/web/receipt.dart';
 import 'package:cmtchat_app/models/web/web_user.dart';
-import 'package:cmtchat_app/services/web/receipt/receipt_service_impl.dart';
+import 'package:cmtchat_app/services/web/receipt/receipt_service.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rethink_db_ns/rethink_db_ns.dart';
 

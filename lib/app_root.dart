@@ -30,8 +30,8 @@ class AppRoot {
 
   // Web services
   static late WebUserServiceApi _webUserService;
-  static late WebMessageService _webMsgServ;
-
+  static late WebMessageServiceApi _webMsgServ;
+  static late ReceiptServiceApi _receiptService;
 
   static late AppRepository _repo;
 
@@ -51,14 +51,16 @@ class AppRoot {
 
     // WebDependant dataProvider APIs
     _webUserService = WebUserService(_r, _connection);
-
     _webMsgServ = WebMessageService(_r, _connection);
+    _receiptService = ReceiptService(_r, _connection);
 
     _repo = AppRepository(
         localCache: _localCacheService,
         dataService: _dataService,
         webUserService: _webUserService,
-        webMessageService: _webMsgServ);
+        webMessageService: _webMsgServ,
+        receiptService: _receiptService,
+    );
 
     _userCubit = UserCubit(repository: _repo);
 

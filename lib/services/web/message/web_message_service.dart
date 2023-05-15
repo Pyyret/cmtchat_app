@@ -12,7 +12,8 @@ class WebMessageService implements WebMessageServiceApi {
   final RethinkDb r;
   final IEncryption? _encryption;
 
-  final StreamController<WebMessage> _controller = StreamController<WebMessage>.broadcast();
+  final StreamController<WebMessage> _controller = StreamController<WebMessage>
+      .broadcast();
   StreamSubscription? _changeFeed;
 
   /// Constructor
@@ -78,11 +79,13 @@ class WebMessageService implements WebMessageServiceApi {
   }
 
 
+
   @override
   Future<void> dispose() async {
     await _changeFeed?.cancel();
     await _controller.close();
   }
+
 
   @override
   Future<void> cancelChangeFeed() async {

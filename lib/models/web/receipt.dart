@@ -40,4 +40,6 @@ class Receipt {
     receipt._id = json['id'];
     return receipt;
   }
+
+  //factory Receipt.delivered()
 }

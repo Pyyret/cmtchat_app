@@ -37,6 +37,7 @@ abstract class LocalDbApi {
   Future<void> saveReceivedMessage({required Chat chat, required Message message});
   Future<void> saveSentMessage({required Chat chat, required Message message});
   Future<void> updateMessages({required List<Message> msgList});
+  Future<Message?> findMessageWith({required String webId});
   //Future<Message?> findMessage(int messageId);
   //Future<List<Message>?> findAllMessages(int chatId);
   //Future<void> removeMessage(int messageId);
