@@ -1,4 +1,3 @@
-
 class WebMessage {
   get webId => _webId;
   final String to;

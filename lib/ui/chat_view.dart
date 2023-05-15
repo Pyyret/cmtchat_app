@@ -75,7 +75,15 @@ class ChatView extends StatelessWidget {
                               Icons.send,
                               color: Colors.white,
                             ),
-                            onPressed: () => _sendMessage(),
+                            onPressed: () {
+                              if (_textEditingController.text.trim().isEmpty) {
+                                return; }
+
+                              context.read<ChatCubit>().sendMessage(
+                                  contents: _textEditingController.text
+                              );
+                              _textEditingController.clear();
+                            },
                           ),
                         ),
                       ),
@@ -91,7 +99,7 @@ class ChatView extends StatelessWidget {
     return ListView.builder(
       padding: const EdgeInsets.only(top: 16.0, left: 16.0, bottom: 20.0),
       itemBuilder: (context, indx) {
-        if (messages[indx].to.value!.id != userId) {
+        if (messages[indx].to.value!.id == userId) {
           return Padding(
             padding: const EdgeInsets.only(bottom: 8.0),
             child: ReceiverMessage(messages[indx]),
@@ -139,23 +147,6 @@ class ChatView extends StatelessWidget {
         ),
       ),
     );
-  }
-
-  _sendMessage() {
-    /*
-    if (_textEditingController.text.trim().isEmpty) { return; }
-    final webMessage = WebMessage(
-        to: _receiver.webUserId!,
-        from: _user.webUserId!,
-        timestamp: DateTime.now(),
-        contents: _textEditingController.text);
-
-    final sendMessageEvent = WebMessageEvent.onMessageSent(webMessage);
-    context.read<WebMessageBloc>().add(sendMessageEvent);
-
-    _textEditingController.clear();
-
-     */
   }
 
   _scrollToEnd() {
