@@ -97,6 +97,20 @@ class IsarLocalDb implements LocalDbApi {
     await _writeNewMessage(chat, message);
   }
 
+  @override
+  Future<void> updateMessages({required List<Message> msgList}) async {
+    final chat = msgList.first.chat.value!;
+    final isar = await db;
+    await isar.writeTxn(() async {
+      for (Message msg in msgList) {
+        await isar.messages.put(msg);
+      }
+      final updatedChat = await _updateChatVariables(chat: chat);
+      await isar.chats.put(updatedChat);
+    });
+
+  }
+
   /// Message private helper methods
   void _setReceivedMessageVariables(Chat chat, Message message) {
     message.chat.value = chat;

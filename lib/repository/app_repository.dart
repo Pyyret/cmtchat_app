@@ -46,6 +46,14 @@ class AppRepository{
 
   /// Methods ///
 
+  Future<void> updateReadMessages({required List<Message> msgList}) async {
+    for(Message msg in msgList) {
+      msg.status = ReceiptStatus.read;
+      msg.receiptTimestamp = DateTime.now();
+    }
+    await _localDb.updateMessages(msgList: msgList);
+  }
+
   Future<void> sendMessage({required Chat chat, required String contents}) async {
     final webMessage = WebMessage(
         to: chat.receiver.value!.webUserId!,

@@ -15,7 +15,6 @@ class RouterCot implements IRouter {
   Future<void> showChat(Chat chat) {
     return Navigator.push(
       context,
-      MaterialPageRoute(builder: (_) => onShowChat(chat)),
-    );
+      MaterialPageRoute(builder: (_) => onShowChat(chat)));
   }
 }

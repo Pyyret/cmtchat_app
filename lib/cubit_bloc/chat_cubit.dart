@@ -50,9 +50,16 @@ class ChatCubit extends Cubit<ChatState> {
     await _messageSub?.cancel();
     final messageStream = await _repo.chatMessageStream(chatId: _chat.id);
     _messageSub = messageStream
-        .listen((messageList) => emit(ChatState(messages: messageList)));
+        .listen((messageList) async {
+          final unreadMessagesList = messageList
+              .where((message) => message.status == ReceiptStatus.delivered)
+              .toList();
+          if(unreadMessagesList.isNotEmpty) {
+            await _repo.updateReadMessages(msgList: unreadMessagesList);
+          }
+          else { emit(ChatState(messages: messageList)); }
+    });
   }
-
 }
 
   /*

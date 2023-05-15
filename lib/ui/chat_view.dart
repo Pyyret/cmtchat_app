@@ -78,7 +78,6 @@ class ChatView extends StatelessWidget {
                             onPressed: () {
                               if (_textEditingController.text.trim().isEmpty) {
                                 return; }
-
                               context.read<ChatCubit>().sendMessage(
                                   contents: _textEditingController.text
                               );
