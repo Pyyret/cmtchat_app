@@ -1,3 +1,6 @@
+import 'package:cmtchat_app/models/local/message.dart';
+import 'package:cmtchat_app/models/web/web_message.dart';
+
 enum ReceiptStatus { sent, delivered, read }
 
 extension EnumParsing on ReceiptStatus {
@@ -15,7 +18,7 @@ class Receipt {
   final String messageId;
   final ReceiptStatus status;
   final DateTime timestamp;
-  late String _id;
+  late final String _id;
 
   Receipt({
     required this.recipient,
@@ -41,5 +44,20 @@ class Receipt {
     return receipt;
   }
 
-  //factory Receipt.delivered()
+  factory Receipt.delivered({required WebMessage message}) =>
+    Receipt(
+        recipient: message.from,
+        messageId: message.webId,
+        status: ReceiptStatus.delivered,
+        timestamp: DateTime.now()
+    );
+
+  factory Receipt.read({required Message message}) =>
+      Receipt(
+          recipient: message.from.value!.webId,
+          messageId: message.webId,
+          status: ReceiptStatus.read,
+          timestamp: DateTime.now()
+      );
+
 }

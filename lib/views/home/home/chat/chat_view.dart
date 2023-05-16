@@ -175,8 +175,8 @@ class _ChatViewState extends State<ChatView> {
   _sendMessage() {
     if (_textEditingController.text.trim().isEmpty) { return; }
     final webMessage = WebMessage(
-        to: _receiver.webUserId!,
-        from: _user.webUserId!,
+        to: _receiver.webId!,
+        from: _user.webId!,
         timestamp: DateTime.now(),
         contents: _textEditingController.text);
 

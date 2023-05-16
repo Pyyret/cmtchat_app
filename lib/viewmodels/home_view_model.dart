@@ -26,7 +26,7 @@ class HomeViewModel {
   Future<Chat?> getChatWith(String webUserId) async {
     Chat chat = await _dataService.findChatWith(webUserId) ?? Chat();
     User chatMate = await _dataService.findWebUser(webUserId)
-        ?? User(webUserId: webUserId);
+        ?? User(webId: webUserId);
     chat.owners.add(chatMate);
     chat.owners.add(_user);
     int newChatId = await _dataService.saveChat(chat, _user.id);
@@ -46,9 +46,9 @@ class HomeViewModel {
 
     // Binding to sender and receiver
     User? to = await _dataService.findWebUser(message.to);
-    to ??= User(webUserId: message.to);
+    to ??= User(webId: message.to);
     User? from = await _dataService.findWebUser(message.from);
-    from ??= User(webUserId: message.from);
+    from ??= User(webId: message.from);
     newMessage.to.value = to;
     newMessage.from.value = from;
 
@@ -62,7 +62,7 @@ class HomeViewModel {
 
   Future<List<WebUser>> activeUsers() async {
     final activeUserList = await _webUserService.online();
-    activeUserList.removeWhere((user) => user.webUserId == _user.webUserId);
+    activeUserList.removeWhere((user) => user.id == _user.webId);
     return activeUserList;
   }
 
@@ -79,7 +79,7 @@ class HomeViewModel {
 
     // Update each local user with the updated webUser data
     for(WebUser webUser in updatedWebUsers) {
-      final user = await _dataService.findWebUser(webUser.webUserId!);
+      final user = await _dataService.findWebUser(webUser.id!);
       user!.update(webUser);
       await _dataService.saveUser(user);
     }
@@ -90,7 +90,7 @@ class HomeViewModel {
     List<String> usersWebIdList = List<String>.empty(growable: true);
     final connectedUsers = await _dataService.findAllConnectedUsers(_user.id);
     for (User user in connectedUsers) {
-      usersWebIdList.add(user.webUserId!);
+      usersWebIdList.add(user.webId!);
     }
     return usersWebIdList;
   }

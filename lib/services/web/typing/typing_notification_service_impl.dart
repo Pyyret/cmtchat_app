@@ -25,7 +25,7 @@ class TypingNotification implements ITypingNotification {
         .toList());
     if(receivers.isEmpty) { return false; }
     events
-        .retainWhere((event) => receivers.map((e) => e.webUserId)
+        .retainWhere((event) => receivers.map((e) => e.id)
         .contains(event.to));
     final data = events.map((e) => e.toJson()).toList();
     Map record = await _r
@@ -52,7 +52,7 @@ class TypingNotification implements ITypingNotification {
         .table('typing_events')
         .filter((event) {
           return event('to')
-              .eq(user.webUserId)
+              .eq(user.id)
               .and(_r.expr(userIds).contains(event('from')));
         })
         .changes({'include_initial': true})

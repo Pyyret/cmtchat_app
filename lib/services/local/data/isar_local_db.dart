@@ -133,14 +133,11 @@ class IsarLocalDb implements LocalDbApi {
   /// Chat ///
   @override
   Future<Chat> saveNewChat({
-    required Chat chat,
-    required User owner,
-    required User receiver,
-    Message? message}) async
-  {
-    chat.owner.value = owner;
-    chat.receiver.value = receiver;
-    chat.chatName = receiver.username!;
+    required User owner, required User receiver, Message? message}) async {
+    final chat = Chat()
+      ..owner.value = owner
+      ..receiver.value = receiver
+      ..chatName = receiver.username;
     if(message != null) { _setReceivedMessageVariables(chat, message); }
 
     final isar = await db;
@@ -162,11 +159,11 @@ class IsarLocalDb implements LocalDbApi {
   }
 
   @override
-  Future<Chat?> findChatWithWebUser({required String webUserId}) async {
+  Future<Chat?> findChatWithWebId({required String userWebId}) async {
     final isar = await db;
     return isar.chats
         .filter()
-        .receiver((receiver) => receiver.webUserIdEqualTo(webUserId))
+        .receiver((receiver) => receiver.webIdEqualTo(userWebId))
         .findAll()
         .then((list) {
       if(list.isEmpty) { return null; }

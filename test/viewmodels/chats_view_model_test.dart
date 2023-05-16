@@ -14,11 +14,11 @@ Future<void> main() async {
   await Isar.initializeIsarCore(download: true);
 
   final IsarLocalDb i = IsarLocalDb();
-  User _user = User(webUserId: '123');
+  User _user = User(webId: '123');
   ChatsViewModel sut = ChatsViewModel(i, _user);
 
   setUp(() {
-    _user = User(webUserId: '123');
+    _user = User(webId: '123');
     i.saveUser(_user);
     sut = ChatsViewModel(i, _user);
   });

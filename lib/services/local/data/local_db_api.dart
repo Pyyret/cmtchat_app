@@ -17,13 +17,11 @@ abstract class LocalDbApi {
 
   /// Chat
   Future<Chat> saveNewChat({
-    required Chat chat,
-    required User owner,
-    required User receiver,
-    Message? message});
+    required User owner, required User receiver, Message? message
+  });
   //Future<Chat> updateChat({required Chat initializedChat});
   //Future<Chat> getChatWith({int receiverId});
-  Future<Chat?> findChatWithWebUser({required String webUserId});
+  Future<Chat?> findChatWithWebId({required String userWebId});
   //Future<Chat?> findChat(int chatId);
   //Future<List<Chat>> getAllUserChatsUpdated(int userId);
   //Future<List<Chat>> getAllUserChats(int userId);

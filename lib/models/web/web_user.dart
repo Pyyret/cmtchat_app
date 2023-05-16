@@ -1,19 +1,14 @@
 import 'package:cmtchat_app/models/local/user.dart';
 
 class WebUser {
-  String? get webUserId => _webUserId;
+  String? get id => _id;
   String username;
-  String photoUrl;
-  bool active;
-  DateTime lastSeen;
-  String? _webUserId;
+  String photoUrl = '';
+  bool active = false;
+  DateTime lastSeen = DateTime.now();
+  String? _id;
 
-  WebUser({
-    this.username = '',
-    this.photoUrl = '',
-    this.active = false,
-    required this.lastSeen,
-  });
+  WebUser({required this.username});
 
   Map<String, dynamic> toJson() {
     var data = {
@@ -22,29 +17,23 @@ class WebUser {
       'active': active,
       'last_seen': lastSeen
     };
-    if(_webUserId?.isNotEmpty ?? false) data['id'] = _webUserId!;
+    if(_id?.isNotEmpty ?? false) data['id'] = _id!;
     return data;
   }
 
   factory WebUser.fromJson(Map<String, dynamic> json) {
-    final user = WebUser(
-        username: json['username'],
-        photoUrl: json['photo_url'],
-        active: json['active'],
-        lastSeen: json['last_seen']
-    );
-    user._webUserId = json['id'];
-    return user;
+    return WebUser(username: json['username'])
+      ..photoUrl = json['photo_url']
+      ..active = json['active']
+      ..lastSeen = json['last_seen']
+      .._id = json['id'];
   }
 
-  factory WebUser.fromUser(User user) {
-    final webUser = WebUser(
-        username: user.username ?? '',
-        photoUrl: user.photoUrl ?? '',
-        active: user.active ?? false,
-        lastSeen: user.lastSeen ?? DateTime.now()
-    );
-    webUser._webUserId = user.webUserId;
-    return webUser;
+  factory WebUser.fromUser({required User user}) {
+    return WebUser(username: user.username)
+      ..photoUrl = user.photoUrl ?? ''
+      ..active = user.active
+      ..lastSeen =  user.lastSeen ?? DateTime.now()
+      .._id = user.webId;
   }
 }

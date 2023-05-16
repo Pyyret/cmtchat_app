@@ -45,7 +45,7 @@ Future<void> main() async {
   test('Emit typingNotification sent state when it is sent', () {
     //webUserService.connect(user);
     final typingEvent = TypingEvent(
-        to: user.webUserId!,
+        to: user.id!,
         from: '123',
         event: Typing.start
     );

@@ -68,8 +68,7 @@ class HomeCubit extends Cubit<HomeState> {
   /// Local Methods ///
   _subscribeToLocalChats() async {
     await _userChatsSub?.cancel();
-    final userChatStream = await _repo.allChatsUpdatedStream();
-    _userChatsSub = userChatStream
+    _userChatsSub = _repo.allChatsUpdatedStream()
         .listen((chatList) {
           emit(state.copyWith(chatsList: chatList));
           print('chatlist update');
@@ -83,7 +82,7 @@ class HomeCubit extends Cubit<HomeState> {
         .activeUsersStream()
         .listen((onlineUsersList) {
           onlineUsersList.removeWhere(
-                  (user) => user.webUserId == _repo.userWebId);
+                  (user) => user.id == _repo.userWebId);
           emit(state.copyWith(onlineUsers: onlineUsersList));
         });
   }

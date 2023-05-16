@@ -235,8 +235,8 @@ class _MessageThreadState extends State<MessageThread> {
   _sendMessage() {
     if(_textEditingController.text.trim().isEmpty) { return; }
     final webMessage = WebMessage(
-        to: _receiver.webUserId,
-        from: _user.webUserId,
+        to: _receiver.id,
+        from: _user.id,
         timestamp: DateTime.now(),
         contents: _textEditingController.text
     );
@@ -259,7 +259,7 @@ class _MessageThreadState extends State<MessageThread> {
     if(message.status == ReceiptStatus.read) { return; }
 
     final receipt = Receipt(
-        recipient: message.from.value!.webUserId,
+        recipient: message.from.value!.webId,
         messageId: message.webId,
         status: ReceiptStatus.read,
         timestamp: DateTime.now()

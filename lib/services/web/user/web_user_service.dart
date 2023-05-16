@@ -2,14 +2,14 @@ import 'dart:async';
 
 import 'package:cmtchat_app/models/web/web_user.dart';
 import 'package:rethink_db_ns/rethink_db_ns.dart';
-
 import 'web_user_service_api.dart';
 
 class WebUserService implements WebUserServiceApi {
   final Connection _connection;
   final RethinkDb r;
 
-  final StreamController<List<WebUser>>_controller = StreamController<List<WebUser>>.broadcast();
+  final StreamController<List<WebUser>>_controller =
+              StreamController<List<WebUser>>.broadcast();
   StreamSubscription? _changeFeed;
 
   WebUserService(this.r, this._connection);
@@ -18,27 +18,25 @@ class WebUserService implements WebUserServiceApi {
   Future<WebUser> connect(WebUser user) async {
     user.active = true;
     user.lastSeen = DateTime.now();
-
     final response = await r
         .table('users')
-        .insert(user.toJson() , {
+        .insert(user.toJson(),
+        {
           'conflict': 'update',
           'return_changes': true
         })
         .run(_connection);
-
     if(response['changes'].length == 0) { return user; }
-    else {
-      return WebUser.fromJson(response['changes'].first['new_val']);
-    }
+    else { return WebUser.fromJson(response['changes'].first['new_val']); }
   }
 
   @override
   Future<void> disconnect(WebUser user) async {
-    await r.table('users').update({
-      'id' : user.webUserId,
-      'active': false,
-      'last_seen': DateTime.now()
+    await r.table('users').update(
+        {
+          'id' : user.id,
+          'active': false,
+          'last_seen': DateTime.now()
         })
         .run(_connection);
   }
@@ -49,7 +47,6 @@ class WebUserService implements WebUserServiceApi {
         .getAll(r.args(ids))
         .filter({'active' : true})
         .run(_connection);
-
     List userList = await users.toList();
     return userList.map((e) => WebUser.fromJson(e)).toList();
   }
@@ -85,13 +82,13 @@ class WebUserService implements WebUserServiceApi {
             if(userData['new_val'] != null) {
               final newUser = WebUser.fromJson(userData['new_val']);
               webUserList.removeWhere(
-                      (user) => user.webUserId == newUser.webUserId);
+                      (user) => user.id == newUser.id);
               webUserList.add(newUser);
             }
             else {
               final unactiveUser = WebUser.fromJson(userData['old_val']);
               webUserList.removeWhere(
-                      (user) => user.webUserId == unactiveUser.webUserId);
+                      (user) => user.id == unactiveUser.id);
             }
             _controller.sink.add(webUserList.toList());
           });

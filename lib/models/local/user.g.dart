@@ -37,9 +37,9 @@ const UserSchema = CollectionSchema(
       name: r'username',
       type: IsarType.string,
     ),
-    r'webUserId': PropertySchema(
+    r'webId': PropertySchema(
       id: 4,
-      name: r'webUserId',
+      name: r'webId',
       type: IsarType.string,
     )
   },
@@ -49,14 +49,14 @@ const UserSchema = CollectionSchema(
   deserializeProp: _userDeserializeProp,
   idName: r'id',
   indexes: {
-    r'webUserId': IndexSchema(
-      id: 7833728435087489101,
-      name: r'webUserId',
+    r'webId': IndexSchema(
+      id: -4916213615988969743,
+      name: r'webId',
       unique: false,
       replace: false,
       properties: [
         IndexPropertySchema(
-          name: r'webUserId',
+          name: r'webId',
           type: IndexType.hash,
           caseSensitive: true,
         )
@@ -115,18 +115,8 @@ int _userEstimateSize(
       bytesCount += 3 + value.length * 3;
     }
   }
-  {
-    final value = object.username;
-    if (value != null) {
-      bytesCount += 3 + value.length * 3;
-    }
-  }
-  {
-    final value = object.webUserId;
-    if (value != null) {
-      bytesCount += 3 + value.length * 3;
-    }
-  }
+  bytesCount += 3 + object.username.length * 3;
+  bytesCount += 3 + object.webId.length * 3;
   return bytesCount;
 }
 
@@ -140,7 +130,7 @@ void _userSerialize(
   writer.writeDateTime(offsets[1], object.lastSeen);
   writer.writeString(offsets[2], object.photoUrl);
   writer.writeString(offsets[3], object.username);
-  writer.writeString(offsets[4], object.webUserId);
+  writer.writeString(offsets[4], object.webId);
 }
 
 User _userDeserialize(
@@ -150,11 +140,11 @@ User _userDeserialize(
   Map<Type, List<int>> allOffsets,
 ) {
   final object = User(
-    active: reader.readBoolOrNull(offsets[0]),
+    active: reader.readBool(offsets[0]),
     lastSeen: reader.readDateTimeOrNull(offsets[1]),
     photoUrl: reader.readStringOrNull(offsets[2]),
-    username: reader.readStringOrNull(offsets[3]),
-    webUserId: reader.readStringOrNull(offsets[4]),
+    username: reader.readString(offsets[3]),
+    webId: reader.readString(offsets[4]),
   );
   object.id = id;
   return object;
@@ -168,15 +158,15 @@ P _userDeserializeProp<P>(
 ) {
   switch (propertyId) {
     case 0:
-      return (reader.readBoolOrNull(offset)) as P;
+      return (reader.readBool(offset)) as P;
     case 1:
       return (reader.readDateTimeOrNull(offset)) as P;
     case 2:
       return (reader.readStringOrNull(offset)) as P;
     case 3:
-      return (reader.readStringOrNull(offset)) as P;
+      return (reader.readString(offset)) as P;
     case 4:
-      return (reader.readStringOrNull(offset)) as P;
+      return (reader.readString(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
   }
@@ -281,65 +271,43 @@ extension UserQueryWhere on QueryBuilder<User, User, QWhereClause> {
     });
   }
 
-  QueryBuilder<User, User, QAfterWhereClause> webUserIdIsNull() {
+  QueryBuilder<User, User, QAfterWhereClause> webIdEqualTo(String webId) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(IndexWhereClause.equalTo(
-        indexName: r'webUserId',
-        value: [null],
+        indexName: r'webId',
+        value: [webId],
       ));
     });
   }
 
-  QueryBuilder<User, User, QAfterWhereClause> webUserIdIsNotNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.between(
-        indexName: r'webUserId',
-        lower: [null],
-        includeLower: false,
-        upper: [],
-      ));
-    });
-  }
-
-  QueryBuilder<User, User, QAfterWhereClause> webUserIdEqualTo(
-      String? webUserId) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.equalTo(
-        indexName: r'webUserId',
-        value: [webUserId],
-      ));
-    });
-  }
-
-  QueryBuilder<User, User, QAfterWhereClause> webUserIdNotEqualTo(
-      String? webUserId) {
+  QueryBuilder<User, User, QAfterWhereClause> webIdNotEqualTo(String webId) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
             .addWhereClause(IndexWhereClause.between(
-              indexName: r'webUserId',
+              indexName: r'webId',
               lower: [],
-              upper: [webUserId],
+              upper: [webId],
               includeUpper: false,
             ))
             .addWhereClause(IndexWhereClause.between(
-              indexName: r'webUserId',
-              lower: [webUserId],
+              indexName: r'webId',
+              lower: [webId],
               includeLower: false,
               upper: [],
             ));
       } else {
         return query
             .addWhereClause(IndexWhereClause.between(
-              indexName: r'webUserId',
-              lower: [webUserId],
+              indexName: r'webId',
+              lower: [webId],
               includeLower: false,
               upper: [],
             ))
             .addWhereClause(IndexWhereClause.between(
-              indexName: r'webUserId',
+              indexName: r'webId',
               lower: [],
-              upper: [webUserId],
+              upper: [webId],
               includeUpper: false,
             ));
       }
@@ -458,23 +426,7 @@ extension UserQueryWhere on QueryBuilder<User, User, QWhereClause> {
 }
 
 extension UserQueryFilter on QueryBuilder<User, User, QFilterCondition> {
-  QueryBuilder<User, User, QAfterFilterCondition> activeIsNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'active',
-      ));
-    });
-  }
-
-  QueryBuilder<User, User, QAfterFilterCondition> activeIsNotNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'active',
-      ));
-    });
-  }
-
-  QueryBuilder<User, User, QAfterFilterCondition> activeEqualTo(bool? value) {
+  QueryBuilder<User, User, QAfterFilterCondition> activeEqualTo(bool value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
         property: r'active',
@@ -749,24 +701,8 @@ extension UserQueryFilter on QueryBuilder<User, User, QFilterCondition> {
     });
   }
 
-  QueryBuilder<User, User, QAfterFilterCondition> usernameIsNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'username',
-      ));
-    });
-  }
-
-  QueryBuilder<User, User, QAfterFilterCondition> usernameIsNotNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'username',
-      ));
-    });
-  }
-
   QueryBuilder<User, User, QAfterFilterCondition> usernameEqualTo(
-    String? value, {
+    String value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
@@ -779,7 +715,7 @@ extension UserQueryFilter on QueryBuilder<User, User, QFilterCondition> {
   }
 
   QueryBuilder<User, User, QAfterFilterCondition> usernameGreaterThan(
-    String? value, {
+    String value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
@@ -794,7 +730,7 @@ extension UserQueryFilter on QueryBuilder<User, User, QFilterCondition> {
   }
 
   QueryBuilder<User, User, QAfterFilterCondition> usernameLessThan(
-    String? value, {
+    String value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
@@ -809,8 +745,8 @@ extension UserQueryFilter on QueryBuilder<User, User, QFilterCondition> {
   }
 
   QueryBuilder<User, User, QAfterFilterCondition> usernameBetween(
-    String? lower,
-    String? upper, {
+    String lower,
+    String upper, {
     bool includeLower = true,
     bool includeUpper = true,
     bool caseSensitive = true,
@@ -894,75 +830,59 @@ extension UserQueryFilter on QueryBuilder<User, User, QFilterCondition> {
     });
   }
 
-  QueryBuilder<User, User, QAfterFilterCondition> webUserIdIsNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'webUserId',
-      ));
-    });
-  }
-
-  QueryBuilder<User, User, QAfterFilterCondition> webUserIdIsNotNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'webUserId',
-      ));
-    });
-  }
-
-  QueryBuilder<User, User, QAfterFilterCondition> webUserIdEqualTo(
-    String? value, {
+  QueryBuilder<User, User, QAfterFilterCondition> webIdEqualTo(
+    String value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'webUserId',
+        property: r'webId',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<User, User, QAfterFilterCondition> webUserIdGreaterThan(
-    String? value, {
+  QueryBuilder<User, User, QAfterFilterCondition> webIdGreaterThan(
+    String value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
         include: include,
-        property: r'webUserId',
+        property: r'webId',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<User, User, QAfterFilterCondition> webUserIdLessThan(
-    String? value, {
+  QueryBuilder<User, User, QAfterFilterCondition> webIdLessThan(
+    String value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.lessThan(
         include: include,
-        property: r'webUserId',
+        property: r'webId',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<User, User, QAfterFilterCondition> webUserIdBetween(
-    String? lower,
-    String? upper, {
+  QueryBuilder<User, User, QAfterFilterCondition> webIdBetween(
+    String lower,
+    String upper, {
     bool includeLower = true,
     bool includeUpper = true,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.between(
-        property: r'webUserId',
+        property: r'webId',
         lower: lower,
         includeLower: includeLower,
         upper: upper,
@@ -972,69 +892,67 @@ extension UserQueryFilter on QueryBuilder<User, User, QFilterCondition> {
     });
   }
 
-  QueryBuilder<User, User, QAfterFilterCondition> webUserIdStartsWith(
+  QueryBuilder<User, User, QAfterFilterCondition> webIdStartsWith(
     String value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'webUserId',
+        property: r'webId',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<User, User, QAfterFilterCondition> webUserIdEndsWith(
+  QueryBuilder<User, User, QAfterFilterCondition> webIdEndsWith(
     String value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'webUserId',
+        property: r'webId',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<User, User, QAfterFilterCondition> webUserIdContains(
-      String value,
+  QueryBuilder<User, User, QAfterFilterCondition> webIdContains(String value,
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.contains(
-        property: r'webUserId',
+        property: r'webId',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<User, User, QAfterFilterCondition> webUserIdMatches(
-      String pattern,
+  QueryBuilder<User, User, QAfterFilterCondition> webIdMatches(String pattern,
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.matches(
-        property: r'webUserId',
+        property: r'webId',
         wildcard: pattern,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<User, User, QAfterFilterCondition> webUserIdIsEmpty() {
+  QueryBuilder<User, User, QAfterFilterCondition> webIdIsEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'webUserId',
+        property: r'webId',
         value: '',
       ));
     });
   }
 
-  QueryBuilder<User, User, QAfterFilterCondition> webUserIdIsNotEmpty() {
+  QueryBuilder<User, User, QAfterFilterCondition> webIdIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'webUserId',
+        property: r'webId',
         value: '',
       ));
     });
@@ -1264,15 +1182,15 @@ extension UserQuerySortBy on QueryBuilder<User, User, QSortBy> {
     });
   }
 
-  QueryBuilder<User, User, QAfterSortBy> sortByWebUserId() {
+  QueryBuilder<User, User, QAfterSortBy> sortByWebId() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'webUserId', Sort.asc);
+      return query.addSortBy(r'webId', Sort.asc);
     });
   }
 
-  QueryBuilder<User, User, QAfterSortBy> sortByWebUserIdDesc() {
+  QueryBuilder<User, User, QAfterSortBy> sortByWebIdDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'webUserId', Sort.desc);
+      return query.addSortBy(r'webId', Sort.desc);
     });
   }
 }
@@ -1338,15 +1256,15 @@ extension UserQuerySortThenBy on QueryBuilder<User, User, QSortThenBy> {
     });
   }
 
-  QueryBuilder<User, User, QAfterSortBy> thenByWebUserId() {
+  QueryBuilder<User, User, QAfterSortBy> thenByWebId() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'webUserId', Sort.asc);
+      return query.addSortBy(r'webId', Sort.asc);
     });
   }
 
-  QueryBuilder<User, User, QAfterSortBy> thenByWebUserIdDesc() {
+  QueryBuilder<User, User, QAfterSortBy> thenByWebIdDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'webUserId', Sort.desc);
+      return query.addSortBy(r'webId', Sort.desc);
     });
   }
 }
@@ -1378,10 +1296,10 @@ extension UserQueryWhereDistinct on QueryBuilder<User, User, QDistinct> {
     });
   }
 
-  QueryBuilder<User, User, QDistinct> distinctByWebUserId(
+  QueryBuilder<User, User, QDistinct> distinctByWebId(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'webUserId', caseSensitive: caseSensitive);
+      return query.addDistinctBy(r'webId', caseSensitive: caseSensitive);
     });
   }
 }
@@ -1393,7 +1311,7 @@ extension UserQueryProperty on QueryBuilder<User, User, QQueryProperty> {
     });
   }
 
-  QueryBuilder<User, bool?, QQueryOperations> activeProperty() {
+  QueryBuilder<User, bool, QQueryOperations> activeProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'active');
     });
@@ -1411,15 +1329,15 @@ extension UserQueryProperty on QueryBuilder<User, User, QQueryProperty> {
     });
   }
 
-  QueryBuilder<User, String?, QQueryOperations> usernameProperty() {
+  QueryBuilder<User, String, QQueryOperations> usernameProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'username');
     });
   }
 
-  QueryBuilder<User, String?, QQueryOperations> webUserIdProperty() {
+  QueryBuilder<User, String, QQueryOperations> webIdProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'webUserId');
+      return query.addPropertyName(r'webId');
     });
   }
 }

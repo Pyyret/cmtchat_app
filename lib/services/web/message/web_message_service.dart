@@ -34,18 +34,16 @@ class WebMessageService implements WebMessageServiceApi {
   }
 
   @override
-  Stream<WebMessage> messageStream({required WebUser activeUser}) {
-    _startRecievingMessages(activeUser);
+  Stream<WebMessage> messageStream({required String webUserId}) {
+    _startRecievingMessages(webUserId);
     return _controller.stream;
   }
 
 
-
-
-  _startRecievingMessages(WebUser user) {
+  _startRecievingMessages(String webUserId) {
     _changeFeed = r
         .table('messages')
-        .filter({'to' : user.webUserId})
+        .filter({'to' : webUserId})
         .changes({'include_initial': true})
         .run(_connection)
         .asStream()

@@ -9,15 +9,14 @@ part 'user.g.dart';
 @Name('Users')
 class User {
   Id id = Isar.autoIncrement; // Automatically given by Isar
-
   @Index()
-  String? webUserId; // Online-specific variables
+  final String webId; // Online-specific variables
 
-  String? username;
-  String? photoUrl;
-  bool? active;
+  String username;
+  bool active;
   @Index()
   DateTime? lastSeen;
+  String? photoUrl;
 
   // Links to the users chats & messages
   final chats = IsarLinks<Chat>();
@@ -25,25 +24,28 @@ class User {
   final receivedMessages = IsarLinks<Message>();
 
   User({
-    this.webUserId,
-    this.username,
-    this.photoUrl,
-    this.active,
-    this.lastSeen});
+    required this.webId,
+    required this.username,
+    required this.active,
+    this.lastSeen,
+    this.photoUrl
+  });
 
   void update(WebUser webUser) {
-    if (webUserId != webUser.webUserId) { return; }
+    if (webId != webUser.id) { return; }
     username = webUser.username;
     photoUrl = webUser.photoUrl;
     active = webUser.active;
     lastSeen = webUser.lastSeen;
   }
 
-  factory User.empty() => User();
-  factory User.noUser() => User(active: false, username: "No User!");
+  factory User.empty() =>
+      User(webId: 'empty', username: 'empty', active: false);
+  factory User.noUser() =>
+      User(webId: 'No user', username: 'No user', active: false);
   factory User.fromWebUser({required WebUser webUser}) =>
       User(
-          webUserId: webUser.webUserId,
+          webId: webUser.id!,
           username: webUser.username,
           photoUrl: webUser.photoUrl,
           active: webUser.active,

@@ -22,7 +22,7 @@ class AppRepository{
   User _user = User.noUser();
   StreamSubscription<WebMessage>? _webMessageSub;
   StreamSubscription<Receipt>? _receiptSub;
-  final List<Receipt> _unhandledReceipts = List<Receipt>.empty(growable: true);
+  final List<Receipt> _savedReceipts = List<Receipt>.empty(growable: true);
 
   /// Constructor
   AppRepository({
@@ -30,8 +30,7 @@ class AppRepository{
     required LocalDbApi dataService,
     required WebUserServiceApi webUserService,
     required WebMessageServiceApi webMessageService,
-    required ReceiptServiceApi receiptService,
-  })
+    required ReceiptServiceApi receiptService })
       : _localCache = localCache,
         _localDb = dataService,
         _webUserService = webUserService,
@@ -40,111 +39,91 @@ class AppRepository{
 
 
 
-  test() { _webUserService.disconnect(WebUser.fromUser(_user)); }
+  test() { _webUserService.disconnect(WebUser.fromUser(user: _user)); }
 
 
   /// Getters ///
   User get user => _user;
-  String? get userWebId => _user.webUserId;
+  String get userWebId => _user.webId;
   WebUserServiceApi get webUserService => _webUserService;
 
 
   /// Methods ///
+  Stream<List<Chat>> allChatsUpdatedStream() async* {
+    yield* await _localDb.allChatsStream();
+  }
+
+  Stream<List<Message>> chatMessageStream({required int chatId}) async* {
+    yield* await _localDb.chatMessageStream(chatId);
+  }
 
   Future<void> updateReadMessages({required List<Message> msgList}) async {
     for(Message msg in msgList) {
-      msg.status = ReceiptStatus.read;
-      msg.receiptTimestamp = DateTime.now();
-      final receipt = Receipt(
-          recipient: msg.from.value!.webUserId!,
-          messageId: msg.webId!,
-          status: ReceiptStatus.read,
-          timestamp: DateTime.now());
+      final receipt = Receipt.read(message: msg);
+      msg.updateReceipt(receipt: receipt);
       _receiptService.send(receipt);
     }
     await _localDb.updateMessages(msgList: msgList);
   }
 
-  Future<void> sendMessage({required Chat chat, required WebMessage message})
-  async {
-    final sentWebMessage = await _webMessageService.send(message: message);
-    final sentMessage = Message.fromWebMessage(message: sentWebMessage)
-      ..status = ReceiptStatus.sent;
-    await _localDb.saveSentMessage(chat: chat, message: sentMessage);
-    final receipts = _unhandledReceipts
-        .where((receipt) => receipt.messageId == sentMessage.webId)
+  Future<void> sendMessage({required Chat chat, required WebMessage message}) async {
+    final sentMsg = Message.fromWeb(
+        message: await _webMessageService.send(message: message)
+    )..status = ReceiptStatus.sent;
+    await _localDb.saveSentMessage(chat: chat, message: sentMsg);
+    final receipts = _savedReceipts
+        .where((receipt) => receipt.messageId == sentMsg.webId)
         .toList();
     if(receipts.isNotEmpty) {
-      _unhandledReceipts
-          .removeWhere((receipt) => receipt.messageId == sentMessage.webId);
-      _updateMessageReceipt(receipt: receipts.last, message: sentMessage);
+      _savedReceipts.removeWhere((r) => r.messageId == sentMsg.webId);
+      _updateMessageReceipt(receipt: receipts.last, message: sentMsg);
     }
   }
 
   Future<Chat> getChat(WebUser webUser) async {
-    Chat? chat = await _localDb.findChatWithWebUser(webUserId: webUser.webUserId!);
-    chat ??= await _localDb.saveNewChat(
-        chat: Chat(),
-        owner: _user,
-        receiver: User.fromWebUser(webUser: webUser));
-    return chat;
+    return await _localDb.findChatWithWebId(userWebId: webUser.id!)
+        ?? await _localDb.saveNewChat(
+            owner: _user,
+            receiver: User.fromWebUser(webUser: webUser)
+        );
   }
 
-  Future<Stream<List<Chat>>> allChatsUpdatedStream() =>
-      _localDb.allChatsStream();
-
-  Future<Stream<List<Message>>> chatMessageStream({required int chatId}) =>
-      _localDb.chatMessageStream(chatId);
-
-
-  Future<User?> newUserLogin(String username) async {
-    // Creates a new User, connects and saves it, from username entered
-    // in the OnboardingUi.
-    WebUser webUser = WebUser(
-        username: username,
-        lastSeen: DateTime.now(),
-        active: true );
-    WebUser connectedWebUser = await _webUserService.connect(webUser);
-    _user = User.fromWebUser(webUser: connectedWebUser);
-    await _cacheAndSave(_user);
-    print('New user logged in $_user');
-    return _user;
+  // Creates a new User from username entered in the OnboardingUi, connects
+  // and saves it, returns the new user
+  Future<User> newUserLogin(String username) async {
+    WebUser webUser = WebUser(username: username)..active = true;
+    _user = User.fromWebUser(webUser: await _webUserService.connect(webUser));
+    return _cacheAndSave(_user);
   }
 
+  // Check local cache for a previously logged in user and fetch it from
+  // the local db. If found, update relevant variables and cache, connect
+  // to webserver and return the user.
   Future<User?> tryLoginFromCache() async {
-    // Check local cache for a previously logged in user
     final cachedUserId = _localCache.fetch('USER_ID');
-    // If cachedUserId is not empty,
-    // check localDb for user with the cashed user id.
-    User? cachedUser;
     if(cachedUserId.isNotEmpty) {
-      cachedUser = await _localDb
+      User? cachedUser = await _localDb
           .getUser(userId: int.parse(cachedUserId['user_id']));
-    }
-    // If found in localDb => connect & save user, then emit UserConnectSuccess
-    if(cachedUser != null) {
-      // Create a WebUser from the cachedUser and update relevant variables
-      final webUser = WebUser.fromUser(cachedUser)
-        ..lastSeen = DateTime.now()
-        ..active = true;
-      // Connect to webserver, then update the local cache
-      WebUser connectedWebUser = await _webUserService.connect(webUser);
-      cachedUser.update(connectedWebUser);
-      final savedUser = await _cacheAndSave(cachedUser);
-      print('User from cache: $savedUser');
-      return savedUser;
+      if(cachedUser != null) {
+        final webUser = WebUser.fromUser(user: cachedUser)
+          ..lastSeen = DateTime.now()
+          ..active = true;
+        cachedUser.update(await _webUserService.connect(webUser));
+        final savedUser = await _cacheAndSave(cachedUser);
+        print('User from cache: $savedUser');
+        return savedUser;
+      }
     }
     return null;
   }
 
   Future<void> logOut() async {
-    print('User logged out: ${_user.webUserId}');
-    await _webUserService.disconnect(WebUser.fromUser(_user));
+    print('User logged out: ${_user.webId}');
+    await _webUserService.disconnect(WebUser.fromUser(user: _user));
     await _localCache.clear();
     await _localDb.cleanDb();
     _user = User.noUser();
   }
-
 
   /// Private Methods ///
 
@@ -166,29 +145,24 @@ class AppRepository{
     await _webMessageSub?.cancel();
     await _webMessageService.cancelChangeFeed();
     _webMessageSub = _webMessageService
-        .messageStream(activeUser: WebUser.fromUser(_user))
+        .messageStream(webUserId: _user.webId)
         .listen((message) async {
-          final newMessage = Message.fromWebMessage(message: message);
-          Chat? chat = await _localDb.findChatWithWebUser(webUserId: message.from);
+          final newMessage = Message.fromWeb(message: message);
+          Chat? chat = await _localDb.findChatWithWebId(userWebId: message.from);
           if(chat != null) {
-            _localDb.saveReceivedMessage(chat: chat, message: newMessage); }
+            _localDb.saveReceivedMessage(chat: chat, message: newMessage);}
           else {
             final receiver = await _webUserService
                 .fetch([message.from])
                 .then((list) => list.single)
-                .then((webUser) => User.fromWebUser(webUser: webUser) );
+                .then((webUser) => User.fromWebUser(webUser: webUser)
+            );
             _localDb.saveNewChat(
-                chat: Chat(),
                 owner: _user,
                 receiver: receiver,
-                message: newMessage );
+                message: newMessage);
           }
-          final receipt = Receipt(
-              recipient: message.from,
-              messageId: message.webId,
-              status: ReceiptStatus.delivered,
-              timestamp: DateTime.now() );
-          _receiptService.send(receipt);
+          _receiptService.send(Receipt.delivered(message: message));
         });
   }
 
@@ -196,12 +170,12 @@ class AppRepository{
     await _receiptSub?.cancel();
     await _receiptService.cancelChangeFeed();
     _receiptSub = _receiptService
-        .receiptStream(activeUser: WebUser.fromUser(_user))
+        .receiptStream(activeUser: WebUser.fromUser(user: _user))
         .listen((receipt) async {
           final message = await _localDb.findMessageWith(webId: receipt.messageId);
           if (message != null) {
             _updateMessageReceipt(receipt: receipt, message: message); }
-          else { _unhandledReceipts.add(receipt); }
+          else { _savedReceipts.add(receipt); }
         });
   }
 

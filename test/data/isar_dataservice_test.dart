@@ -18,14 +18,14 @@ Future<void> main() async {
   final IsarLocalDb i = IsarLocalDb();
 
   User user1 = User(
-      webUserId: '111',
+      webId: '111',
       username: '111',
       photoUrl: 'url',
       active: false,
       lastSeen: DateTime.now());
 
   User user2 = User(
-      webUserId: '222',
+      webId: '222',
       username: '222',
       photoUrl: 'url',
       active: false,
@@ -38,14 +38,14 @@ Future<void> main() async {
 
     setUp(() async {
       user1 = User(
-          webUserId: '111',
+          webId: '111',
           username: '111',
           photoUrl: 'url',
           active: false,
           lastSeen: DateTime.now());
 
       user2 = User(
-          webUserId: '222',
+          webId: '222',
           username: '222',
           photoUrl: 'url',
           active: false,

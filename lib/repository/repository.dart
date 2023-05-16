@@ -87,7 +87,7 @@ class Repository {
 
   Future<List<WebUser>> activeUsers() async {
     final activeUserList = await _webUserService.online();
-    activeUserList.removeWhere((user) => user.webUserId == _appUser.webUserId);
+    activeUserList.removeWhere((user) => user.id == _appUser.webId);
     return activeUserList;
   }
 

@@ -27,9 +27,9 @@ abstract class BaseViewModel {
 
     // Binding to sender and receiver
     User? to = await _dataService.findWebUser(message.to);
-    to ??= User(webUserId: message.to);
+    to ??= User(webId: message.to);
     User? from = await _dataService.findWebUser(message.from);
-    from ??= User(webUserId: message.from);
+    from ??= User(webId: message.from);
     newMessage.to.value = to;
     newMessage.from.value = from;
 
@@ -48,7 +48,7 @@ abstract class BaseViewModel {
     Chat? chat = await _dataService.findChatWith(webUserId);
     if(chat == null) {
       User? chatMate = await _dataService.findWebUser(webUserId);
-      chatMate ??= User(webUserId: webUserId);
+      chatMate ??= User(webId: webUserId);
       chat = Chat();
       chat.owners.add(chatMate);
       chat.owners.add(_user);

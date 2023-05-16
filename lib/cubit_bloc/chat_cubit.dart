@@ -43,17 +43,17 @@ class ChatCubit extends Cubit<ChatState> {
   /// Methods
   void sendMessage({required String contents}) {
     final message = WebMessage(
-        to: receiver.webUserId!,
-        from: _repo.userWebId!,
+        to: receiver.webId,
+        from: _repo.userWebId,
         timestamp: DateTime.now(),
         contents: contents );
-    _repo.sendMessage(chat: _chat,message: message);
+    _repo.sendMessage(chat: _chat, message: message);
   }
 
   /// Private methods
   _subscribeToChatMessages() async {
     await _messageSub?.cancel();
-    final messageStream = await _repo.chatMessageStream(chatId: _chat.id);
+    final messageStream = _repo.chatMessageStream(chatId: _chat.id);
     _messageSub = messageStream.listen((messageList) async {
       final unreadMessagesList = messageList.where((message) {
         return message.status == ReceiptStatus.delivered

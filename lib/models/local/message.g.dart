@@ -102,12 +102,7 @@ int _messageEstimateSize(
   var bytesCount = offsets.last;
   bytesCount += 3 + object.contents.length * 3;
   bytesCount += 3 + object.status.name.length * 3;
-  {
-    final value = object.webId;
-    if (value != null) {
-      bytesCount += 3 + value.length * 3;
-    }
-  }
+  bytesCount += 3 + object.webId.length * 3;
   return bytesCount;
 }
 
@@ -136,7 +131,7 @@ Message _messageDeserialize(
     status: _MessagestatusValueEnumMap[reader.readStringOrNull(offsets[2])] ??
         ReceiptStatus.sent,
     timestamp: reader.readDateTime(offsets[3]),
-    webId: reader.readStringOrNull(offsets[4]),
+    webId: reader.readString(offsets[4]),
   );
   object.id = id;
   return object;
@@ -159,7 +154,7 @@ P _messageDeserializeProp<P>(
     case 3:
       return (reader.readDateTime(offset)) as P;
     case 4:
-      return (reader.readStringOrNull(offset)) as P;
+      return (reader.readString(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
   }
@@ -786,24 +781,8 @@ extension MessageQueryFilter
     });
   }
 
-  QueryBuilder<Message, Message, QAfterFilterCondition> webIdIsNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'webId',
-      ));
-    });
-  }
-
-  QueryBuilder<Message, Message, QAfterFilterCondition> webIdIsNotNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'webId',
-      ));
-    });
-  }
-
   QueryBuilder<Message, Message, QAfterFilterCondition> webIdEqualTo(
-    String? value, {
+    String value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
@@ -816,7 +795,7 @@ extension MessageQueryFilter
   }
 
   QueryBuilder<Message, Message, QAfterFilterCondition> webIdGreaterThan(
-    String? value, {
+    String value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
@@ -831,7 +810,7 @@ extension MessageQueryFilter
   }
 
   QueryBuilder<Message, Message, QAfterFilterCondition> webIdLessThan(
-    String? value, {
+    String value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
@@ -846,8 +825,8 @@ extension MessageQueryFilter
   }
 
   QueryBuilder<Message, Message, QAfterFilterCondition> webIdBetween(
-    String? lower,
-    String? upper, {
+    String lower,
+    String upper, {
     bool includeLower = true,
     bool includeUpper = true,
     bool caseSensitive = true,
@@ -1183,7 +1162,7 @@ extension MessageQueryProperty
     });
   }
 
-  QueryBuilder<Message, String?, QQueryOperations> webIdProperty() {
+  QueryBuilder<Message, String, QQueryOperations> webIdProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'webId');
     });

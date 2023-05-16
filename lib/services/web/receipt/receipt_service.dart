@@ -49,7 +49,7 @@ class ReceiptService implements ReceiptServiceApi {
   _startRecievingReceipts(WebUser activeUser) {
     _changeFeed = r
         .table('receipts')
-        .filter({'recipient' : activeUser.webUserId})
+        .filter({'recipient' : activeUser.id})
         .changes({'include_initial': true})
         .run(_connection)
         .asStream()
