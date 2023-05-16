@@ -1,7 +1,6 @@
+import 'package:cmtchat_app/models/local/message.dart';
 import 'package:cmtchat_app/models/local/user.dart';
 import 'package:isar/isar.dart';
-
-import 'message.dart';
 
 part 'chat.g.dart';
 

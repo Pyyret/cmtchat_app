@@ -1,5 +1,8 @@
-import 'package:cmtchat_app/collections/chat_message_collection.dart';
+import 'package:cmtchat_app/models/local/chat.dart';
 import 'package:cmtchat_app/models/local/user.dart';
+import 'package:cmtchat_app/models/web/receipt.dart';
+import 'package:cmtchat_app/models/web/web_message.dart';
+
 import 'package:isar/isar.dart';
 
 part 'message.g.dart';

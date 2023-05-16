@@ -1,9 +1,7 @@
-import 'package:cmtchat_app/models/web/typing_event.dart';
+import 'package:cmtchat_app/_deprecated/models/typing_event.dart';
 import 'package:cmtchat_app/models/web/web_user.dart';
-import 'package:cmtchat_app/services/web/typing/typing_notification_service_impl.dart';
 import 'package:cmtchat_app/services/web/user/web_user_service_api.dart';
 import 'package:cmtchat_app/services/web/user/web_user_service.dart';
-import 'package:cmtchat_app/states_management/typing/typing_notification_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rethink_db_ns/rethink_db_ns.dart';
 

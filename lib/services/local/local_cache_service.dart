@@ -2,13 +2,15 @@ import 'dart:convert';
 
 import 'package:shared_preferences/shared_preferences.dart';
 
-abstract class ILocalCacheService {
+/// Interface ///
+abstract class LocalCacheApi {
   Future<void> save(String key, Map<String, dynamic> json);
   Map<String, dynamic> fetch(String key);
   Future<void> clear();
 }
 
-class LocalCacheService implements ILocalCacheService {
+
+class LocalCacheService implements LocalCacheApi {
   final SharedPreferences _sharedPreferences;
 
   LocalCacheService(this._sharedPreferences);

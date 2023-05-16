@@ -1,8 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import 'colors.dart';
+/// Colors ///
+const kPrimary = Color(0xFF32699A);
+const kBubbleLight = Color(0xFFE8E8E8);
+const kBubbleDark = Color(0xFF262629);
+const kAppBarDark = Color(0xFF111111);
+const kActiveUsersDark = Color(0xFF3B3B3B);
+const kIndicatorBubble = Color(0xFF39B54A);
+const kIconLight = Color(0xFF999999);
 
+/// Theme ///
 const appBarTheme = AppBarTheme(
   centerTitle: false,
   elevation: 8,

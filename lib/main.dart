@@ -1,12 +1,12 @@
 import 'package:cmtchat_app/theme.dart';
 import 'package:flutter/material.dart';
-import 'app_root.dart';
+import 'composition_root.dart';
 
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await AppRoot.configure();
-  final director = AppRoot.director();
+  await CompositionRoot.configure();
+  final director = CompositionRoot.director();
   runApp(MyApp(director));
 }
 

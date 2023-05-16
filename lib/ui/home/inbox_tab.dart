@@ -1,12 +1,12 @@
-import 'package:cmtchat_app/colors.dart';
+import 'package:cmtchat_app/cubits/home_cubit.dart';
 import 'package:cmtchat_app/models/local/chat.dart';
-import 'package:cmtchat_app/views/shared_widgets/profile_placeholder.dart';
+import 'package:cmtchat_app/ui/shared_widgets/profile_placeholder.dart';
+import 'package:cmtchat_app/theme.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 
-import '../../cubit_bloc/home_cubit.dart';
-import '../../theme.dart';
 
 class InboxTab extends StatelessWidget {
   const InboxTab({super.key});
@@ -26,9 +26,6 @@ class InboxTab extends StatelessWidget {
         itemCount: chatsList.length
     );
   }
-
-
-
 
   _chatItem(context, Chat chat) =>
       ListTile(

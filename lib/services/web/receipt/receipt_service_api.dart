@@ -5,6 +5,6 @@ abstract class ReceiptServiceApi {
   Future<bool> send(Receipt receipt);
   Future<bool> sendList(List<Receipt> receiptList);
   Stream<Receipt> receiptStream({required WebUser activeUser});
-  void dispose();
   Future<void> cancelChangeFeed();
+  void dispose();
 }

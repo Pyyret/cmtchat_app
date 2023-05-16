@@ -1,6 +1,6 @@
 import 'package:cmtchat_app/models/web/web_message.dart';
 import 'package:cmtchat_app/models/web/web_user.dart';
-import 'package:cmtchat_app/services/web/encryption/encryption_service_impl.dart';
+import 'package:cmtchat_app/services/web/encryption/encryption_service.dart';
 import 'package:cmtchat_app/services/web/message/web_message_service.dart';
 import 'package:encrypt/encrypt.dart';
 import 'package:flutter_test/flutter_test.dart';

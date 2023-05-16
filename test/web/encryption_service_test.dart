@@ -1,11 +1,11 @@
-import 'package:cmtchat_app/services/web/encryption/encryption_contract.dart';
-import 'package:cmtchat_app/services/web/encryption/encryption_service_impl.dart';
+import 'package:cmtchat_app/services/web/encryption/encryption_service_api.dart';
+import 'package:cmtchat_app/services/web/encryption/encryption_service.dart';
 import 'package:encrypt/encrypt.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 main() {
   final encrypter = Encrypter(AES(Key.fromLength(32)));
-  IEncryption sut = EncryptionService(encrypter);
+  EncryptionServiceApi sut = EncryptionService(encrypter);
 
   test('Encryption of plain text', () {
     const text = 'This is a message';

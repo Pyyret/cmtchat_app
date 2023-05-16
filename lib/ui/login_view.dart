@@ -1,7 +1,8 @@
-import 'package:cmtchat_app/colors.dart';
-import 'package:cmtchat_app/cubit_bloc/user_cubit.dart';
-import 'package:cmtchat_app/ui/widgets/costum_text_field.dart';
-import 'package:cmtchat_app/ui/widgets/logo.dart';
+import 'package:cmtchat_app/cubits/user_cubit.dart';
+import 'package:cmtchat_app/ui/shared_widgets/custom_text_field.dart';
+import 'package:cmtchat_app/ui/shared_widgets/logo.dart';
+import 'package:cmtchat_app/theme.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 

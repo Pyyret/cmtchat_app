@@ -1,10 +1,9 @@
-import 'package:cmtchat_app/cubit_bloc/home_cubit.dart';
-import 'package:cmtchat_app/cubit_bloc/user_cubit.dart';
+import 'package:cmtchat_app/cubits/home_cubit.dart';
 import 'package:cmtchat_app/models/web/web_user.dart';
+import 'package:cmtchat_app/ui/shared_widgets/profile_placeholder.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-
-import '../../views/shared_widgets/profile_placeholder.dart';
 
 class OnlineTab extends StatelessWidget {
   const OnlineTab({super.key});

@@ -1,23 +1,22 @@
 import 'dart:async';
+
 import 'package:cmtchat_app/models/web/web_message.dart';
-import 'package:cmtchat_app/models/web/web_user.dart';
+import 'package:cmtchat_app/services/web/encryption/encryption_service_api.dart';
 import 'package:cmtchat_app/services/web/message/web_message_service_api.dart';
 import 'package:rethink_db_ns/rethink_db_ns.dart';
-
-import '../encryption/encryption_contract.dart';
 
 
 class WebMessageService implements WebMessageServiceApi {
   final Connection _connection;
   final RethinkDb r;
-  final IEncryption? _encryption;
+  final EncryptionServiceApi? _encryption;
 
   final StreamController<WebMessage> _controller = StreamController<WebMessage>
       .broadcast();
   StreamSubscription? _changeFeed;
 
   /// Constructor
-  WebMessageService(this.r, this._connection, {IEncryption? encryption})
+  WebMessageService(this.r, this._connection, {EncryptionServiceApi? encryption})
       : _encryption = encryption;
 
   @override

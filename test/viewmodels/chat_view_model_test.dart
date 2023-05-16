@@ -1,6 +1,6 @@
 import 'package:cmtchat_app/models/local/user.dart';
 import 'package:cmtchat_app/models/web/web_message.dart';
-import 'package:cmtchat_app/services/local/data/isar_local_db.dart';
+import 'package:cmtchat_app/services/local/local_db_isar.dart';
 import 'package:cmtchat_app/viewmodels/chat_view_model.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:isar/isar.dart';
@@ -12,7 +12,7 @@ Future<void> main() async {
   PathProviderPlatform.instance = FakePathProviderPlatform();
   await Isar.initializeIsarCore(download: true);
 
-  final IsarLocalDb i = IsarLocalDb();
+  final LocalDbIsar i = LocalDbIsar();
   User _user = User(webId: '123');
   ChatViewModel sut = ChatViewModel(i, _user);
 
