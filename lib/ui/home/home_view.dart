@@ -1,5 +1,5 @@
 import 'package:cmtchat_app/cubits/home_cubit.dart';
-import 'package:cmtchat_app/cubits/message_cubit.dart';
+import 'package:cmtchat_app/_deprecated/message_cubit.dart';
 import 'package:cmtchat_app/cubits/root_cubit.dart';
 import 'package:cmtchat_app/ui/home/online_tab.dart';
 import 'package:cmtchat_app/ui/home/inbox_tab.dart';
@@ -13,7 +13,6 @@ class HomeView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final MessageState s = context.read<MessageCubit>().state;
     print('HomeView build');
     return DefaultTabController(
       length: 2,

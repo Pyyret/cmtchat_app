@@ -15,7 +15,6 @@ class Repository{
   final WebMessageServiceApi _webMessageService;
   final ReceiptServiceApi _receiptService;
 
-  /// Root Cubit
   final RootCubit _rootCubit;
 
   /// Private variable
@@ -29,12 +28,12 @@ class Repository{
     required ReceiptServiceApi receiptService,
     required RootCubit rootCubit })
       : _localDb = dataService,
-        _rootCubit = rootCubit,
         _webMessageService = webMessageService,
-        _receiptService = receiptService 
+        _receiptService = receiptService,
+        _rootCubit = rootCubit
   {
     // Initializing
-    //_subscribeToWebMessages();
+    _subscribeToWebMessages();
     _subscribeToReceipts();
   }
 
@@ -80,7 +79,7 @@ class Repository{
   }
 
   Future<Chat> getChat(String webUserId) async {
-    final chat = await _localDb.findChatWithWebId(userWebId: webUserId)
+    final chat = await _localDb.findChatWith(webUserId: webUserId)
         ?? Chat(
             ownerWebId: activeUser.webId!,
             receiver: await _rootCubit.fetchWebUser(webUserId: webUserId)
@@ -89,24 +88,22 @@ class Repository{
     return chat;
   }
 
-  /*
-  StreamSubscription? _sub;
+
   /// Private Methods ///
   _subscribeToWebMessages() {
-    _sub = _webMessageService.messageStream(webUserId: activeUser.webUser.id!)
+    _webMessageService.messageStream(webUserId: activeUser.webUser.id!)
         .listen((msg) => _receivedMessage(msg));
   }
 
-   */
-
-  receivedMessage(WebMessage message) async {
+  _receivedMessage(WebMessage message) async {
     final localMessage = Message.fromWebMessage(
         message: message,
         receiptStatus: ReceiptStatus.delivered
     );
     _localDb.saveMessage(
         chat: await getChat(message.from),
-        message: localMessage);
+        message: localMessage
+    );
     _receiptService.send(Receipt.delivered(message: message)
     );
   }

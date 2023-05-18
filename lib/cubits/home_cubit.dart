@@ -47,11 +47,11 @@ class HomeCubit extends Cubit<HomeState> {
   /// Constructor
   HomeCubit({
     required Repository repository,
+    required WebUserServiceApi webUserService,
     required RouterCot router,
-    required WebUserServiceApi webUserService })
-      : _repo = repository,
-        _router = router,
+  }) :  _repo = repository,
         _webUserService = webUserService,
+        _router = router,
         super(HomeState.initial())
   {
     // Initializing

@@ -12,7 +12,7 @@ abstract class LocalDbApi {
 
   /// Chat
   Future<void> saveNewChat({required Chat chat, required User owner});
-  Future<Chat?> findChatWithWebId({required String userWebId});
+  Future<Chat?> findChatWith({required String webUserId});
   Future<Stream<List<Chat>>> allChatsStream({required int ownerId});
 
   /// Message

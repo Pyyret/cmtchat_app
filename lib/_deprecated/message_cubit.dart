@@ -1,3 +1,5 @@
+/*
+
 import 'dart:async';
 
 import 'package:equatable/equatable.dart';
@@ -62,3 +64,5 @@ class MessageCubit extends Cubit<MessageState> {
     });
   }
 }
+
+ */

@@ -55,9 +55,9 @@ class LocalDbIsar implements LocalDbApi {
   }
   
   @override
-  Future<Chat?> findChatWithWebId({required String userWebId}) async {
+  Future<Chat?> findChatWith({required String webUserId}) async {
     final isar = await _db;
-    return isar.chats.filter().receiverWebIdMatches(userWebId).findFirstSync();
+    return isar.chats.filter().receiverWebIdMatches(webUserId).findFirstSync();
   }
   
   @override
@@ -79,7 +79,10 @@ class LocalDbIsar implements LocalDbApi {
         ? chat.owner.value?.receivedMessages.add(message)
         : chat.owner.value?.sentMessages.add(message);
     chat.messages.add(message);
-    isar.writeTxnSync(() => isar.messages.putSync(message));
+    isar.writeTxnSync(() {
+      isar.users.putSync(chat.owner.value!);
+      isar.chats.putSync(chat);
+    });
   }
 
   @override
