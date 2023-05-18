@@ -6,20 +6,18 @@ abstract class LocalDbApi {
   Future<void> cleanDb();
 
   /// User
-  Future<User?> getUser({required int userId});
-  Future<User> putUser({required User user});
+  Future<User?> findUser({required int userId});
+  Future<User?> findUserWith({required String username});
+  Future<int> putUser(User user);
 
   /// Chat
-  Future<Chat> saveNewChat({
-    required User owner, required User receiver, Message? message
-  });
+  Future<void> saveNewChat({required Chat chat, required User owner});
   Future<Chat?> findChatWithWebId({required String userWebId});
-  Future<Stream<List<Chat>>> allChatsStream();
+  Future<Stream<List<Chat>>> allChatsStream({required int ownerId});
 
   /// Message
-  Future<void> saveReceivedMessage({required Chat chat, required Message message});
-  Future<void> saveSentMessage({required Chat chat, required Message message});
-  Future<void> updateMessages({required List<Message> msgList});
-  Future<Message?> findMessageWith({required String webId});
+  Future<void> saveMessage({required Chat chat, required Message message});
+  Future<void> updateMessages({required List<Message> messages});
+  Future<Message?> findMessageFrom({required String webId});
   Future<Stream<List<Message>>> chatMessageStream(int chatId);
 }

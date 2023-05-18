@@ -7,50 +7,58 @@ import 'package:isar/isar.dart';
 
 part 'message.g.dart';
 
-@Collection()
+/// Message ///
+// Local representation of WebMessage.
+// The @embedded annotation makes messages nestable in isar collections
+@collection
 @Name('Messages')
 class Message {
-  Id id = Isar.autoIncrement;            // Automatically given and used by Isar
-  final String webId;                        // Webserver-specific id.
 
-  @Index()
-  final DateTime timestamp;
+  /// Variables
+  Id id = Isar.autoIncrement;
+  final String webId;               // Webserver-specific id.
+
+  final String toWebId;
+  final String fromWebId;
   final String contents;
+  DateTime timestamp = DateTime.now();
 
   // Receipt data
-  @Enumerated(EnumType.name)
-  ReceiptStatus status;
-  DateTime receiptTimestamp;
+  @enumerated
+  ReceiptStatus receiptStatus;
+  DateTime receiptTimestamp = DateTime.now();
 
-  // Isar links to sender, receiver & containing chatroom
-  @Backlink(to: 'receivedMessages')
-  final to = IsarLink<User>();
-  @Backlink(to: 'sentMessages')
-  final from = IsarLink<User>();
-  @Backlink(to: 'messages')
+  // Isar links
+  final owner = IsarLink<User>();
   final chat = IsarLink<Chat>();
 
   /// Constructors
   Message({
     required this.webId,
-    required this.timestamp,
+    required this.toWebId,
+    required this.fromWebId,
     required this.contents,
-    required this.status,
-    required this.receiptTimestamp,
+    required this.receiptStatus,
   });
 
-  factory Message.fromWeb({required WebMessage message}) {
+  factory Message.fromWebMessage({
+    required WebMessage message,
+    required ReceiptStatus receiptStatus
+  }) {
     return Message(
-      webId: message.webId,
-      timestamp: message.timestamp,
+      toWebId: message.to,
+      fromWebId: message.from,
       contents: message.contents,
-      status: ReceiptStatus.delivered,
-      receiptTimestamp: DateTime.now() );
+      webId: message.webId,
+      receiptStatus: receiptStatus,
+    )
+      ..timestamp = message.timestamp
+      ..receiptTimestamp = DateTime.now();
   }
 
   /// Methods
   void updateReceipt({required Receipt receipt}) {
-    status = receipt.status;
+    receiptStatus = receipt.status;
     receiptTimestamp = receipt.timestamp;
   }
 }

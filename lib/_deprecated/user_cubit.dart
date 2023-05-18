@@ -39,12 +39,10 @@ class UserCubit extends Cubit<UserState> {
     return user;
   }
 
-  Future<User?> newUserLogin(String username) async {
+  Future<User> logIn(String username) async {
     emit(UserLoading(state.user));
-    final User? user = await _repo.newUserLogin(username);
-    user == null
-        ? emit(const UserInitial())
-        : emit(UserLoggedIn(user: user));
+    final User user = await _repo.logIn(username: username);
+    emit(UserLoggedIn(user: user));
     return user;
   }
 

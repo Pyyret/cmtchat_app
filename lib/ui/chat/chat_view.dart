@@ -1,6 +1,6 @@
+import 'package:cmtchat_app/collections/cubits.dart';
 import 'package:cmtchat_app/cubits/chat_cubit.dart';
 import 'package:cmtchat_app/models/local/message.dart';
-import 'package:cmtchat_app/models/local/user.dart';
 import 'package:cmtchat_app/ui/chat/receiver_message.dart';
 import 'package:cmtchat_app/ui/chat/sender_message.dart';
 import 'package:cmtchat_app/theme.dart';
@@ -10,10 +10,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 
 class ChatView extends StatelessWidget {
-  ChatView({super.key});
+  ChatView({super.key,});
 
   final ScrollController _scrollController = ScrollController();
   final TextEditingController _textEditingController = TextEditingController();
+
 
   @override
   Widget build(BuildContext context) {
@@ -26,17 +27,17 @@ class ChatView extends StatelessWidget {
               Flexible(
                 flex: 6,
                 child: BlocBuilder<ChatCubit, ChatState>(
-                    builder: (context, state) {
-                  if (state.messages.isEmpty) {
-                    return Container(color: Colors.transparent);
-                  } else {
-                    WidgetsBinding.instance
-                        .addPostFrameCallback((_) => _scrollToEnd());
-                    final List<Message> messages = state.messages;
-                    final userId = context.select((ChatCubit c) => c.userId);
-                    return _buildListOfMessages(userId, messages);
-                  }
-                }),
+                    builder: (_, state) {
+                      if (state.messages.isEmpty) {
+                        return Container(color: Colors.transparent);
+                      } else {
+                        WidgetsBinding.instance
+                            .addPostFrameCallback((_) => _scrollToEnd());
+                        final List<Message> messages = state.messages;
+                        final ownerWebId = context.read<ChatCubit>().ownerWebId;
+                        return _buildListOfMessages(messages, ownerWebId);
+                      }
+                    }),
               ),
               Expanded(
                   child: Container(
@@ -75,12 +76,12 @@ class ChatView extends StatelessWidget {
                               color: Colors.white,
                             ),
                             onPressed: () {
-                              if (_textEditingController.text.trim().isEmpty) {
-                                return; }
-                              context.read<ChatCubit>().sendMessage(
-                                  contents: _textEditingController.text
-                              );
-                              _textEditingController.clear();
+                              if (_textEditingController.text.trim().isNotEmpty) {
+                                context.read<ChatCubit>().sendMessage(
+                                    contents: _textEditingController.text
+                                );
+                                _textEditingController.clear();
+                              }
                             },
                           ),
                         ),
@@ -92,11 +93,11 @@ class ChatView extends StatelessWidget {
             ])));
   }
 
-  _buildListOfMessages(userId, messages) {
+  _buildListOfMessages(List<Message> messages, String ownerWebId) {
     return ListView.builder(
       padding: const EdgeInsets.only(top: 16.0, left: 16.0, bottom: 20.0),
       itemBuilder: (context, indx) {
-        if (messages[indx].to.value!.id == userId) {
+        if (messages[indx].toWebId == ownerWebId) {
           return Padding(
             padding: const EdgeInsets.only(bottom: 8.0),
             child: ReceiverMessage(messages[indx]),
@@ -146,7 +147,7 @@ class ChatView extends StatelessWidget {
     );
   }
 
-  _chatsAppBar(context) {
+  _chatsAppBar(BuildContext context) {
     return AppBar(
       titleSpacing: 0,
       automaticallyImplyLeading: false,
@@ -169,31 +170,33 @@ class ChatView extends StatelessWidget {
 
   _headerStatus() {
     return Builder(builder: (context) {
-    final User receiver = context.select((ChatCubit c) => c.receiver);
-    return Container(
-        width: double.maxFinite,
-        child: Row(children: [
-          _profilePlaceholder(),
-          Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Padding(
-              padding: const EdgeInsets.only(left: 8.0),
-              child: Text(
-                receiver.username,
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      fontSize: 14.0,
-                      fontWeight: FontWeight.bold,
-                    ),
+      final receiver  = context.select((ChatCubit c) => c.receiver);
+      return Container(
+          width: double.maxFinite,
+          child: Row(children: [
+            _profilePlaceholder(),
+            Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Padding(
+                padding: const EdgeInsets.only(left: 8.0),
+                child: Text(
+                  receiver.username,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    fontSize: 14.0,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
-            ),
-            Padding(
-              padding: const EdgeInsets.only(left: 8.0),
-              child: Text(receiver.active ? 'online' : 'offline',
-                  style: Theme.of(context).textTheme.bodySmall),
-            ),
-          ]),
-        ])
-    );}
-    );
+              Padding(
+                padding: const EdgeInsets.only(left: 8.0),
+                child: Text(receiver.active ? 'online' : 'offline',
+                    style: Theme.of(context).textTheme.bodySmall),
+              ),
+            ]),
+          ])
+      );
+    });
+
+
   }
 
   _profilePlaceholder() {

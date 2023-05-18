@@ -15,30 +15,37 @@ class WebUserService implements WebUserServiceApi {
   WebUserService(this.r, this._connection);
 
   @override
-  Future<WebUser> connect(WebUser user) async {
-    user.active = true;
-    user.lastSeen = DateTime.now();
+  Future<WebUser> connectNew(String username) async {
     final response = await r
         .table('users')
-        .insert(user.toJson(),
+        .insert(
+        {
+          'username': username,
+          'photo_url': '',
+          'active': true,
+          'last_seen': DateTime.now()
+        },
         {
           'conflict': 'update',
           'return_changes': true
         })
         .run(_connection);
-    if(response['changes'].length == 0) { return user; }
-    else { return WebUser.fromJson(response['changes'].first['new_val']); }
+    return WebUser.fromJson(response['changes'].first['new_val']);
   }
 
   @override
-  Future<void> disconnect(WebUser user) async {
-    await r.table('users').update(
+  Future<WebUser?> update({required WebUser webUser}) async {
+    webUser.lastSeen = DateTime.now();
+    final response = await r
+        .table('users')
+        .insert(webUser.toJson(),
         {
-          'id' : user.id,
-          'active': false,
-          'last_seen': DateTime.now()
+          'conflict': 'update',
+          'return_changes': true
         })
         .run(_connection);
+    if(response['changes'].length == 0) { return null; }
+    else { return WebUser.fromJson(response['changes'].first['new_val']); }
   }
 
   @override

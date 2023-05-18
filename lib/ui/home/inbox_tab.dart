@@ -20,7 +20,8 @@ class InboxTab extends StatelessWidget {
         itemBuilder: (_, indx) =>
             GestureDetector(
               child: _chatItem(context, chatsList[indx]),
-              onTap: () => context.read<HomeCubit>().routeChat(chatsList[indx]),
+              onTap: () =>
+                  context.read<HomeCubit>().routeChat(context, chatsList[indx]),
             ),
         separatorBuilder: (_, __) => const Divider(),
         itemCount: chatsList.length

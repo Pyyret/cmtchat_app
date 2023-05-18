@@ -1,53 +1,46 @@
-import 'package:cmtchat_app/models/local/chat.dart';
-import 'package:cmtchat_app/models/web/web_user.dart';
-import 'message.dart';
+import 'package:cmtchat_app/collections/models.dart';
 import 'package:isar/isar.dart';
 
 part 'user.g.dart';
 
+/// User ///
 @Collection()
 @Name('Users')
 class User {
+  /// Variables
   Id id = Isar.autoIncrement; // Automatically given by Isar
-  @Index()
-  final String webId; // Online-specific variables
 
-  String username;
-  bool active;
-  @Index()
-  DateTime? lastSeen;
-  String? photoUrl;
+  final WebUser webUser;    // Most user data is in this internal webUser
 
-  // Links to the users chats & messages
-  final chats = IsarLinks<Chat>();
+  // Isar links
+  @Backlink(to: 'owner')
   final sentMessages = IsarLinks<Message>();
+  @Backlink(to: 'owner')
   final receivedMessages = IsarLinks<Message>();
+  @Backlink(to: 'owner')
+  final chats = IsarLinks<Chat>();    // isar links to the users chats
 
-  User({
-    required this.webId,
-    required this.username,
-    required this.active,
-    this.lastSeen,
-    this.photoUrl
-  });
+  /// Constructors
+  User(this.webUser);
+  factory User.empty() => User(WebUser(username: 'No User', active: false));
 
-  void update(WebUser webUser) {
-    if (webId != webUser.id) { return; }
-    username = webUser.username;
-    photoUrl = webUser.photoUrl;
-    active = webUser.active;
-    lastSeen = webUser.lastSeen;
-  }
+  /// Getters
+  String get webId => webUser.id;
+  String get username => webUser.username;
+  String? get photoUrl => webUser.photoUrl;
+  bool get active => webUser.active;
+  DateTime get lastSeen => webUser.lastSeen;
 
-  factory User.empty() =>
-      User(webId: 'empty', username: 'empty', active: false);
-  factory User.noUser() =>
-      User(webId: 'No user', username: 'No user', active: false);
-  factory User.fromWebUser({required WebUser webUser}) =>
-      User(
-          webId: webUser.id!,
-          username: webUser.username,
-          photoUrl: webUser.photoUrl,
-          active: webUser.active,
-          lastSeen: webUser.lastSeen);
+  /// Method
+ bool isUpdatedFrom({required WebUser? webUser}) {
+   if(webUser != null && webUser.id == webId) {
+     this.webUser
+       ..username = webUser.username
+       ..photoUrl = webUser.photoUrl
+       ..active = webUser.active
+       ..lastSeen = webUser.lastSeen;
+     return true;
+   }
+   else { return false; }
+ }
 }

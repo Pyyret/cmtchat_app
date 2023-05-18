@@ -8,8 +8,8 @@ import 'package:rethink_db_ns/rethink_db_ns.dart';
 class ReceiptService implements ReceiptServiceApi {
   final Connection _connection;
   final RethinkDb r;
-  final StreamController<Receipt> _controller = StreamController<Receipt>.broadcast();
 
+  final _controller = StreamController<Receipt>.broadcast();
   StreamSubscription? _changeFeed;
 
   /// Constructor
@@ -35,8 +35,8 @@ class ReceiptService implements ReceiptServiceApi {
   }
 
   @override
-  Stream<Receipt> receiptStream({required WebUser activeUser}) {
-    _startRecievingReceipts(activeUser);
+  Stream<Receipt> receiptStream({required String webUserId}) {
+    _startRecievingReceipts(webUserId);
     return _controller.stream;
   }
 
@@ -46,10 +46,10 @@ class ReceiptService implements ReceiptServiceApi {
     _controller.close();
   }
 
-  _startRecievingReceipts(WebUser activeUser) {
+  _startRecievingReceipts(webUserId) {
     _changeFeed = r
         .table('receipts')
-        .filter({'recipient' : activeUser.id})
+        .filter({'recipient' : webUserId})
         .changes({'include_initial': true})
         .run(_connection)
         .asStream()

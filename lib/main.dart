@@ -6,16 +6,14 @@ import 'composition_root.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await CompositionRoot.configure();
-  final director = CompositionRoot.director();
+  final director = CompositionRoot.root();
   runApp(MyApp(director));
 }
 
 class MyApp extends StatelessWidget {
   final Widget director;
-
   const MyApp(this.director, {super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(

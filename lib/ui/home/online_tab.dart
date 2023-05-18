@@ -16,7 +16,9 @@ class OnlineTab extends StatelessWidget {
       padding: const EdgeInsets.only(top: 30.0, right: 16.0),
       itemBuilder: (_, indx) => GestureDetector(
         child: _listItem(context, onlineUsers[indx]),
-        onTap: () => context.read<HomeCubit>().routeChatFromWebUser(onlineUsers[indx]),
+        onTap: () => context
+            .read<HomeCubit>()
+            .routeChatFromWebUser(context, onlineUsers[indx].id!),
       ),
       separatorBuilder: (_, __) => const Divider(),
       itemCount: onlineUsers.length,
@@ -24,17 +26,16 @@ class OnlineTab extends StatelessWidget {
   }
 
 
-  _listItem(context, WebUser user) => ListTile(
-    leading: const ProfilePlaceholder(50),
-    title: Text(
-      user.username,
-      style: Theme.of(context).textTheme.titleSmall?.copyWith(
-        fontSize: 14.0,
-        fontWeight: FontWeight.bold,
-      ),
-    ),
-  );
-
-
+  _listItem(context, WebUser user) =>
+      ListTile(
+        leading: const ProfilePlaceholder(50),
+        title: Text(
+          user.username,
+          style: Theme.of(context).textTheme.titleSmall?.copyWith(
+            fontSize: 14.0,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      );
 }
 

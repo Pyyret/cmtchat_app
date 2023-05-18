@@ -41,6 +41,12 @@ const UserSchema = CollectionSchema(
       id: 4,
       name: r'webId',
       type: IsarType.string,
+    ),
+    r'webUser': PropertySchema(
+      id: 5,
+      name: r'webUser',
+      type: IsarType.object,
+      target: r'WebUser',
     )
   },
   estimateSize: _userEstimateSize,
@@ -48,55 +54,31 @@ const UserSchema = CollectionSchema(
   deserialize: _userDeserialize,
   deserializeProp: _userDeserializeProp,
   idName: r'id',
-  indexes: {
-    r'webId': IndexSchema(
-      id: -4916213615988969743,
-      name: r'webId',
-      unique: false,
-      replace: false,
-      properties: [
-        IndexPropertySchema(
-          name: r'webId',
-          type: IndexType.hash,
-          caseSensitive: true,
-        )
-      ],
-    ),
-    r'lastSeen': IndexSchema(
-      id: -4002271667734767009,
-      name: r'lastSeen',
-      unique: false,
-      replace: false,
-      properties: [
-        IndexPropertySchema(
-          name: r'lastSeen',
-          type: IndexType.value,
-          caseSensitive: false,
-        )
-      ],
-    )
-  },
+  indexes: {},
   links: {
-    r'chats': LinkSchema(
-      id: 8674652565919938927,
-      name: r'chats',
-      target: r'Chats',
-      single: false,
-    ),
     r'sentMessages': LinkSchema(
-      id: 2306446899940004802,
+      id: 3053113647714842755,
       name: r'sentMessages',
       target: r'Messages',
       single: false,
+      linkName: r'owner',
     ),
     r'receivedMessages': LinkSchema(
-      id: 1078301063707512648,
+      id: 3053113647714842755,
       name: r'receivedMessages',
       target: r'Messages',
       single: false,
+      linkName: r'owner',
+    ),
+    r'chats': LinkSchema(
+      id: 8986037084840624435,
+      name: r'chats',
+      target: r'Chats',
+      single: false,
+      linkName: r'owner',
     )
   },
-  embeddedSchemas: {},
+  embeddedSchemas: {r'WebUser': WebUserSchema},
   getId: _userGetId,
   getLinks: _userGetLinks,
   attach: _userAttach,
@@ -117,6 +99,9 @@ int _userEstimateSize(
   }
   bytesCount += 3 + object.username.length * 3;
   bytesCount += 3 + object.webId.length * 3;
+  bytesCount += 3 +
+      WebUserSchema.estimateSize(
+          object.webUser, allOffsets[WebUser]!, allOffsets);
   return bytesCount;
 }
 
@@ -131,6 +116,12 @@ void _userSerialize(
   writer.writeString(offsets[2], object.photoUrl);
   writer.writeString(offsets[3], object.username);
   writer.writeString(offsets[4], object.webId);
+  writer.writeObject<WebUser>(
+    offsets[5],
+    allOffsets,
+    WebUserSchema.serialize,
+    object.webUser,
+  );
 }
 
 User _userDeserialize(
@@ -140,11 +131,12 @@ User _userDeserialize(
   Map<Type, List<int>> allOffsets,
 ) {
   final object = User(
-    active: reader.readBool(offsets[0]),
-    lastSeen: reader.readDateTimeOrNull(offsets[1]),
-    photoUrl: reader.readStringOrNull(offsets[2]),
-    username: reader.readString(offsets[3]),
-    webId: reader.readString(offsets[4]),
+    reader.readObjectOrNull<WebUser>(
+          offsets[5],
+          WebUserSchema.deserialize,
+          allOffsets,
+        ) ??
+        WebUser(),
   );
   object.id = id;
   return object;
@@ -160,13 +152,20 @@ P _userDeserializeProp<P>(
     case 0:
       return (reader.readBool(offset)) as P;
     case 1:
-      return (reader.readDateTimeOrNull(offset)) as P;
+      return (reader.readDateTime(offset)) as P;
     case 2:
       return (reader.readStringOrNull(offset)) as P;
     case 3:
       return (reader.readString(offset)) as P;
     case 4:
       return (reader.readString(offset)) as P;
+    case 5:
+      return (reader.readObjectOrNull<WebUser>(
+            offset,
+            WebUserSchema.deserialize,
+            allOffsets,
+          ) ??
+          WebUser()) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
   }
@@ -177,30 +176,22 @@ Id _userGetId(User object) {
 }
 
 List<IsarLinkBase<dynamic>> _userGetLinks(User object) {
-  return [object.chats, object.sentMessages, object.receivedMessages];
+  return [object.sentMessages, object.receivedMessages, object.chats];
 }
 
 void _userAttach(IsarCollection<dynamic> col, Id id, User object) {
   object.id = id;
-  object.chats.attach(col, col.isar.collection<Chat>(), r'chats', id);
   object.sentMessages
       .attach(col, col.isar.collection<Message>(), r'sentMessages', id);
   object.receivedMessages
       .attach(col, col.isar.collection<Message>(), r'receivedMessages', id);
+  object.chats.attach(col, col.isar.collection<Chat>(), r'chats', id);
 }
 
 extension UserQueryWhereSort on QueryBuilder<User, User, QWhere> {
   QueryBuilder<User, User, QAfterWhere> anyId() {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(const IdWhereClause.any());
-    });
-  }
-
-  QueryBuilder<User, User, QAfterWhere> anyLastSeen() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(
-        const IndexWhereClause.any(indexName: r'lastSeen'),
-      );
     });
   }
 }
@@ -270,159 +261,6 @@ extension UserQueryWhere on QueryBuilder<User, User, QWhereClause> {
       ));
     });
   }
-
-  QueryBuilder<User, User, QAfterWhereClause> webIdEqualTo(String webId) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.equalTo(
-        indexName: r'webId',
-        value: [webId],
-      ));
-    });
-  }
-
-  QueryBuilder<User, User, QAfterWhereClause> webIdNotEqualTo(String webId) {
-    return QueryBuilder.apply(this, (query) {
-      if (query.whereSort == Sort.asc) {
-        return query
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'webId',
-              lower: [],
-              upper: [webId],
-              includeUpper: false,
-            ))
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'webId',
-              lower: [webId],
-              includeLower: false,
-              upper: [],
-            ));
-      } else {
-        return query
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'webId',
-              lower: [webId],
-              includeLower: false,
-              upper: [],
-            ))
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'webId',
-              lower: [],
-              upper: [webId],
-              includeUpper: false,
-            ));
-      }
-    });
-  }
-
-  QueryBuilder<User, User, QAfterWhereClause> lastSeenIsNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.equalTo(
-        indexName: r'lastSeen',
-        value: [null],
-      ));
-    });
-  }
-
-  QueryBuilder<User, User, QAfterWhereClause> lastSeenIsNotNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.between(
-        indexName: r'lastSeen',
-        lower: [null],
-        includeLower: false,
-        upper: [],
-      ));
-    });
-  }
-
-  QueryBuilder<User, User, QAfterWhereClause> lastSeenEqualTo(
-      DateTime? lastSeen) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.equalTo(
-        indexName: r'lastSeen',
-        value: [lastSeen],
-      ));
-    });
-  }
-
-  QueryBuilder<User, User, QAfterWhereClause> lastSeenNotEqualTo(
-      DateTime? lastSeen) {
-    return QueryBuilder.apply(this, (query) {
-      if (query.whereSort == Sort.asc) {
-        return query
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'lastSeen',
-              lower: [],
-              upper: [lastSeen],
-              includeUpper: false,
-            ))
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'lastSeen',
-              lower: [lastSeen],
-              includeLower: false,
-              upper: [],
-            ));
-      } else {
-        return query
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'lastSeen',
-              lower: [lastSeen],
-              includeLower: false,
-              upper: [],
-            ))
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'lastSeen',
-              lower: [],
-              upper: [lastSeen],
-              includeUpper: false,
-            ));
-      }
-    });
-  }
-
-  QueryBuilder<User, User, QAfterWhereClause> lastSeenGreaterThan(
-    DateTime? lastSeen, {
-    bool include = false,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.between(
-        indexName: r'lastSeen',
-        lower: [lastSeen],
-        includeLower: include,
-        upper: [],
-      ));
-    });
-  }
-
-  QueryBuilder<User, User, QAfterWhereClause> lastSeenLessThan(
-    DateTime? lastSeen, {
-    bool include = false,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.between(
-        indexName: r'lastSeen',
-        lower: [],
-        upper: [lastSeen],
-        includeUpper: include,
-      ));
-    });
-  }
-
-  QueryBuilder<User, User, QAfterWhereClause> lastSeenBetween(
-    DateTime? lowerLastSeen,
-    DateTime? upperLastSeen, {
-    bool includeLower = true,
-    bool includeUpper = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.between(
-        indexName: r'lastSeen',
-        lower: [lowerLastSeen],
-        includeLower: includeLower,
-        upper: [upperLastSeen],
-        includeUpper: includeUpper,
-      ));
-    });
-  }
 }
 
 extension UserQueryFilter on QueryBuilder<User, User, QFilterCondition> {
@@ -487,24 +325,8 @@ extension UserQueryFilter on QueryBuilder<User, User, QFilterCondition> {
     });
   }
 
-  QueryBuilder<User, User, QAfterFilterCondition> lastSeenIsNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'lastSeen',
-      ));
-    });
-  }
-
-  QueryBuilder<User, User, QAfterFilterCondition> lastSeenIsNotNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'lastSeen',
-      ));
-    });
-  }
-
   QueryBuilder<User, User, QAfterFilterCondition> lastSeenEqualTo(
-      DateTime? value) {
+      DateTime value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
         property: r'lastSeen',
@@ -514,7 +336,7 @@ extension UserQueryFilter on QueryBuilder<User, User, QFilterCondition> {
   }
 
   QueryBuilder<User, User, QAfterFilterCondition> lastSeenGreaterThan(
-    DateTime? value, {
+    DateTime value, {
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
@@ -527,7 +349,7 @@ extension UserQueryFilter on QueryBuilder<User, User, QFilterCondition> {
   }
 
   QueryBuilder<User, User, QAfterFilterCondition> lastSeenLessThan(
-    DateTime? value, {
+    DateTime value, {
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
@@ -540,8 +362,8 @@ extension UserQueryFilter on QueryBuilder<User, User, QFilterCondition> {
   }
 
   QueryBuilder<User, User, QAfterFilterCondition> lastSeenBetween(
-    DateTime? lower,
-    DateTime? upper, {
+    DateTime lower,
+    DateTime upper, {
     bool includeLower = true,
     bool includeUpper = true,
   }) {
@@ -959,64 +781,16 @@ extension UserQueryFilter on QueryBuilder<User, User, QFilterCondition> {
   }
 }
 
-extension UserQueryObject on QueryBuilder<User, User, QFilterCondition> {}
+extension UserQueryObject on QueryBuilder<User, User, QFilterCondition> {
+  QueryBuilder<User, User, QAfterFilterCondition> webUser(
+      FilterQuery<WebUser> q) {
+    return QueryBuilder.apply(this, (query) {
+      return query.object(q, r'webUser');
+    });
+  }
+}
 
 extension UserQueryLinks on QueryBuilder<User, User, QFilterCondition> {
-  QueryBuilder<User, User, QAfterFilterCondition> chats(FilterQuery<Chat> q) {
-    return QueryBuilder.apply(this, (query) {
-      return query.link(q, r'chats');
-    });
-  }
-
-  QueryBuilder<User, User, QAfterFilterCondition> chatsLengthEqualTo(
-      int length) {
-    return QueryBuilder.apply(this, (query) {
-      return query.linkLength(r'chats', length, true, length, true);
-    });
-  }
-
-  QueryBuilder<User, User, QAfterFilterCondition> chatsIsEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.linkLength(r'chats', 0, true, 0, true);
-    });
-  }
-
-  QueryBuilder<User, User, QAfterFilterCondition> chatsIsNotEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.linkLength(r'chats', 0, false, 999999, true);
-    });
-  }
-
-  QueryBuilder<User, User, QAfterFilterCondition> chatsLengthLessThan(
-    int length, {
-    bool include = false,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.linkLength(r'chats', 0, true, length, include);
-    });
-  }
-
-  QueryBuilder<User, User, QAfterFilterCondition> chatsLengthGreaterThan(
-    int length, {
-    bool include = false,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.linkLength(r'chats', length, include, 999999, true);
-    });
-  }
-
-  QueryBuilder<User, User, QAfterFilterCondition> chatsLengthBetween(
-    int lower,
-    int upper, {
-    bool includeLower = true,
-    bool includeUpper = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.linkLength(
-          r'chats', lower, includeLower, upper, includeUpper);
-    });
-  }
-
   QueryBuilder<User, User, QAfterFilterCondition> sentMessages(
       FilterQuery<Message> q) {
     return QueryBuilder.apply(this, (query) {
@@ -1129,6 +903,61 @@ extension UserQueryLinks on QueryBuilder<User, User, QFilterCondition> {
     return QueryBuilder.apply(this, (query) {
       return query.linkLength(
           r'receivedMessages', lower, includeLower, upper, includeUpper);
+    });
+  }
+
+  QueryBuilder<User, User, QAfterFilterCondition> chats(FilterQuery<Chat> q) {
+    return QueryBuilder.apply(this, (query) {
+      return query.link(q, r'chats');
+    });
+  }
+
+  QueryBuilder<User, User, QAfterFilterCondition> chatsLengthEqualTo(
+      int length) {
+    return QueryBuilder.apply(this, (query) {
+      return query.linkLength(r'chats', length, true, length, true);
+    });
+  }
+
+  QueryBuilder<User, User, QAfterFilterCondition> chatsIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.linkLength(r'chats', 0, true, 0, true);
+    });
+  }
+
+  QueryBuilder<User, User, QAfterFilterCondition> chatsIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.linkLength(r'chats', 0, false, 999999, true);
+    });
+  }
+
+  QueryBuilder<User, User, QAfterFilterCondition> chatsLengthLessThan(
+    int length, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.linkLength(r'chats', 0, true, length, include);
+    });
+  }
+
+  QueryBuilder<User, User, QAfterFilterCondition> chatsLengthGreaterThan(
+    int length, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.linkLength(r'chats', length, include, 999999, true);
+    });
+  }
+
+  QueryBuilder<User, User, QAfterFilterCondition> chatsLengthBetween(
+    int lower,
+    int upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.linkLength(
+          r'chats', lower, includeLower, upper, includeUpper);
     });
   }
 }
@@ -1317,7 +1146,7 @@ extension UserQueryProperty on QueryBuilder<User, User, QQueryProperty> {
     });
   }
 
-  QueryBuilder<User, DateTime?, QQueryOperations> lastSeenProperty() {
+  QueryBuilder<User, DateTime, QQueryOperations> lastSeenProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'lastSeen');
     });
@@ -1338,6 +1167,12 @@ extension UserQueryProperty on QueryBuilder<User, User, QQueryProperty> {
   QueryBuilder<User, String, QQueryOperations> webIdProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'webId');
+    });
+  }
+
+  QueryBuilder<User, WebUser, QQueryOperations> webUserProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'webUser');
     });
   }
 }

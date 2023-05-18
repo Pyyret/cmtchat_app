@@ -1,3 +1,5 @@
+
+import 'package:cmtchat_app/models/local/user.dart';
 import 'package:cmtchat_app/repository.dart';
 import 'package:cmtchat_app/collections/cubits.dart';
 import 'package:cmtchat_app/collections/services.dart';
@@ -13,97 +15,125 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:rethink_db_ns/rethink_db_ns.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'cubits/message_cubit.dart';
 
+/// Composition Root ///
+// Dependency injection overview
 class CompositionRoot {
-
-  // Rethink webDb
-  static late RethinkDb _r;
-  static late Connection _connection;
 
   // Local services
   static late LocalCacheApi _localCacheService;
-  static late LocalDbApi _dataService;
+  static late LocalDbApi _localDb;
+
+  // Rethink WebDataBase
+  static late RethinkDb _r;
+  static late Connection _connection;
 
   // Web services
   static late WebUserServiceApi _webUserService;
-  static late WebMessageServiceApi _webMsgServ;
-  static late ReceiptServiceApi _receiptService;
+  static late WebMessageService _webMessageService;
 
-  static late Repository _repo;
+  static late RootCubit _rootCubit;
 
-
-  static late UserCubit _userCubit;
-
+  /// Configures & initializes app-wide data providers & Root Cubit ///
   static configure() async {
 
-    // Initializing
+    /// Local data providers
     final sp = await SharedPreferences.getInstance();
-    _r = RethinkDb();
-    _connection = await _r.connect(host: '172.17.112.1', port: 28015);
-
-    // Local dataService APIs
     _localCacheService = LocalCacheService(sp);
-    _dataService = LocalDbIsar();
+    _localDb = LocalDbIsar();
 
-    // WebDependant dataProvider APIs
+    /// Rethink database
+    _r = RethinkDb();
+    _connection = await _r.connect(host: '172.29.32.1', port: 28015);
+
+
+    _webMessageService = WebMessageService(_r, _connection);
+    /// Root Cubit
     _webUserService = WebUserService(_r, _connection);
-    _webMsgServ = WebMessageService(_r, _connection);
-    _receiptService = ReceiptService(_r, _connection);
-
-    _repo = Repository(
-        localCache: _localCacheService,
-        dataService: _dataService,
-        webUserService: _webUserService,
-        webMessageService: _webMsgServ,
-        receiptService: _receiptService,
+    _rootCubit = RootCubit(
+      connection: _connection,
+      localCacheService: _localCacheService,
+      dataService: _localDb,
+      webUserService: _webUserService,
     );
-
-    _userCubit = UserCubit(repository: _repo);
-
   }
 
-  static Widget director() {
-    return RepositoryProvider(
-        create: (BuildContext context) => _repo,
-        child: MultiBlocProvider(
-            providers: [
-              BlocProvider(create: (context) => _userCubit),
-            ],
-            child: BlocBuilder<UserCubit, UserState>(
-              builder: (context, state) {
-                return state is UserLoggedIn
-                    ? composeHomeView()
-                    : const LogInView();
-              } ,
-            )
+  static Widget root() {
+    return BlocProvider.value(
+      value: _rootCubit,
+      child: BlocBuilder<RootCubit, RootState>(
+        builder: (context, state) => state.isLoggedIn
+            ? composeApp(state.user) : const LogInView(),
+      ),
+    );
+  }
+
+  static Widget composeApp(User activeUser) {
+
+    final repository = Repository(
+      activeUser: activeUser,
+      dataService: _localDb,
+      webMessageService: _webMessageService,
+      receiptService: ReceiptService(_r, _connection),
+      rootCubit: _rootCubit,
+    );
+
+    final router = RouterCot(repository: repository, onShowChat: composeChat);
+
+    return MultiBlocProvider(
+        providers: [
+        BlocProvider(create: (BuildContext context) =>
+        MessageCubit(
+            repository: repository,
+            webMessageService: _webMessageService
         ),
+        ),
+          BlocProvider(create: (context) =>
+              HomeCubit(
+                  repository: repository,
+                  router: router,
+                  webUserService: _webUserService)
+          )
+        ],
+        child: const HomeView()
     );
   }
 
+  /*
+    BlocProvider(
+      create: (context) {
+        final repository = Repository(
+          activeUser: activeUser,
+          dataService: _localDb,
+          webMessageService: _webMessageService,
+          receiptService: ReceiptService(_r, _connection),
+          rootCubit: _rootCubit,
+        );
 
-  static Widget composeHomeView() {
-    return BlocProvider(
-      create: (BuildContext context) {
-        final IRouter router = RouterCot(
-            context: context,
-            onShowChat: composeChatView);
+        final router = RouterCot(repository: repository, onShowChat: composeChat);
+
         return HomeCubit(
-            repository: _repo,
+            repository: repository,
             router: router,
             webUserService: _webUserService);
+
       },
       child: const HomeView(),
     );
   }
 
-  static Widget composeChatView(Chat chat) {
-    return MultiBlocProvider(
-        providers: [
-        BlocProvider(create:(BuildContext context) => ChatCubit(
-            repository: _repo,
-            chat: chat)),
-        ],
-        child: ChatView(),
+   */
+
+  static Widget composeChat(Repository repository, Chat chat) {
+    return BlocProvider(
+        create: (_) {
+          return ChatCubit(
+            repository: repository,
+            chat: chat,
+          );
+        },
+      child: ChatView(),
     );
   }
 }

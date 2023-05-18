@@ -11,9 +11,9 @@ class WebMessageService implements WebMessageServiceApi {
   final RethinkDb r;
   final EncryptionServiceApi? _encryption;
 
-  final StreamController<WebMessage> _controller = StreamController<WebMessage>
-      .broadcast();
+  StreamController<WebMessage> _controller = StreamController<WebMessage>.broadcast();
   StreamSubscription? _changeFeed;
+  late Cursor c;
 
   /// Constructor
   WebMessageService(this.r, this._connection, {EncryptionServiceApi? encryption})
@@ -48,6 +48,7 @@ class WebMessageService implements WebMessageServiceApi {
         .asStream()
         .cast<Feed>()
         .listen((event) {
+          c = event;
           event.forEach((feedData) {
             print('message: $feedData');
             if(feedData['new_val'] == null) return;
@@ -55,6 +56,7 @@ class WebMessageService implements WebMessageServiceApi {
             _controller.sink.add(message);
             _removeDeliveredMessage(message);
           })
+              .catchError((err) => print(err))
               .onError((err, stackTrace) => print(err));
         });
   }
@@ -81,13 +83,19 @@ class WebMessageService implements WebMessageServiceApi {
   Future<void> dispose() async {
     await _changeFeed?.cancel();
     await _controller.close();
+    _controller = StreamController<WebMessage>.broadcast();
   }
 
 
   @override
   Future<void> cancelChangeFeed() async {
+    print('cursor före ${c != null}');
+    await c.close();
+    print('cursor efter ${c != null}');
+    print('changefeed före ${_changeFeed != null}');
     if(_changeFeed != null){
-      await _changeFeed?.cancel();
+      _changeFeed?.cancel();
+      print('changefeedefter ${_changeFeed != null}');
     }
   }
 }

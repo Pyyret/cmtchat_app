@@ -22,24 +22,34 @@ const MessageSchema = CollectionSchema(
       name: r'contents',
       type: IsarType.string,
     ),
-    r'receiptTimestamp': PropertySchema(
+    r'fromWebId': PropertySchema(
       id: 1,
+      name: r'fromWebId',
+      type: IsarType.string,
+    ),
+    r'receiptStatus': PropertySchema(
+      id: 2,
+      name: r'receiptStatus',
+      type: IsarType.byte,
+      enumMap: _MessagereceiptStatusEnumValueMap,
+    ),
+    r'receiptTimestamp': PropertySchema(
+      id: 3,
       name: r'receiptTimestamp',
       type: IsarType.dateTime,
     ),
-    r'status': PropertySchema(
-      id: 2,
-      name: r'status',
-      type: IsarType.string,
-      enumMap: _MessagestatusEnumValueMap,
-    ),
     r'timestamp': PropertySchema(
-      id: 3,
+      id: 4,
       name: r'timestamp',
       type: IsarType.dateTime,
     ),
+    r'toWebId': PropertySchema(
+      id: 5,
+      name: r'toWebId',
+      type: IsarType.string,
+    ),
     r'webId': PropertySchema(
-      id: 4,
+      id: 6,
       name: r'webId',
       type: IsarType.string,
     )
@@ -49,42 +59,19 @@ const MessageSchema = CollectionSchema(
   deserialize: _messageDeserialize,
   deserializeProp: _messageDeserializeProp,
   idName: r'id',
-  indexes: {
-    r'timestamp': IndexSchema(
-      id: 1852253767416892198,
-      name: r'timestamp',
-      unique: false,
-      replace: false,
-      properties: [
-        IndexPropertySchema(
-          name: r'timestamp',
-          type: IndexType.value,
-          caseSensitive: false,
-        )
-      ],
-    )
-  },
+  indexes: {},
   links: {
-    r'to': LinkSchema(
-      id: 5846264769581525150,
-      name: r'to',
+    r'owner': LinkSchema(
+      id: 6925379843899898367,
+      name: r'owner',
       target: r'Users',
       single: true,
-      linkName: r'receivedMessages',
-    ),
-    r'from': LinkSchema(
-      id: -4492051004294854526,
-      name: r'from',
-      target: r'Users',
-      single: true,
-      linkName: r'sentMessages',
     ),
     r'chat': LinkSchema(
-      id: 3896569018622454675,
+      id: 8233618922905670644,
       name: r'chat',
       target: r'Chats',
       single: true,
-      linkName: r'messages',
     )
   },
   embeddedSchemas: {},
@@ -101,7 +88,8 @@ int _messageEstimateSize(
 ) {
   var bytesCount = offsets.last;
   bytesCount += 3 + object.contents.length * 3;
-  bytesCount += 3 + object.status.name.length * 3;
+  bytesCount += 3 + object.fromWebId.length * 3;
+  bytesCount += 3 + object.toWebId.length * 3;
   bytesCount += 3 + object.webId.length * 3;
   return bytesCount;
 }
@@ -113,10 +101,12 @@ void _messageSerialize(
   Map<Type, List<int>> allOffsets,
 ) {
   writer.writeString(offsets[0], object.contents);
-  writer.writeDateTime(offsets[1], object.receiptTimestamp);
-  writer.writeString(offsets[2], object.status.name);
-  writer.writeDateTime(offsets[3], object.timestamp);
-  writer.writeString(offsets[4], object.webId);
+  writer.writeString(offsets[1], object.fromWebId);
+  writer.writeByte(offsets[2], object.receiptStatus.index);
+  writer.writeDateTime(offsets[3], object.receiptTimestamp);
+  writer.writeDateTime(offsets[4], object.timestamp);
+  writer.writeString(offsets[5], object.toWebId);
+  writer.writeString(offsets[6], object.webId);
 }
 
 Message _messageDeserialize(
@@ -127,13 +117,16 @@ Message _messageDeserialize(
 ) {
   final object = Message(
     contents: reader.readString(offsets[0]),
-    receiptTimestamp: reader.readDateTime(offsets[1]),
-    status: _MessagestatusValueEnumMap[reader.readStringOrNull(offsets[2])] ??
-        ReceiptStatus.sent,
-    timestamp: reader.readDateTime(offsets[3]),
-    webId: reader.readString(offsets[4]),
+    fromWebId: reader.readString(offsets[1]),
+    receiptStatus:
+        _MessagereceiptStatusValueEnumMap[reader.readByteOrNull(offsets[2])] ??
+            ReceiptStatus.sent,
+    toWebId: reader.readString(offsets[5]),
+    webId: reader.readString(offsets[6]),
   );
   object.id = id;
+  object.receiptTimestamp = reader.readDateTime(offsets[3]);
+  object.timestamp = reader.readDateTime(offsets[4]);
   return object;
 }
 
@@ -147,28 +140,33 @@ P _messageDeserializeProp<P>(
     case 0:
       return (reader.readString(offset)) as P;
     case 1:
-      return (reader.readDateTime(offset)) as P;
+      return (reader.readString(offset)) as P;
     case 2:
-      return (_MessagestatusValueEnumMap[reader.readStringOrNull(offset)] ??
+      return (_MessagereceiptStatusValueEnumMap[
+              reader.readByteOrNull(offset)] ??
           ReceiptStatus.sent) as P;
     case 3:
       return (reader.readDateTime(offset)) as P;
     case 4:
+      return (reader.readDateTime(offset)) as P;
+    case 5:
+      return (reader.readString(offset)) as P;
+    case 6:
       return (reader.readString(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
   }
 }
 
-const _MessagestatusEnumValueMap = {
-  r'sent': r'sent',
-  r'delivered': r'delivered',
-  r'read': r'read',
+const _MessagereceiptStatusEnumValueMap = {
+  'sent': 0,
+  'delivered': 1,
+  'read': 2,
 };
-const _MessagestatusValueEnumMap = {
-  r'sent': ReceiptStatus.sent,
-  r'delivered': ReceiptStatus.delivered,
-  r'read': ReceiptStatus.read,
+const _MessagereceiptStatusValueEnumMap = {
+  0: ReceiptStatus.sent,
+  1: ReceiptStatus.delivered,
+  2: ReceiptStatus.read,
 };
 
 Id _messageGetId(Message object) {
@@ -176,13 +174,12 @@ Id _messageGetId(Message object) {
 }
 
 List<IsarLinkBase<dynamic>> _messageGetLinks(Message object) {
-  return [object.to, object.from, object.chat];
+  return [object.owner, object.chat];
 }
 
 void _messageAttach(IsarCollection<dynamic> col, Id id, Message object) {
   object.id = id;
-  object.to.attach(col, col.isar.collection<User>(), r'to', id);
-  object.from.attach(col, col.isar.collection<User>(), r'from', id);
+  object.owner.attach(col, col.isar.collection<User>(), r'owner', id);
   object.chat.attach(col, col.isar.collection<Chat>(), r'chat', id);
 }
 
@@ -190,14 +187,6 @@ extension MessageQueryWhereSort on QueryBuilder<Message, Message, QWhere> {
   QueryBuilder<Message, Message, QAfterWhere> anyId() {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(const IdWhereClause.any());
-    });
-  }
-
-  QueryBuilder<Message, Message, QAfterWhere> anyTimestamp() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(
-        const IndexWhereClause.any(indexName: r'timestamp'),
-      );
     });
   }
 }
@@ -263,96 +252,6 @@ extension MessageQueryWhere on QueryBuilder<Message, Message, QWhereClause> {
         lower: lowerId,
         includeLower: includeLower,
         upper: upperId,
-        includeUpper: includeUpper,
-      ));
-    });
-  }
-
-  QueryBuilder<Message, Message, QAfterWhereClause> timestampEqualTo(
-      DateTime timestamp) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.equalTo(
-        indexName: r'timestamp',
-        value: [timestamp],
-      ));
-    });
-  }
-
-  QueryBuilder<Message, Message, QAfterWhereClause> timestampNotEqualTo(
-      DateTime timestamp) {
-    return QueryBuilder.apply(this, (query) {
-      if (query.whereSort == Sort.asc) {
-        return query
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'timestamp',
-              lower: [],
-              upper: [timestamp],
-              includeUpper: false,
-            ))
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'timestamp',
-              lower: [timestamp],
-              includeLower: false,
-              upper: [],
-            ));
-      } else {
-        return query
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'timestamp',
-              lower: [timestamp],
-              includeLower: false,
-              upper: [],
-            ))
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'timestamp',
-              lower: [],
-              upper: [timestamp],
-              includeUpper: false,
-            ));
-      }
-    });
-  }
-
-  QueryBuilder<Message, Message, QAfterWhereClause> timestampGreaterThan(
-    DateTime timestamp, {
-    bool include = false,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.between(
-        indexName: r'timestamp',
-        lower: [timestamp],
-        includeLower: include,
-        upper: [],
-      ));
-    });
-  }
-
-  QueryBuilder<Message, Message, QAfterWhereClause> timestampLessThan(
-    DateTime timestamp, {
-    bool include = false,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.between(
-        indexName: r'timestamp',
-        lower: [],
-        upper: [timestamp],
-        includeUpper: include,
-      ));
-    });
-  }
-
-  QueryBuilder<Message, Message, QAfterWhereClause> timestampBetween(
-    DateTime lowerTimestamp,
-    DateTime upperTimestamp, {
-    bool includeLower = true,
-    bool includeUpper = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.between(
-        indexName: r'timestamp',
-        lower: [lowerTimestamp],
-        includeLower: includeLower,
-        upper: [upperTimestamp],
         includeUpper: includeUpper,
       ));
     });
@@ -491,6 +390,136 @@ extension MessageQueryFilter
     });
   }
 
+  QueryBuilder<Message, Message, QAfterFilterCondition> fromWebIdEqualTo(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'fromWebId',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Message, Message, QAfterFilterCondition> fromWebIdGreaterThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'fromWebId',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Message, Message, QAfterFilterCondition> fromWebIdLessThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'fromWebId',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Message, Message, QAfterFilterCondition> fromWebIdBetween(
+    String lower,
+    String upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'fromWebId',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Message, Message, QAfterFilterCondition> fromWebIdStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'fromWebId',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Message, Message, QAfterFilterCondition> fromWebIdEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'fromWebId',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Message, Message, QAfterFilterCondition> fromWebIdContains(
+      String value,
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'fromWebId',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Message, Message, QAfterFilterCondition> fromWebIdMatches(
+      String pattern,
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'fromWebId',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Message, Message, QAfterFilterCondition> fromWebIdIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'fromWebId',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<Message, Message, QAfterFilterCondition> fromWebIdIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'fromWebId',
+        value: '',
+      ));
+    });
+  }
+
   QueryBuilder<Message, Message, QAfterFilterCondition> idEqualTo(Id value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
@@ -535,6 +564,60 @@ extension MessageQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.between(
         property: r'id',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+      ));
+    });
+  }
+
+  QueryBuilder<Message, Message, QAfterFilterCondition> receiptStatusEqualTo(
+      ReceiptStatus value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'receiptStatus',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Message, Message, QAfterFilterCondition>
+      receiptStatusGreaterThan(
+    ReceiptStatus value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'receiptStatus',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Message, Message, QAfterFilterCondition> receiptStatusLessThan(
+    ReceiptStatus value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'receiptStatus',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Message, Message, QAfterFilterCondition> receiptStatusBetween(
+    ReceiptStatus lower,
+    ReceiptStatus upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'receiptStatus',
         lower: lower,
         includeLower: includeLower,
         upper: upper,
@@ -598,136 +681,6 @@ extension MessageQueryFilter
     });
   }
 
-  QueryBuilder<Message, Message, QAfterFilterCondition> statusEqualTo(
-    ReceiptStatus value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'status',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<Message, Message, QAfterFilterCondition> statusGreaterThan(
-    ReceiptStatus value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'status',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<Message, Message, QAfterFilterCondition> statusLessThan(
-    ReceiptStatus value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'status',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<Message, Message, QAfterFilterCondition> statusBetween(
-    ReceiptStatus lower,
-    ReceiptStatus upper, {
-    bool includeLower = true,
-    bool includeUpper = true,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'status',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<Message, Message, QAfterFilterCondition> statusStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'status',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<Message, Message, QAfterFilterCondition> statusEndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'status',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<Message, Message, QAfterFilterCondition> statusContains(
-      String value,
-      {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'status',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<Message, Message, QAfterFilterCondition> statusMatches(
-      String pattern,
-      {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'status',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<Message, Message, QAfterFilterCondition> statusIsEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'status',
-        value: '',
-      ));
-    });
-  }
-
-  QueryBuilder<Message, Message, QAfterFilterCondition> statusIsNotEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'status',
-        value: '',
-      ));
-    });
-  }
-
   QueryBuilder<Message, Message, QAfterFilterCondition> timestampEqualTo(
       DateTime value) {
     return QueryBuilder.apply(this, (query) {
@@ -777,6 +730,136 @@ extension MessageQueryFilter
         includeLower: includeLower,
         upper: upper,
         includeUpper: includeUpper,
+      ));
+    });
+  }
+
+  QueryBuilder<Message, Message, QAfterFilterCondition> toWebIdEqualTo(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'toWebId',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Message, Message, QAfterFilterCondition> toWebIdGreaterThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'toWebId',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Message, Message, QAfterFilterCondition> toWebIdLessThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'toWebId',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Message, Message, QAfterFilterCondition> toWebIdBetween(
+    String lower,
+    String upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'toWebId',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Message, Message, QAfterFilterCondition> toWebIdStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'toWebId',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Message, Message, QAfterFilterCondition> toWebIdEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'toWebId',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Message, Message, QAfterFilterCondition> toWebIdContains(
+      String value,
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'toWebId',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Message, Message, QAfterFilterCondition> toWebIdMatches(
+      String pattern,
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'toWebId',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Message, Message, QAfterFilterCondition> toWebIdIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'toWebId',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<Message, Message, QAfterFilterCondition> toWebIdIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'toWebId',
+        value: '',
       ));
     });
   }
@@ -917,29 +1000,16 @@ extension MessageQueryObject
 
 extension MessageQueryLinks
     on QueryBuilder<Message, Message, QFilterCondition> {
-  QueryBuilder<Message, Message, QAfterFilterCondition> to(
+  QueryBuilder<Message, Message, QAfterFilterCondition> owner(
       FilterQuery<User> q) {
     return QueryBuilder.apply(this, (query) {
-      return query.link(q, r'to');
+      return query.link(q, r'owner');
     });
   }
 
-  QueryBuilder<Message, Message, QAfterFilterCondition> toIsNull() {
+  QueryBuilder<Message, Message, QAfterFilterCondition> ownerIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.linkLength(r'to', 0, true, 0, true);
-    });
-  }
-
-  QueryBuilder<Message, Message, QAfterFilterCondition> from(
-      FilterQuery<User> q) {
-    return QueryBuilder.apply(this, (query) {
-      return query.link(q, r'from');
-    });
-  }
-
-  QueryBuilder<Message, Message, QAfterFilterCondition> fromIsNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.linkLength(r'from', 0, true, 0, true);
+      return query.linkLength(r'owner', 0, true, 0, true);
     });
   }
 
@@ -970,6 +1040,30 @@ extension MessageQuerySortBy on QueryBuilder<Message, Message, QSortBy> {
     });
   }
 
+  QueryBuilder<Message, Message, QAfterSortBy> sortByFromWebId() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'fromWebId', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Message, Message, QAfterSortBy> sortByFromWebIdDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'fromWebId', Sort.desc);
+    });
+  }
+
+  QueryBuilder<Message, Message, QAfterSortBy> sortByReceiptStatus() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'receiptStatus', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Message, Message, QAfterSortBy> sortByReceiptStatusDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'receiptStatus', Sort.desc);
+    });
+  }
+
   QueryBuilder<Message, Message, QAfterSortBy> sortByReceiptTimestamp() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'receiptTimestamp', Sort.asc);
@@ -982,18 +1076,6 @@ extension MessageQuerySortBy on QueryBuilder<Message, Message, QSortBy> {
     });
   }
 
-  QueryBuilder<Message, Message, QAfterSortBy> sortByStatus() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'status', Sort.asc);
-    });
-  }
-
-  QueryBuilder<Message, Message, QAfterSortBy> sortByStatusDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'status', Sort.desc);
-    });
-  }
-
   QueryBuilder<Message, Message, QAfterSortBy> sortByTimestamp() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'timestamp', Sort.asc);
@@ -1003,6 +1085,18 @@ extension MessageQuerySortBy on QueryBuilder<Message, Message, QSortBy> {
   QueryBuilder<Message, Message, QAfterSortBy> sortByTimestampDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'timestamp', Sort.desc);
+    });
+  }
+
+  QueryBuilder<Message, Message, QAfterSortBy> sortByToWebId() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'toWebId', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Message, Message, QAfterSortBy> sortByToWebIdDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'toWebId', Sort.desc);
     });
   }
 
@@ -1033,6 +1127,18 @@ extension MessageQuerySortThenBy
     });
   }
 
+  QueryBuilder<Message, Message, QAfterSortBy> thenByFromWebId() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'fromWebId', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Message, Message, QAfterSortBy> thenByFromWebIdDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'fromWebId', Sort.desc);
+    });
+  }
+
   QueryBuilder<Message, Message, QAfterSortBy> thenById() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'id', Sort.asc);
@@ -1042,6 +1148,18 @@ extension MessageQuerySortThenBy
   QueryBuilder<Message, Message, QAfterSortBy> thenByIdDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'id', Sort.desc);
+    });
+  }
+
+  QueryBuilder<Message, Message, QAfterSortBy> thenByReceiptStatus() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'receiptStatus', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Message, Message, QAfterSortBy> thenByReceiptStatusDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'receiptStatus', Sort.desc);
     });
   }
 
@@ -1057,18 +1175,6 @@ extension MessageQuerySortThenBy
     });
   }
 
-  QueryBuilder<Message, Message, QAfterSortBy> thenByStatus() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'status', Sort.asc);
-    });
-  }
-
-  QueryBuilder<Message, Message, QAfterSortBy> thenByStatusDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'status', Sort.desc);
-    });
-  }
-
   QueryBuilder<Message, Message, QAfterSortBy> thenByTimestamp() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'timestamp', Sort.asc);
@@ -1078,6 +1184,18 @@ extension MessageQuerySortThenBy
   QueryBuilder<Message, Message, QAfterSortBy> thenByTimestampDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'timestamp', Sort.desc);
+    });
+  }
+
+  QueryBuilder<Message, Message, QAfterSortBy> thenByToWebId() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'toWebId', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Message, Message, QAfterSortBy> thenByToWebIdDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'toWebId', Sort.desc);
     });
   }
 
@@ -1103,22 +1221,35 @@ extension MessageQueryWhereDistinct
     });
   }
 
+  QueryBuilder<Message, Message, QDistinct> distinctByFromWebId(
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'fromWebId', caseSensitive: caseSensitive);
+    });
+  }
+
+  QueryBuilder<Message, Message, QDistinct> distinctByReceiptStatus() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'receiptStatus');
+    });
+  }
+
   QueryBuilder<Message, Message, QDistinct> distinctByReceiptTimestamp() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'receiptTimestamp');
     });
   }
 
-  QueryBuilder<Message, Message, QDistinct> distinctByStatus(
-      {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'status', caseSensitive: caseSensitive);
-    });
-  }
-
   QueryBuilder<Message, Message, QDistinct> distinctByTimestamp() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'timestamp');
+    });
+  }
+
+  QueryBuilder<Message, Message, QDistinct> distinctByToWebId(
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'toWebId', caseSensitive: caseSensitive);
     });
   }
 
@@ -1144,21 +1275,34 @@ extension MessageQueryProperty
     });
   }
 
+  QueryBuilder<Message, String, QQueryOperations> fromWebIdProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'fromWebId');
+    });
+  }
+
+  QueryBuilder<Message, ReceiptStatus, QQueryOperations>
+      receiptStatusProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'receiptStatus');
+    });
+  }
+
   QueryBuilder<Message, DateTime, QQueryOperations> receiptTimestampProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'receiptTimestamp');
     });
   }
 
-  QueryBuilder<Message, ReceiptStatus, QQueryOperations> statusProperty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'status');
-    });
-  }
-
   QueryBuilder<Message, DateTime, QQueryOperations> timestampProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'timestamp');
+    });
+  }
+
+  QueryBuilder<Message, String, QQueryOperations> toWebIdProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'toWebId');
     });
   }
 

@@ -1,4 +1,4 @@
-import 'package:cmtchat_app/cubits/user_cubit.dart';
+import 'package:cmtchat_app/cubits/root_cubit.dart';
 import 'package:cmtchat_app/ui/shared_widgets/logo.dart';
 
 import 'package:flutter/material.dart';
@@ -12,10 +12,6 @@ class AppBarCot extends StatelessWidget with PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
-    String? username = context.select(
-            (UserCubit cubit) => cubit.state.user?.username);
-    bool? status = context.select((UserCubit cubit) => cubit.state.user?.active);
-
     return AppBar(
       flexibleSpace: SafeArea(
         child: Column(
@@ -29,12 +25,12 @@ class AppBarCot extends StatelessWidget with PreferredSizeWidget {
               padding: const EdgeInsets.only(top: 5, left: 10.0),
               child: Column(
                 children: [
-                  Text(
-                      username ?? 'noname',
+                  Text(context.select(
+                          (RootCubit cubit) => cubit.state.user.username),
                       style: Theme.of(context).appBarTheme.toolbarTextStyle
                   ),
-                  Text(
-                    status ?? false ? 'online' : 'offline',
+                  Text(context.select((RootCubit cubit) => cubit
+                      .state.user.active) ? 'online' : 'offline',
                     style: Theme.of(context).appBarTheme.toolbarTextStyle
                         ?.copyWith(fontSize: 20, fontWeight: FontWeight.w100),
                   ),
@@ -57,7 +53,7 @@ class AppBarCot extends StatelessWidget with PreferredSizeWidget {
         const SizedBox(width: 15.0),
         GestureDetector(
           child: const Logo(),
-          onTap: () { context.read<UserCubit>().logOut(); },
+          onTap: () { context.read<RootCubit>().logOut(); },
         ),
         const SizedBox(width: 15.0),
         Text('Cot', style: Theme.of(context).appBarTheme.titleTextStyle),

@@ -1,4 +1,4 @@
-import 'package:cmtchat_app/cubits/user_cubit.dart';
+import 'package:cmtchat_app/cubits/root_cubit.dart';
 import 'package:cmtchat_app/ui/shared_widgets/custom_text_field.dart';
 import 'package:cmtchat_app/ui/shared_widgets/logo.dart';
 import 'package:cmtchat_app/theme.dart';
@@ -37,7 +37,7 @@ class LogInView extends StatelessWidget {
               child: ElevatedButton(
                   onPressed: () {
                     if(username.isNotEmpty) {
-                      context.read<UserCubit>().newUserLogin(username);}
+                      context.read<RootCubit>().logIn(username: username);}
                     else {
                       const snackBar = SnackBar(
                         content: Text(

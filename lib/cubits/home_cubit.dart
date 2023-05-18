@@ -1,13 +1,12 @@
 import 'dart:async';
+import 'package:cmtchat_app/repository.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import 'package:cmtchat_app/repository.dart';
 import 'package:cmtchat_app/models/local/chat.dart';
 import 'package:cmtchat_app/models/web/web_user.dart';
 import 'package:cmtchat_app/services/web/user/web_user_service_api.dart';
 import 'package:cmtchat_app/ui/router.dart';
-
 
 
 /// HomeState ///
@@ -33,65 +32,66 @@ class HomeState extends Equatable {
 
 /// Home Cubit ///
 class HomeCubit extends Cubit<HomeState> {
+
   /// Data providers
   final Repository _repo;
   final WebUserServiceApi _webUserService;
 
-  final IRouter _router;
+  /// Router
+  final RouterCot _router;
 
-  /// Stream subscriptions
-
+  /// Private variables
   StreamSubscription<List<WebUser>>? _activeUsersSub;
   StreamSubscription<List<Chat>>? _userChatsSub;
 
   /// Constructor
   HomeCubit({
     required Repository repository,
-    required IRouter router,
-    required WebUserServiceApi webUserService,
-  })
+    required RouterCot router,
+    required WebUserServiceApi webUserService })
       : _repo = repository,
         _router = router,
         _webUserService = webUserService,
         super(HomeState.initial())
   {
     // Initializing
+    print('HomeCubit created');
     _subscribeToLocalChats();
     _subscribeToOnlineUsers();
   }
 
-
   /// Methods ///
-  void routeChatFromWebUser(WebUser webUser) =>
-      _repo.getChat(webUser).then((chat) => routeChat(chat));
-  void routeChat(Chat chat) => _router.showChat(chat);
+  void routeChat(context, Chat chat) => _router.showChat(context, chat);
+  void routeChatFromWebUser(context, String webUserId) =>
+      _repo.getChat(webUserId).then((chat) => routeChat(context, chat));
 
-
-  /// Local Methods ///
-  _subscribeToLocalChats() async {
+  @override
+  close() async {
+    print('HomeCubit close');
+    await _activeUsersSub?.cancel();
+    await _webUserService.cancelChangeFeed();
     await _userChatsSub?.cancel();
-    _userChatsSub = _repo.allChatsUpdatedStream()
+    super.close();
+  }
+
+  /// Private Methods
+  _subscribeToLocalChats() async {
+    _userChatsSub = _repo
+        .allChatsUpdatedStream()
         .listen((chatList) {
           emit(state.copyWith(chatsList: chatList));
           print('chatlist update');
-    });
-  }
-
-  _subscribeToOnlineUsers() async {
-    await _activeUsersSub?.cancel();
-    await _webUserService.cancelChangeFeed();
-    _activeUsersSub = _webUserService
-        .activeUsersStream()
-        .listen((onlineUsersList) {
-          onlineUsersList.removeWhere(
-                  (user) => user.id == _repo.userWebId);
-          emit(state.copyWith(onlineUsers: onlineUsersList));
         });
   }
 
-  _close() async {
-    await _activeUsersSub?.cancel();
-    await _webUserService.dispose();
-    return super.close();
+  _subscribeToOnlineUsers() async {
+    _activeUsersSub = _webUserService
+        .activeUsersStream()
+        .listen((onlineUsersList) {
+          print('onlineUsersList updated');
+          onlineUsersList
+              .removeWhere((user) => user.id == _repo.activeUser.webUser.id);
+          emit(state.copyWith(onlineUsers: onlineUsersList));
+        });
   }
 }
