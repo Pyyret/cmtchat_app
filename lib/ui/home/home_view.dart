@@ -1,15 +1,16 @@
 import 'package:cmtchat_app/cubits/home_cubit.dart';
-import 'package:cmtchat_app/_deprecated/message_cubit.dart';
-import 'package:cmtchat_app/cubits/root_cubit.dart';
 import 'package:cmtchat_app/ui/home/online_tab.dart';
 import 'package:cmtchat_app/ui/home/inbox_tab.dart';
+import 'package:cmtchat_app/ui/router.dart';
 import 'package:cmtchat_app/ui/shared_widgets/app_bar_cot.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class HomeView extends StatelessWidget {
-  const HomeView({super.key});
+  const HomeView({required this.router, super.key});
+
+  final RouterCot router;
 
   @override
   Widget build(BuildContext context) {
@@ -22,11 +23,11 @@ class HomeView extends StatelessWidget {
           child: Column(
             children: [
               _tabBar(),
-              const Expanded(
+              Expanded(
                 child: TabBarView(
                   children: [
-                    InboxTab(),
-                    OnlineTab(),
+                    InboxTab(router: router),
+                    OnlineTab(router: router,),
                     //ActiveUsers(),
                   ],
                 ),

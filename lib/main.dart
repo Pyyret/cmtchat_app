@@ -2,10 +2,17 @@ import 'package:cmtchat_app/theme.dart';
 import 'package:flutter/material.dart';
 import 'composition_root.dart';
 
+/// RethinkDb Address ///
+// Needed to connect
+final dbAddress = RethinkDbAddress(
+    host: '172.29.32.1',
+    port: 28015
+);
 
+/// Main ///
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await CompositionRoot.configure();
+  await CompositionRoot.configure(dbAddress);
   final director = CompositionRoot.root();
   runApp(MyApp(director));
 }

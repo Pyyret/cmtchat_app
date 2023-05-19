@@ -1,5 +1,6 @@
 import 'package:cmtchat_app/cubits/home_cubit.dart';
 import 'package:cmtchat_app/models/local/chat.dart';
+import 'package:cmtchat_app/ui/router.dart';
 import 'package:cmtchat_app/ui/shared_widgets/profile_placeholder.dart';
 import 'package:cmtchat_app/theme.dart';
 
@@ -9,26 +10,28 @@ import 'package:intl/intl.dart';
 
 
 class InboxTab extends StatelessWidget {
-  const InboxTab({super.key});
+  const InboxTab({required this.router, super.key});
+
+  final RouterCot router;
 
   @override
   Widget build(BuildContext context) {
-    final List<Chat> chatsList = context.select(
-            (HomeCubit c) => c.state.chatsList);
+    final chatsList = context.select((HomeCubit c) => c.state.chatsList);
     return ListView.separated(
         padding: const EdgeInsets.only(top: 30.0, right: 16.0),
         itemBuilder: (_, indx) =>
             GestureDetector(
               child: _chatItem(context, chatsList[indx]),
-              onTap: () =>
-                  context.read<HomeCubit>().routeChat(context, chatsList[indx]),
+              onTap: () => router.showChat(
+                  context: context,
+                  chat: chatsList[indx]),
             ),
         separatorBuilder: (_, __) => const Divider(),
         itemCount: chatsList.length
     );
   }
 
-  _chatItem(context, Chat chat) =>
+  _chatItem(BuildContext context, Chat chat) =>
       ListTile(
         contentPadding: const EdgeInsets.only(left: 16.0),
         leading: const ProfilePlaceholder(50),
@@ -46,8 +49,7 @@ class InboxTab extends StatelessWidget {
           softWrap: true,
           style: Theme.of(context).textTheme.labelSmall?.copyWith(
             color: isLightTheme(context) ? Colors.black54 : Colors.white70,
-            fontWeight:
-            chat.unread > 0 ? FontWeight.bold : FontWeight.normal,
+            fontWeight: chat.unread > 0 ? FontWeight.bold : FontWeight.normal,
           ),
         ),
         trailing: Column(
@@ -56,7 +58,9 @@ class InboxTab extends StatelessWidget {
             Text(
               DateFormat('h:mm a').format(chat.lastUpdate),
               style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                color: isLightTheme(context) ? Colors.black54 : Colors.white70,
+                color: isLightTheme(context)
+                    ? Colors.black54
+                    : Colors.white70,
               ),
             ),
             Padding(
@@ -71,7 +75,7 @@ class InboxTab extends StatelessWidget {
                   child: Text(
                     chat.unread.toString(),
                     style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                      color: Colors.white,
+                        color: Colors.white
                     ),
                   ),
                 ),

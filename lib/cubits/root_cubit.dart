@@ -1,15 +1,10 @@
 import 'package:bloc/bloc.dart';
 import 'package:cmtchat_app/collections/services.dart';
+import 'package:cmtchat_app/composition_root.dart';
 import 'package:cmtchat_app/models/local/user.dart';
 import 'package:cmtchat_app/models/web/web_user.dart';
 import 'package:equatable/equatable.dart';
 import 'package:rethink_db_ns/rethink_db_ns.dart';
-
-class RethinkDbAddress {
-  RethinkDbAddress({required this.host, required this.port});
-  final String host;
-  final int port;
-}
 
 /// Root State ///
 class RootState extends Equatable {

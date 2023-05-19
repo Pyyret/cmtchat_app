@@ -73,7 +73,8 @@ class LocalDbIsar implements LocalDbApi {
     final isar = await _db;
     return isar.chats
         .filter()
-        .owner((owner) => owner.idEqualTo(ownerId))
+        .owner((owner) => owner
+        .idEqualTo(ownerId))
         .watch(fireImmediately: true);
   }
   
@@ -95,8 +96,12 @@ class LocalDbIsar implements LocalDbApi {
 
   @override
   Future<void> updateMessages({required List<Message> messages}) async {
+    final chat = messages.first.chat.value!;
     final isar = await _db;
-    await isar.writeTxn(() async { isar.messages.putAll(messages); });
+    await isar.writeTxn(() async {
+      await isar.messages.putAll(messages);
+      await isar.chats.put(chat);
+    });
   }
 
   @override

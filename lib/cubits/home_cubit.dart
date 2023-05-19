@@ -6,8 +6,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:cmtchat_app/models/local/chat.dart';
 import 'package:cmtchat_app/models/web/web_user.dart';
 import 'package:cmtchat_app/services/web/user/web_user_service_api.dart';
-import 'package:cmtchat_app/ui/router.dart';
-
 
 /// HomeState ///
 class HomeState extends Equatable {
@@ -37,9 +35,6 @@ class HomeCubit extends Cubit<HomeState> {
   final Repository _repo;
   final WebUserServiceApi _webUserService;
 
-  /// Router
-  final RouterCot _router;
-
   /// Private variables
   StreamSubscription<List<WebUser>>? _activeUsersSub;
   StreamSubscription<List<Chat>>? _userChatsSub;
@@ -48,10 +43,8 @@ class HomeCubit extends Cubit<HomeState> {
   HomeCubit({
     required Repository repository,
     required WebUserServiceApi webUserService,
-    required RouterCot router,
   }) :  _repo = repository,
         _webUserService = webUserService,
-        _router = router,
         super(HomeState.initial())
   {
     // Initializing
@@ -60,10 +53,11 @@ class HomeCubit extends Cubit<HomeState> {
     _subscribeToOnlineUsers();
   }
 
+  Repository get repository => _repo;
+
   /// Methods ///
-  void routeChat(context, Chat chat) => _router.showChat(context, chat);
-  void routeChatFromWebUser(context, String webUserId) =>
-      _repo.getChat(webUserId).then((chat) => routeChat(context, chat));
+  Future<Chat> getChat({required String webUserId}) async =>
+      await _repo.getChat(webUserId);
 
   @override
   close() async {
@@ -76,12 +70,14 @@ class HomeCubit extends Cubit<HomeState> {
 
   /// Private Methods
   _subscribeToLocalChats() async {
-    _userChatsSub = _repo
+    _userChatsSub = await _repo
         .allChatsUpdatedStream()
+        .then((stream) => stream
         .listen((chatList) {
           emit(state.copyWith(chatsList: chatList));
           print('chatlist update');
-        });
+        }),
+    );
   }
 
   _subscribeToOnlineUsers() async {

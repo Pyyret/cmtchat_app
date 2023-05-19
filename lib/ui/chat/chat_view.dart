@@ -1,5 +1,4 @@
 import 'package:cmtchat_app/collections/cubits.dart';
-import 'package:cmtchat_app/cubits/chat_cubit.dart';
 import 'package:cmtchat_app/models/local/message.dart';
 import 'package:cmtchat_app/ui/chat/receiver_message.dart';
 import 'package:cmtchat_app/ui/chat/sender_message.dart';
@@ -14,7 +13,6 @@ class ChatView extends StatelessWidget {
 
   final ScrollController _scrollController = ScrollController();
   final TextEditingController _textEditingController = TextEditingController();
-
 
   @override
   Widget build(BuildContext context) {
@@ -33,7 +31,7 @@ class ChatView extends StatelessWidget {
                       } else {
                         WidgetsBinding.instance
                             .addPostFrameCallback((_) => _scrollToEnd());
-                        final List<Message> messages = state.messages;
+                        final messages = state.messages;
                         final ownerWebId = context.read<ChatCubit>().ownerWebId;
                         return _buildListOfMessages(messages, ownerWebId);
                       }
@@ -171,6 +169,9 @@ class ChatView extends StatelessWidget {
   _headerStatus() {
     return Builder(builder: (context) {
       final receiver  = context.select((ChatCubit c) => c.receiver);
+      final status = context.select(
+              (HomeCubit c) => c.state.onlineUsers.any(
+                      (webUser) => webUser.id == receiver.id));
       return Container(
           width: double.maxFinite,
           child: Row(children: [
@@ -188,7 +189,7 @@ class ChatView extends StatelessWidget {
               ),
               Padding(
                 padding: const EdgeInsets.only(left: 8.0),
-                child: Text(receiver.active ? 'online' : 'offline',
+                child: Text(status ? 'online' : 'offline',
                     style: Theme.of(context).textTheme.bodySmall),
               ),
             ]),

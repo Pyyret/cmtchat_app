@@ -63,17 +63,19 @@ class ChatCubit extends Cubit<ChatState> {
 
   /// Private methods
   _subscribeToChatMessages() async {
-    _messageSub = _repo
-        .chatMessageStream(chatId: _chat.id)
+    _messageSub = await _repo
+        .chatMessageStream(_chat.id)
+        .then((stream) => stream
         .listen((messageList) async {
-          final unreadMessagesList = messageList.where(
-                  (message) => message.receiptStatus == ReceiptStatus.delivered
-                      && message.toWebId == _chat.ownerWebId)
+          final unreadMessagesList = messageList
+              .where((message) => message
+              .receiptStatus == ReceiptStatus.delivered
+              && message.toWebId == _chat.ownerWebId)
               .toList();
           if(unreadMessagesList.isNotEmpty) {
             await _repo.updateReadMessages(msgList: unreadMessagesList);
           }
           else { emit(ChatState(messages: messageList)); }
-        });
+        }));
   }
 }

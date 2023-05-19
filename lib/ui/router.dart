@@ -1,22 +1,17 @@
+import 'package:cmtchat_app/collections/cubits.dart';
 import 'package:cmtchat_app/models/local/chat.dart';
-import 'package:cmtchat_app/repository.dart';
 import 'package:flutter/material.dart';
 
 
-abstract class IRouter {
-  Future<void> showChat(BuildContext context, Chat chat);
-}
+class RouterCot {
+  final HomeCubit homeCubit;
+  final Widget Function(HomeCubit homeCubit, Chat chat) onShowChat;
 
-class RouterCot implements IRouter {
-  final Repository repository;
-  final Widget Function(Repository repository, Chat chat) onShowChat;
+  RouterCot({required this.homeCubit, required this.onShowChat});
 
-  RouterCot({required this.repository, required this.onShowChat});
-
-  @override
-  Future<void> showChat(BuildContext context, Chat chat) {
+  Future<void> showChat({required BuildContext context, required Chat chat}) {
     return Navigator.push(
       context,
-      MaterialPageRoute(builder: (_) => onShowChat(repository, chat)));
+      MaterialPageRoute(builder: (context) => onShowChat(homeCubit, chat)));
   }
 }

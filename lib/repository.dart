@@ -14,7 +14,6 @@ class Repository{
   final LocalDbApi _localDb;
   final WebMessageServiceApi _webMessageService;
   final ReceiptServiceApi _receiptService;
-
   final RootCubit _rootCubit;
 
   /// Private variable
@@ -37,17 +36,16 @@ class Repository{
     _subscribeToReceipts();
   }
 
-  /// Active User getter
+  /// Active User
   final User  activeUser;
 
-  /// Streams ///
+  /// Streams
   // For providing updates in the local database to HomeCubit & ChatCubit
-  Stream<List<Chat>> allChatsUpdatedStream() async* {
-    yield* await _localDb.allChatsStream(ownerId: activeUser.id);
-  }
-  Stream<List<Message>> chatMessageStream({required int chatId}) async* {
-    yield* await _localDb.chatMessageStream(chatId);
-  }
+  Future<Stream<List<Chat>>> allChatsUpdatedStream() =>
+      _localDb.allChatsStream(ownerId: activeUser.id);
+
+  Future<Stream<List<Message>>> chatMessageStream(chatId) =>
+      _localDb.chatMessageStream(chatId);
 
   /// Methods ///
   Future<void> updateReadMessages({required List<Message> msgList}) async {
@@ -118,9 +116,7 @@ class Repository{
         });
   }
 
-  Future<void> _updateMessageReceipt({
-    required Receipt receipt,
-    required Message message
+  Future<void> _updateMessageReceipt({required Receipt receipt, required Message message
   }) async{
     message.receiptStatus = receipt.status;
     message.receiptTimestamp = receipt.timestamp;
