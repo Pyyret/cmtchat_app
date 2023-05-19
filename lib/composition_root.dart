@@ -1,5 +1,3 @@
-
-import 'package:cmtchat_app/models/local/user.dart';
 import 'package:cmtchat_app/repository.dart';
 import 'package:cmtchat_app/collections/cubits.dart';
 import 'package:cmtchat_app/collections/services.dart';
@@ -15,7 +13,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:rethink_db_ns/rethink_db_ns.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '_deprecated/message_cubit.dart';
 
 /// Composition Root ///
 // Dependency injection overview
@@ -26,6 +23,7 @@ class CompositionRoot {
   static late RethinkDb _r;
   static late RethinkDbAddress _rAddress;
   static late RootCubit _rootCubit;
+
 
   /// Initializes persistent data providers & Root Cubit ///
   static configure() async {
@@ -38,10 +36,7 @@ class CompositionRoot {
     /// RethinkDb service
     _r = RethinkDb();
     // For opening and closing the connection to RethinkDb
-    _rAddress = const RethinkDbAddress(
-        host: '172.29.32.1',
-        port: 28015
-    );
+    _rAddress = RethinkDbAddress(host: '172.29.32.1', port: 28015);
 
     /// RootCubit
     _rootCubit = RootCubit(
@@ -50,81 +45,51 @@ class CompositionRoot {
       rethinkDb: _r,
       rethinkDbAddress: _rAddress
     );
-
   }
 
   static Widget root() {
     return BlocProvider.value(
         value: _rootCubit,
         child: BlocBuilder<RootCubit, RootState>(
-            builder: (BuildContext context, state) => !state.isLoggedIn
-                ? const LogInView() : composeApp(context)
-
+            builder: (context, state) => !state.isLoggedIn
+                ? const LogInView() : composeApp(state)
         )
     );
   }
 
 
-  static Widget composeApp(BuildContext context) {
-    final user = context.read<RootCubit>().state.user;
-    final connection = context.read<RootCubit>().connection;
+  static Widget composeApp(RootState state) {
+    final connection = state.connection!;
+    final webUserService = WebUserService(_r, connection);
+    final webMessageService = WebMessageService(_r, connection);
+    final receiptService = ReceiptService(_r, connection);
+
     final repository = Repository(
-        activeUser: user,
-        dataService: _localDb,
-        webMessageService: WebMessageService(_r, connection),
-        receiptService: ReceiptService(_r, connection),
-        rootCubit: context.read<RootCubit>(),
+      activeUser: state.user,
+      dataService: _localDb,
+      webMessageService: webMessageService,
+      receiptService: receiptService,
+      rootCubit: _rootCubit,
     );
 
-    return RepositoryProvider.value(
-      value: repository,
-      child: BlocProvider(
-          create: (context) => HomeCubit(
-              repository: repository,
-              webUserService: WebUserService(_r, connection),
-              router: RouterCot(
-                repository: repository,
-                onShowChat: composeChat,
-              )
-          ),
-        child: const HomeView(),
-      )
-    );
-  }
+    final router = RouterCot(repository: repository, onShowChat: composeChat);
 
-  /*
-    BlocProvider(
-      create: (context) {
-        final repository = Repository(
-          activeUser: activeUser,
-          dataService: _localDb,
-          webMessageService: _webMessageService,
-          receiptService: ReceiptService(_r, _connection),
-          rootCubit: _rootCubit,
-        );
-
-        final router = RouterCot(repository: repository, onShowChat: composeChat);
-
-        return HomeCubit(
-            repository: repository,
-            router: router,
-            webUserService: _webUserService);
-
-      },
+    return BlocProvider(create: (BuildContext context) => HomeCubit(
+        repository: repository,
+        webUserService: webUserService,
+        router: router
+    ),
       child: const HomeView(),
     );
   }
 
-   */
-
   static Widget composeChat(Repository repository, Chat chat) {
-    return BlocProvider(
-        create: (_) {
-          return ChatCubit(
-            repository: repository,
-            chat: chat,
-          );
-        },
+    return BlocProvider(create: (BuildContext context) {
+      return ChatCubit(
+          repository: repository,
+          chat: chat
+      );
+    },
       child: ChatView(),
     );
   }

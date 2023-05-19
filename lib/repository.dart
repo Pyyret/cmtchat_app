@@ -59,9 +59,7 @@ class Repository{
     await _localDb.updateMessages(messages: msgList);
   }
 
-  Future<void> sendMessage({
-    required Chat chat,
-    required WebMessage message})
+  Future<void> sendMessage({required Chat chat, required WebMessage message})
   async {
     final sentMsg = Message.fromWebMessage(
         message: await _webMessageService.send(message: message),
@@ -79,11 +77,11 @@ class Repository{
   }
 
   Future<Chat> getChat(String webUserId) async {
-    final chat = await _localDb.findChatWith(webUserId: webUserId)
+    final chat = await _localDb
+        .findChatWith(ownerWebId: activeUser.webId, receiverWebId: webUserId)
         ?? Chat(
-            ownerWebId: activeUser.webId!,
-            receiver: await _rootCubit.fetchWebUser(webUserId: webUserId)
-        );
+            ownerWebId: activeUser.webId,
+            receiver: await _rootCubit.fetchWebUser(webUserId: webUserId));
     await _localDb.saveNewChat(chat: chat, owner: activeUser);
     return chat;
   }
@@ -91,7 +89,7 @@ class Repository{
 
   /// Private Methods ///
   _subscribeToWebMessages() {
-    _webMessageService.messageStream(webUserId: activeUser.webUser.id!)
+    _webMessageService.messageStream(webUserId: activeUser.webUser.id)
         .listen((msg) => _receivedMessage(msg));
   }
 
@@ -109,7 +107,7 @@ class Repository{
   }
 
   _subscribeToReceipts() {
-    _receiptService.receiptStream(webUserId: activeUser.webUser.id!)
+    _receiptService.receiptStream(webUserId: activeUser.webUser.id)
         .listen((receipt) async {
           final message = await _localDb
               .findMessageFrom(webId: receipt.messageId);

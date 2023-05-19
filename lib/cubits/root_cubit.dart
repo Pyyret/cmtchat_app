@@ -2,14 +2,11 @@ import 'package:bloc/bloc.dart';
 import 'package:cmtchat_app/collections/services.dart';
 import 'package:cmtchat_app/models/local/user.dart';
 import 'package:cmtchat_app/models/web/web_user.dart';
-import 'package:cmtchat_app/services/local/local_cache_service.dart';
-import 'package:cmtchat_app/services/local/local_db_api.dart';
-import 'package:cmtchat_app/services/web/user/web_user_service_api.dart';
 import 'package:equatable/equatable.dart';
 import 'package:rethink_db_ns/rethink_db_ns.dart';
 
 class RethinkDbAddress {
-  const RethinkDbAddress({required this.host, required this.port});
+  RethinkDbAddress({required this.host, required this.port});
   final String host;
   final int port;
 }
@@ -17,14 +14,19 @@ class RethinkDbAddress {
 /// Root State ///
 class RootState extends Equatable {
   /// Constructor
-  const RootState({required this.isLoggedIn, required this.user});
+  const RootState({
+    required this.isLoggedIn,
+    required this.connection,
+    required this.user});
 
   /// State variables
   final bool isLoggedIn;
+  final Connection? connection;
   final User user;
 
+
   @override
-  List<Object> get props => [isLoggedIn, user];
+  List<Object?> get props => [isLoggedIn, connection, user];
 }
 
 /// Root Cubit ///
@@ -33,38 +35,35 @@ class RootCubit extends Cubit<RootState> {
   /// Data Providers
   final LocalCacheApi _localCache;
   final LocalDbApi _localDb;
-  final RethinkDb _r;
-  final RethinkDbAddress _rAddress;
+  late final WebUserServiceApi _webUserService;
 
   /// Private Variables
-  late Connection _connection;
-  late WebUserServiceApi _webUserService;
+  final RethinkDb _r;
+  final RethinkDbAddress _rAddress;
+  late final Connection _rootConnection;
+
 
   /// Constructor
   RootCubit({
     required LocalCacheApi localCacheService,
     required LocalDbApi localDbService,
     required RethinkDb rethinkDb,
-    required RethinkDbAddress rethinkDbAddress,
+    required RethinkDbAddress rethinkDbAddress
   })
       : _localCache = localCacheService,
         _localDb = localDbService,
         _r = rethinkDb,
         _rAddress = rethinkDbAddress,
-        super(RootState(isLoggedIn: false, user: User.empty()))
+        super(RootState(isLoggedIn: false, connection: null , user: User.empty()))
   {
     // Initializing
-    _tryLoginFromCache();
+    _initialize();
   }
-
-
-  Connection get connection => _connection;
 
   /// Methods ///
   // Creates a new User from username entered in the OnboardingUi, connects
   // and saves it, returns the new user
   Future<void> logIn({required String username}) async {
-    await _setNewConnection();
     final dbUser = await _localDb.findUserWith(username: username);
     if(dbUser != null) {
       print('old user login start');
@@ -77,14 +76,14 @@ class RootCubit extends Cubit<RootState> {
   }
 
   Future<void> logOut() async {
-    //await _repo.reset();
-    final response = await _webUserService
-        .update(webUser: state.user.webUser..active = false);
+    state.connection?.close();
+    final response = await _webUserService.update(
+        webUser: state.user.webUser..active = false);
     if(state.user.isUpdatedFrom(webUser: response)) {
       print('User logout success, webId: ${state.user.webId}');
       await _localDb.putUser(state.user);
       await _localCache.clear();
-      emit(RootState(isLoggedIn: false, user: state.user));
+      emit(RootState(isLoggedIn: false, connection: null, user: state.user));
       //await _localDb.cleanDb();
     }
     else { print('User logout failed, webId: ${state.user.webId}'); }
@@ -95,11 +94,16 @@ class RootCubit extends Cubit<RootState> {
   }
 
   /// Local Methods ///
+  Future<void> _initialize() async {
+    _rootConnection = await _r.connect(host: _rAddress.host, port: _rAddress.port);
+    _webUserService = WebUserService(_r, _rootConnection);
+    _tryLoginFromCache();
+  }
+
   // Check local cache for a previously logged in user and fetch it from
   // the local db. If found, update relevant variables and cache, connect
   // to webserver and return the user.
   Future<void> _tryLoginFromCache() async {
-    await _setNewConnection();
     final userId = _localCache.fetch('USER_ID');
     if(userId.isNotEmpty) {
       User? user = await _localDb.findUser(userId: int.parse(userId['user_id']));
@@ -108,11 +112,6 @@ class RootCubit extends Cubit<RootState> {
         await _connectOldUserAndStart(user);
       }
     }
-  }
-
-  Future<void> _setNewConnection() async {
-    _connection = await _r.connect(host: _rAddress.host, port: _rAddress.port);
-    _webUserService = WebUserService(_r, _connection);
   }
 
   // Connects an already existing user
@@ -130,6 +129,9 @@ class RootCubit extends Cubit<RootState> {
   Future<void> _cacheAndStart({required User connectedUser}) async {
     await _localDb.putUser(connectedUser);
     await _localCache.save('USER_ID', {'user_id': connectedUser.id.toString()});
-    emit(RootState(isLoggedIn: true, user: connectedUser));
+    final userConnection = await _r
+        .connect(host: _rAddress.host, port: _rAddress.port);
+
+    emit(RootState(isLoggedIn: true, connection: userConnection, user: connectedUser));
   }
 }
