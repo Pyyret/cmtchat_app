@@ -2,6 +2,7 @@ import 'package:cmtchat_app/models/local/chat.dart';
 import 'package:cmtchat_app/repository.dart';
 import 'package:flutter/material.dart';
 
+
 abstract class IRouter {
   Future<void> showChat(BuildContext context, Chat chat);
 }
