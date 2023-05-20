@@ -120,7 +120,7 @@ class CompositionRoot {
   static Widget composeChat(HomeCubit homeCubit, Chat chat) {
 
     /// ChatCubit
-    //final chatCubit = ChatCubit(repository: homeCubit.repository, chat: chat);
+    final chatCubit = ChatCubit(repository: homeCubit.repository, chat: chat);
 
     /// ChatView
     // MultiBlocProvider makes both the HomeCubit and the ChatCubit available
@@ -128,9 +128,7 @@ class CompositionRoot {
     return MultiBlocProvider(
       providers: [
         BlocProvider.value(value: homeCubit),
-        BlocProvider(create: (BuildContext context) =>
-            ChatCubit(repository: homeCubit.repository, chat: chat),
-        ),
+        BlocProvider.value(value: chatCubit),
       ],
       child: ChatView(),
     );

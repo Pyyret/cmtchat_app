@@ -65,7 +65,12 @@ class SenderMessage extends StatelessWidget {
                   color: isLightTheme(context) ? Colors.white : Colors.black,
                   borderRadius: BorderRadius.circular(30),
                 ),
-                child: Icon(
+                child: _message.receiptStatus == ReceiptStatus.sent
+                    ? const Icon(
+                    Icons.arrow_circle_right_outlined,
+                    color: Colors.black54,
+                    size: 20)
+                    : Icon(
                   Icons.check_circle_rounded,
                   color: _message.receiptStatus == ReceiptStatus.read
                       ? Colors.green[700]

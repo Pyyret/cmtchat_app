@@ -1,11 +1,12 @@
+import 'package:cmtchat_app/collections/cubits.dart';
 import 'package:cmtchat_app/cubits/root_cubit.dart';
 import 'package:cmtchat_app/ui/shared_widgets/logo.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-class AppBarCot extends StatelessWidget with PreferredSizeWidget {
-  const AppBarCot({super.key});
+class CotAppBar extends StatelessWidget with PreferredSizeWidget {
+  const CotAppBar({super.key});
 
   @override
   final Size preferredSize = const Size.fromHeight(170);
@@ -53,7 +54,10 @@ class AppBarCot extends StatelessWidget with PreferredSizeWidget {
         const SizedBox(width: 15.0),
         GestureDetector(
           child: const Logo(),
-          onTap: () { context.read<RootCubit>().logOut(); },
+          onTap: () {
+            context.read<HomeCubit>().close();
+            context.read<RootCubit>().logOut();
+            },
         ),
         const SizedBox(width: 15.0),
         Text('Cot', style: Theme.of(context).appBarTheme.titleTextStyle),

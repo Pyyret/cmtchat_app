@@ -10,8 +10,8 @@ class RouterCot {
   RouterCot({required this.homeCubit, required this.onShowChat});
 
   Future<void> showChat({required BuildContext context, required Chat chat}) {
-    return Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => onShowChat(homeCubit, chat)));
+    return Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => onShowChat(homeCubit, chat))
+    );
   }
 }

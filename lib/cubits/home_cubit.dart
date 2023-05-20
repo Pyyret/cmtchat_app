@@ -20,8 +20,9 @@ class HomeState extends Equatable {
   /// Methods
   HomeState copyWith({List<Chat>? chatsList, List<WebUser>? onlineUsers}) {
     return HomeState(
-        chatsList: chatsList ?? this.chatsList,
-        onlineUsers: onlineUsers ?? this.onlineUsers);
+      chatsList: chatsList ?? this.chatsList,
+      onlineUsers: onlineUsers ?? this.onlineUsers,
+    );
   }
 
   @override
@@ -53,6 +54,7 @@ class HomeCubit extends Cubit<HomeState> {
     _subscribeToOnlineUsers();
   }
 
+  /// Getter
   Repository get repository => _repo;
 
   /// Methods ///

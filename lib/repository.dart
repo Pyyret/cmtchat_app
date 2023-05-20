@@ -48,13 +48,13 @@ class Repository{
       _localDb.chatMessageStream(chatId);
 
   /// Methods ///
-  Future<void> updateReadMessages({required List<Message> msgList}) async {
-    for(Message msg in msgList) {
+  Future<void> updateReadMessages(List<Message> messageList) async {
+    for(Message msg in messageList) {
       final receipt = Receipt.read(message: msg);
       msg.updateReceipt(receipt: receipt);
       _receiptService.send(receipt);
     }
-    await _localDb.updateMessages(messages: msgList);
+    await _localDb.updateMessages(messages: messageList);
   }
 
   Future<void> sendMessage({required Chat chat, required WebMessage message})

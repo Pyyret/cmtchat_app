@@ -1,36 +1,23 @@
 import 'dart:async';
 import 'package:bloc/bloc.dart';
-import 'package:equatable/equatable.dart';
 
 import 'package:cmtchat_app/collections/models.dart';
 import 'package:cmtchat_app/repository.dart';
 
-/// Chat State ///
-class ChatState extends Equatable {
-  /// Constructor
-  const ChatState({required this.messages});
-
-  /// State variables
-  final List<Message> messages;
-
-  @override
-  List<Object> get props => [messages];
-}
-
 /// Chat Cubit
-class ChatCubit extends Cubit<ChatState> {
+class ChatCubit extends Cubit<List<Message>> {
   /// Data Provider
   final Repository _repo;
 
   /// Private variables
   final Chat _chat;
-  StreamSubscription<List<Message>>? _messageSub;
+  late final StreamSubscription<List<Message>> _messageSub;
 
   /// Constructor
   ChatCubit({required Repository repository, required Chat chat})
       : _repo = repository,
         _chat = chat,
-        super(const ChatState(messages: []))
+        super(const [])
   {
     // Initializing
     _subscribeToChatMessages();
@@ -41,22 +28,20 @@ class ChatCubit extends Cubit<ChatState> {
   String get ownerWebId => _chat.ownerWebId;
   WebUser get receiver => _chat.receiver;
 
-
-  /// Methods
+  /// Public Methods
   void sendMessage({required String contents}) {
     final message = WebMessage(
         to: receiver.id,
         from: ownerWebId,
         timestamp: DateTime.now(),
-        contents: contents );
+        contents: contents,
+    );
     _repo.sendMessage(chat: _chat, message: message);
   }
 
-
-
   @override
   close() async {
-    await _messageSub?.cancel();
+    await _messageSub.cancel();
     print('ChatCubit closed');
     super.close();
   }
@@ -67,15 +52,15 @@ class ChatCubit extends Cubit<ChatState> {
         .chatMessageStream(_chat.id)
         .then((stream) => stream
         .listen((messageList) async {
-          final unreadMessagesList = messageList
+          final unreadMsgList = messageList
               .where((message) => message
               .receiptStatus == ReceiptStatus.delivered
               && message.toWebId == _chat.ownerWebId)
               .toList();
-          if(unreadMessagesList.isNotEmpty) {
-            await _repo.updateReadMessages(msgList: unreadMessagesList);
+          if(unreadMsgList.isNotEmpty) {
+            await _repo.updateReadMessages(unreadMsgList);
           }
-          else { emit(ChatState(messages: messageList)); }
+          else { emit(messageList); }
         }));
   }
 }

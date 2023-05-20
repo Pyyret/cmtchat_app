@@ -2,7 +2,7 @@ import 'package:cmtchat_app/cubits/home_cubit.dart';
 import 'package:cmtchat_app/ui/home/online_tab.dart';
 import 'package:cmtchat_app/ui/home/inbox_tab.dart';
 import 'package:cmtchat_app/ui/router.dart';
-import 'package:cmtchat_app/ui/shared_widgets/app_bar_cot.dart';
+import 'package:cmtchat_app/ui/home/cot_app_bar.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -18,7 +18,7 @@ class HomeView extends StatelessWidget {
     return DefaultTabController(
       length: 2,
       child: Scaffold(
-        appBar: const AppBarCot(),
+        appBar: const CotAppBar(),
         body: SafeArea(
           child: Column(
             children: [
@@ -46,10 +46,19 @@ class HomeView extends StatelessWidget {
           horizontal: 20,
         ),
         tabs: [
-          const Tab(
+          Tab(
             child: Align(
               alignment: Alignment.center,
-              child: Text('Chats'),
+              child: Builder(builder: (context) {
+                final nrOfUnreadMsg = context
+                    .select((HomeCubit c) => c.state.chatsList
+                    .where((chat) => chat.unread > 0)
+                    .length,
+                );
+                if(nrOfUnreadMsg == 0) { return const Text('Chats'); }
+                else { return Text('Chats ($nrOfUnreadMsg)'); }
+                }
+              ),
             ),
           ),
           Tab(

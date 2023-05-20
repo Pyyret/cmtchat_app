@@ -8,17 +8,19 @@ import 'package:rethink_db_ns/rethink_db_ns.dart';
 
 /// Root State ///
 class RootState extends Equatable {
-  /// Constructor
-  const RootState({
-    required this.isLoggedIn,
-    required this.connection,
-    required this.user});
 
   /// State variables
   final bool isLoggedIn;
   final Connection? connection;
   final User user;
 
+  /// Constructors
+  const RootState(this.isLoggedIn, this.connection, this.user);
+  factory RootState.loggedOut() => RootState(false, null, User.empty());
+  factory RootState.loggedIn({
+    required Connection connection,
+    required User activeUser
+  }) => RootState(true, connection, activeUser);
 
   @override
   List<Object?> get props => [isLoggedIn, connection, user];
@@ -37,7 +39,6 @@ class RootCubit extends Cubit<RootState> {
   final RethinkDbAddress _rAddress;
   late final Connection _rootConnection;
 
-
   /// Constructor
   RootCubit({
     required LocalCacheApi localCacheService,
@@ -49,15 +50,15 @@ class RootCubit extends Cubit<RootState> {
         _localDb = localDbService,
         _r = rethinkDb,
         _rAddress = rethinkDbAddress,
-        super(RootState(isLoggedIn: false, connection: null , user: User.empty()))
+        super(RootState.loggedOut())
   {
     // Initializing
     _initialize();
   }
 
-  /// Methods ///
-  // Creates a new User from username entered in the OnboardingUi, connects
-  // and saves it, returns the new user
+  /// Public Methods
+  // Looks for an already existing user with this username, if not found,
+  // creates a new one.
   Future<void> logIn({required String username}) async {
     final dbUser = await _localDb.findUserWith(username: username);
     if(dbUser != null) {
@@ -66,38 +67,38 @@ class RootCubit extends Cubit<RootState> {
     }
     else {
       final user = User(await _webUserService.connectNew(username));
-      await _cacheAndStart(connectedUser: user);
+      await _cacheAndStart(activeUser: user);
     }
   }
 
+  // Closes the user specific connection, updates the webDb with active = false,
+  // clears the cache, then emits the logged out state, thus presenting the
+  // LogInView
   Future<void> logOut() async {
     state.connection?.close();
     final response = await _webUserService.update(
         webUser: state.user.webUser..active = false);
     if(state.user.isUpdatedFrom(webUser: response)) {
-      print('User logout success, webId: ${state.user.webId}');
       await _localDb.putUser(state.user);
       await _localCache.clear();
-      emit(RootState(isLoggedIn: false, connection: null, user: state.user));
+      emit(RootState.loggedOut());
       //await _localDb.cleanDb();
     }
-    else { print('User logout failed, webId: ${state.user.webId}'); }
+    else { print('User logout failed, webId: ${state.user.username}'); }
   }
 
   Future<WebUser> fetchWebUser({required String webUserId}) async {
     return await _webUserService.fetch([webUserId]).then((list) => list.single);
   }
 
-  /// Local Methods ///
+  /// Private Methods
   Future<void> _initialize() async {
     _rootConnection = await _r.connect(host: _rAddress.host, port: _rAddress.port);
     _webUserService = WebUserService(_r, _rootConnection);
     _tryLoginFromCache();
   }
 
-  // Check local cache for a previously logged in user and fetch it from
-  // the local db. If found, update relevant variables and cache, connect
-  // to webserver and return the user.
+  // Checks local cache for a previously logged in user
   Future<void> _tryLoginFromCache() async {
     final userId = _localCache.fetch('USER_ID');
     if(userId.isNotEmpty) {
@@ -114,19 +115,18 @@ class RootCubit extends Cubit<RootState> {
     user.webUser.active = true;
     final response = await _webUserService.update(webUser: user.webUser);
     if(user.isUpdatedFrom(webUser: response)) {
-      await _cacheAndStart(connectedUser: user);
+      await _cacheAndStart(activeUser: user);
     }
-    else { print('Failed to connect old user'); }
   }
 
   // Saves connected user to localDb & cache, initializes repository
   // and emits a logged in root state with the resulting user.
-  Future<void> _cacheAndStart({required User connectedUser}) async {
-    await _localDb.putUser(connectedUser);
-    await _localCache.save('USER_ID', {'user_id': connectedUser.id.toString()});
-    final userConnection = await _r
+  Future<void> _cacheAndStart({required User activeUser}) async {
+    await _localDb.putUser(activeUser);
+    await _localCache.save('USER_ID', {'user_id': activeUser.id.toString()});
+    final connection = await _r
         .connect(host: _rAddress.host, port: _rAddress.port);
 
-    emit(RootState(isLoggedIn: true, connection: userConnection, user: connectedUser));
+    emit(RootState.loggedIn(connection: connection, activeUser: activeUser));
   }
 }
