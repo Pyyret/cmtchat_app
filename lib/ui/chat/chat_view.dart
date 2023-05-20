@@ -7,6 +7,8 @@ import 'package:cmtchat_app/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import 'chat_app_bar.dart';
+
 
 class ChatView extends StatelessWidget {
   ChatView({super.key,});
@@ -17,25 +19,14 @@ class ChatView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: _chatsAppBar(context),
+        appBar: const ChatAppBar(),
         resizeToAvoidBottomInset: true,
         body: GestureDetector(
             onTap: () => FocusScope.of(context).requestFocus(FocusNode()),
             child: Column(children: [
               Flexible(
                 flex: 6,
-                child: BlocBuilder<ChatCubit, ChatState>(
-                    builder: (_, state) {
-                      if (state.messages.isEmpty) {
-                        return Container(color: Colors.transparent);
-                      } else {
-                        WidgetsBinding.instance
-                            .addPostFrameCallback((_) => _scrollToEnd());
-                        final messages = state.messages;
-                        final ownerWebId = context.read<ChatCubit>().ownerWebId;
-                        return _buildListOfMessages(messages, ownerWebId);
-                      }
-                    }),
+                child: _buildListOfMessages(),
               ),
               Expanded(
                   child: Container(
@@ -91,27 +82,35 @@ class ChatView extends StatelessWidget {
             ])));
   }
 
-  _buildListOfMessages(List<Message> messages, String ownerWebId) {
-    return ListView.builder(
-      padding: const EdgeInsets.only(top: 16.0, left: 16.0, bottom: 20.0),
-      itemBuilder: (context, indx) {
-        if (messages[indx].toWebId == ownerWebId) {
-          return Padding(
-            padding: const EdgeInsets.only(bottom: 8.0),
-            child: ReceiverMessage(messages[indx]),
-          );
-        } else {
-          return Padding(
-            padding: const EdgeInsets.only(bottom: 8.0),
-            child: SenderMessage(messages[indx]),
-          );
-        }
-      },
-      itemCount: messages.length,
-      controller: _scrollController,
-      physics: const AlwaysScrollableScrollPhysics(),
-      addAutomaticKeepAlives: true,
-    );
+  _buildListOfMessages() {
+    return BlocBuilder<ChatCubit, List<Message>>(
+        builder: (context, messages) {
+          if (messages.isEmpty) { return Container(color: Colors.transparent); }
+          else {
+            WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToEnd());
+            final ownerWebId = context.read<ChatCubit>().ownerWebId;
+            return ListView.builder(
+              padding: const EdgeInsets.only(top: 16.0, left: 16.0, bottom: 20.0),
+              itemBuilder: (context, indx) {
+                if (messages[indx].toWebId == ownerWebId) {
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 8.0),
+                    child: ReceiverMessage(messages[indx]),
+                  );
+                } else {
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 8.0),
+                    child: SenderMessage(messages[indx]),
+                  );
+                }
+              },
+              itemCount: messages.length,
+              controller: _scrollController,
+              physics: const AlwaysScrollableScrollPhysics(),
+              addAutomaticKeepAlives: true,
+            );
+          }
+        });
   }
 
   _buildMessageInput(BuildContext context) {
@@ -142,89 +141,6 @@ class ChatView extends StatelessWidget {
           focusedBorder: border,
         ),
       ),
-    );
-  }
-
-  _chatsAppBar(BuildContext context) {
-    return AppBar(
-      titleSpacing: 0,
-      automaticallyImplyLeading: false,
-      title: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          IconButton(
-            onPressed: () {
-              //context.read<ChatCubit>().close();
-              Navigator.of(context).pop();
-            },
-            icon: const Icon(Icons.arrow_back_ios_rounded),
-            color: isLightTheme(context) ? Colors.black : Colors.white,
-          ),
-          Expanded(child: _headerStatus()),
-        ],
-      ),
-    );
-  }
-
-  _headerStatus() {
-    return Builder(builder: (context) {
-      final receiver  = context.select((ChatCubit c) => c.receiver);
-      final status = context.select(
-              (HomeCubit c) => c.state.onlineUsers.any(
-                      (webUser) => webUser.id == receiver.id));
-      return Container(
-          width: double.maxFinite,
-          child: Row(children: [
-            _profilePlaceholder(),
-            Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Padding(
-                padding: const EdgeInsets.only(left: 8.0),
-                child: Text(
-                  receiver.username,
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    fontSize: 14.0,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.only(left: 8.0),
-                child: Text(status ? 'online' : 'offline',
-                    style: Theme.of(context).textTheme.bodySmall),
-              ),
-            ]),
-          ])
-      );
-    });
-
-
-  }
-
-  _profilePlaceholder() {
-    const double size = 50.0;
-    return Container(
-      height: size,
-      width: size,
-      child: Builder(builder: (context) {
-        return Material(
-          color: isLightTheme(context)
-              ? const Color(0xFFF2F2F2)
-              : const Color(0xFF211E1E),
-          borderRadius: BorderRadius.circular(size),
-          child: InkWell(
-            borderRadius: BorderRadius.circular(size),
-            onTap: () {},
-            child: CircleAvatar(
-              backgroundColor: Colors.transparent,
-              child: Icon(
-                Icons.person_outline_rounded,
-                size: size,
-                color: isLightTheme(context) ? kIconLight : Colors.black,
-              ),
-            ),
-          ),
-        );
-      }),
     );
   }
 

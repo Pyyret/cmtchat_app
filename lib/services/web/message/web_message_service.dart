@@ -50,7 +50,6 @@ class WebMessageService implements WebMessageServiceApi {
         .listen((event) {
           c = event;
           event.forEach((feedData) {
-            print('message: $feedData');
             if(feedData['new_val'] == null) return;
             final message = _messageFromFeed(feedData);
             _controller.sink.add(message);
@@ -77,8 +76,6 @@ class WebMessageService implements WebMessageServiceApi {
         .run(_connection);
   }
 
-
-
   @override
   Future<void> dispose() async {
     await _changeFeed?.cancel();
@@ -86,16 +83,11 @@ class WebMessageService implements WebMessageServiceApi {
     _controller = StreamController<WebMessage>.broadcast();
   }
 
-
   @override
   Future<void> cancelChangeFeed() async {
-    print('cursor före ${c != null}');
     await c.close();
-    print('cursor efter ${c != null}');
-    print('changefeed före ${_changeFeed != null}');
     if(_changeFeed != null){
       _changeFeed?.cancel();
-      print('changefeedefter ${_changeFeed != null}');
     }
   }
 }

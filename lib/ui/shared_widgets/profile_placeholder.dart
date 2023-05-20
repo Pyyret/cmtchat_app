@@ -8,11 +8,13 @@ class ProfilePlaceholder extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return SizedBox(
       height: size,
       width: size,
       child: Material(
-        color: isLightTheme(context) ? const Color(0xFFF2F2F2) : const Color(0xFF211E1E),
+        color: isLightTheme(context)
+            ? const Color(0xFFF2F2F2)
+            : const Color(0xFF211E1E),
         borderRadius: BorderRadius.circular(size),
         child: InkWell(
           borderRadius: BorderRadius.circular(size),
