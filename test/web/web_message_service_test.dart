@@ -9,6 +9,7 @@ import 'package:rethink_db_ns/rethink_db_ns.dart';
 import 'helpers.dart';
 
 Future<void> main() async {
+
   RethinkDb r = RethinkDb();
   final Connection connection = await r.connect(host: '127.0.0.1', port: 28015);
   final encryption =  EncryptionService(Encrypter(AES(Key.fromLength(32))));

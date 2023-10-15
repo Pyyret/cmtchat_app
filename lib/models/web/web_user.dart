@@ -15,6 +15,7 @@ class WebUser {
 
   /// Constructors
   WebUser({this.id = '', this.username = '', this.active = false});
+
   factory WebUser.fromJson(Map<String, dynamic> json) {
     return WebUser(
         id: json['id'],

@@ -14,4 +14,8 @@ Future<void> cleanDb(RethinkDb r, Connection connection) async {
   await r.table('messages').delete().run(connection);
   await r.table('receipts').delete().run(connection);
   await r.table('typing_events').delete().run(connection);
+
+  await r.dbCreate('test').run(connection);
+  await r.tableCreate('users').run(connection);
 }
+

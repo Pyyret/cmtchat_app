@@ -14,7 +14,6 @@ class HomeView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    print('HomeView build');
     return DefaultTabController(
       length: 2,
       child: Scaffold(
@@ -27,8 +26,7 @@ class HomeView extends StatelessWidget {
                 child: TabBarView(
                   children: [
                     InboxTab(router: router),
-                    OnlineTab(router: router,),
-                    //ActiveUsers(),
+                    OnlineTab(router: router),
                   ],
                 ),
               ),
